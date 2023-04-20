@@ -1,6 +1,6 @@
 import {
   Arrow
-} from "/build/_shared/chunk-PHDZR7YR.js";
+} from "/build/_shared/chunk-L3DBNCDU.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-VIPVJV6J.js";
@@ -76,4 +76,4 @@ function EventDetails({
 export {
   EventDetails
 };
-//# sourceMappingURL=/build/_shared/chunk-ET5WXRGH.js.map
+//# sourceMappingURL=/build/_shared/chunk-Q4V7EJS5.js.map
