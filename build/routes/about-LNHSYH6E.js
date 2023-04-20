@@ -1,6 +1,6 @@
 import {
   PageGrid
-} from "/build/_shared/chunk-PHDZR7YR.js";
+} from "/build/_shared/chunk-L3DBNCDU.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-VIPVJV6J.js";
@@ -125,4 +125,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/about-S43ISKFU.js.map
+//# sourceMappingURL=/build/routes/about-LNHSYH6E.js.map

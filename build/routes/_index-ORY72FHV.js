@@ -1,12 +1,12 @@
 import {
   EventDetails
-} from "/build/_shared/chunk-ET5WXRGH.js";
+} from "/build/_shared/chunk-Q4V7EJS5.js";
 import {
   useLoaderData
 } from "/build/_shared/chunk-5FSI6U5Z.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-PHDZR7YR.js";
+} from "/build/_shared/chunk-L3DBNCDU.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-VIPVJV6J.js";
@@ -82,4 +82,4 @@ export {
   Index as default,
   meta
 };
-//# sourceMappingURL=/build/routes/_index-I2EB4L3T.js.map
+//# sourceMappingURL=/build/routes/_index-ORY72FHV.js.map
