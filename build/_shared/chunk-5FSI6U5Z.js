@@ -3308,28 +3308,6 @@ function isModifiedEvent(event) {
 function shouldProcessLinkClick(event, target) {
   return event.button === 0 && (!target || target === "_self") && !isModifiedEvent(event);
 }
-function createSearchParams(init) {
-  if (init === void 0) {
-    init = "";
-  }
-  return new URLSearchParams(typeof init === "string" || Array.isArray(init) || init instanceof URLSearchParams ? init : Object.keys(init).reduce((memo, key) => {
-    let value = init[key];
-    return memo.concat(Array.isArray(value) ? value.map((v) => [key, v]) : [[key, value]]);
-  }, []));
-}
-function getSearchParamsForLocation(locationSearch, defaultSearchParams) {
-  let searchParams = createSearchParams(locationSearch);
-  if (defaultSearchParams) {
-    for (let key of defaultSearchParams.keys()) {
-      if (!searchParams.has(key)) {
-        defaultSearchParams.getAll(key).forEach((value) => {
-          searchParams.append(key, value);
-        });
-      }
-    }
-  }
-  return searchParams;
-}
 function getFormSubmissionInfo(target, defaultAction, options) {
   let method;
   let action;
@@ -3497,20 +3475,6 @@ function useLinkClickHandler(to, _temp) {
       });
     }
   }, [location, navigate, path, replaceProp, state, target, to, preventScrollReset, relative]);
-}
-function useSearchParams(defaultInit) {
-  true ? warning(typeof URLSearchParams !== "undefined", "You cannot use the `useSearchParams` hook in a browser that does not support the URLSearchParams API. If you need to support Internet Explorer 11, we recommend you load a polyfill such as https://github.com/ungap/url-search-params\n\nIf you're unsure how to load polyfills, we recommend you check out https://polyfill.io/v3/ which provides some recommendations about how to load polyfills only for users that need them, instead of for every user.") : void 0;
-  let defaultSearchParamsRef = React2.useRef(createSearchParams(defaultInit));
-  let hasSetSearchParamsRef = React2.useRef(false);
-  let location = useLocation();
-  let searchParams = React2.useMemo(() => getSearchParamsForLocation(location.search, hasSetSearchParamsRef.current ? null : defaultSearchParamsRef.current), [location.search]);
-  let navigate = useNavigate();
-  let setSearchParams = React2.useCallback((nextInit, navigateOptions) => {
-    const newSearchParams = createSearchParams(typeof nextInit === "function" ? nextInit(searchParams) : nextInit);
-    hasSetSearchParamsRef.current = true;
-    navigate("?" + newSearchParams, navigateOptions);
-  }, [navigate, searchParams]);
-  return [searchParams, setSearchParams];
 }
 function useSubmitImpl(fetcherKey, routeId) {
   let {
@@ -5527,7 +5491,6 @@ function ScrollRestoration2({
 
 export {
   Outlet,
-  useSearchParams,
   Links,
   Meta,
   Scripts,
@@ -5536,4 +5499,4 @@ export {
   RemixBrowser,
   ScrollRestoration2 as ScrollRestoration
 };
-//# sourceMappingURL=/build/_shared/chunk-OTWBB2NH.js.map
+//# sourceMappingURL=/build/_shared/chunk-5FSI6U5Z.js.map
