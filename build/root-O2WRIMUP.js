@@ -5,7 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration
-} from "/build/_shared/chunk-OTWBB2NH.js";
+} from "/build/_shared/chunk-5FSI6U5Z.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-VIPVJV6J.js";
@@ -14,7 +14,7 @@ import {
 } from "/build/_shared/chunk-5KL4PAQL.js";
 
 // app/root.css
-var root_default = "/build/_assets/root-KDXZHFXP.css";
+var root_default = "/build/_assets/root-XXLIKLAI.css";
 
 // app/root.tsx
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
@@ -102,4 +102,4 @@ function App() {
 export {
   App as default
 };
-//# sourceMappingURL=/build/root-3SKJJUIM.js.map
+//# sourceMappingURL=/build/root-O2WRIMUP.js.map
