@@ -25,7 +25,7 @@ var team = [
   },
   {
     name: "Cody Lewis",
-    role: "Organizer-At-Large"
+    role: "Community"
   }
 ];
 var organizersEmeritum = ["Rasha Moumneh", "Matt Brophy"];
@@ -125,4 +125,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/about-LNHSYH6E.js.map
+//# sourceMappingURL=/build/routes/about-NJIASHWZ.js.map
