@@ -1,6 +1,6 @@
 import {
   PageGrid
-} from "/build/_shared/chunk-I3VYIGH5.js";
+} from "/build/_shared/chunk-DC63RHJT.js";
 import {
   init_buffer,
   init_dirname,
@@ -118,4 +118,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/code-of-conduct-LVFDAPC7.js.map
+//# sourceMappingURL=/build/routes/code-of-conduct-7457BVTM.js.map

@@ -1,6 +1,6 @@
 import {
   Arrow
-} from "/build/_shared/chunk-I3VYIGH5.js";
+} from "/build/_shared/chunk-DC63RHJT.js";
 import {
   init_buffer,
   init_dirname,
@@ -86,4 +86,4 @@ function EventDetails({
 export {
   EventDetails
 };
-//# sourceMappingURL=/build/_shared/chunk-HPK5MWYB.js.map
+//# sourceMappingURL=/build/_shared/chunk-PN232BDI.js.map
