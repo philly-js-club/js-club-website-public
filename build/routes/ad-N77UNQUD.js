@@ -1,14 +1,38 @@
 import {
   useSearchParams
-} from "/build/_shared/chunk-OTWBB2NH.js";
+} from "/build/_shared/chunk-62MKTFXD.js";
 import {
+  init_buffer,
+  init_dirname,
+  init_filename,
+  init_global,
+  init_process,
   require_jsx_dev_runtime
-} from "/build/_shared/chunk-VIPVJV6J.js";
+} from "/build/_shared/chunk-6GQJD64I.js";
 import {
   __toESM
-} from "/build/_shared/chunk-5KL4PAQL.js";
+} from "/build/_shared/chunk-IU43IUTG.js";
+
+// browser-route-module:routes/ad.tsx?browser
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
+
+// app/routes/ad.tsx
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 
 // app/components/AdLogo.tsx
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
 function AdLogo({ className }) {
   return /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(
@@ -176,4 +200,4 @@ export {
   Ad as default,
   meta
 };
-//# sourceMappingURL=/build/routes/ad-ZXOD3AWW.js.map
+//# sourceMappingURL=/build/routes/ad-N77UNQUD.js.map

@@ -1,20 +1,37 @@
 import {
   EventDetails
-} from "/build/_shared/chunk-Q4V7EJS5.js";
+} from "/build/_shared/chunk-HPK5MWYB.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-L3DBNCDU.js";
+} from "/build/_shared/chunk-I3VYIGH5.js";
 import {
   useLoaderData
-} from "/build/_shared/chunk-OTWBB2NH.js";
+} from "/build/_shared/chunk-62MKTFXD.js";
 import {
+  init_buffer,
+  init_dirname,
+  init_filename,
+  init_global,
+  init_process,
   require_jsx_dev_runtime
-} from "/build/_shared/chunk-VIPVJV6J.js";
+} from "/build/_shared/chunk-6GQJD64I.js";
 import {
   __toESM
-} from "/build/_shared/chunk-5KL4PAQL.js";
+} from "/build/_shared/chunk-IU43IUTG.js";
+
+// browser-route-module:routes/events.tsx?browser
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 
 // app/routes/events.tsx
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
 var meta = () => {
   return [{ title: "Events | Philly JS Club" }];
@@ -78,4 +95,4 @@ export {
   Events as default,
   meta
 };
-//# sourceMappingURL=/build/routes/events-FCTV4ZIB.js.map
+//# sourceMappingURL=/build/routes/events-ZJMDNDC5.js.map
