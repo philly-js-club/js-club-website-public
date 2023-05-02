@@ -1,11 +1,15 @@
 import {
+  init_buffer,
+  init_dirname,
+  init_filename,
+  init_global,
+  init_process,
   require_react
-} from "/build/_shared/chunk-VIPVJV6J.js";
+} from "/build/_shared/chunk-6GQJD64I.js";
 import {
-  __commonJS,
   __esm,
   __toESM
-} from "/build/_shared/chunk-5KL4PAQL.js";
+} from "/build/_shared/chunk-IU43IUTG.js";
 
 // node_modules/@remix-run/router/dist/router.js
 function _extends() {
@@ -39,6 +43,7 @@ function createBrowserHistory(options) {
         search,
         hash
       },
+      // state defaults to `null` because `window.history.state` does
       globalHistory.state && globalHistory.state.usr || null,
       globalHistory.state && globalHistory.state.key || "default"
     );
@@ -83,6 +88,10 @@ function createLocation(current, to, state, key) {
     hash: ""
   }, typeof to === "string" ? parsePath(to) : to, {
     state,
+    // TODO: This could be cleaned up.  push/replace should probably just take
+    // full Locations now and avoid the need to run through this flow at all
+    // But that's a pretty big refactor to the current test suite so going to
+    // keep as is for the time being and just let any incoming keys take precedence
     key: to && to.key || key || createKey()
   });
   return location;
@@ -240,7 +249,7 @@ function getUrlBasedHistory(getLocation, createHref, validateLocation, options) 
 function isIndexRoute(route) {
   return route.index === true;
 }
-function convertRoutesToDataRoutes(routes, detectErrorBoundary2, parentPath, manifest) {
+function convertRoutesToDataRoutes(routes, mapRouteProperties2, parentPath, manifest) {
   if (parentPath === void 0) {
     parentPath = [];
   }
@@ -253,21 +262,19 @@ function convertRoutesToDataRoutes(routes, detectErrorBoundary2, parentPath, man
     invariant(route.index !== true || !route.children, "Cannot specify children on an index route");
     invariant(!manifest[id], 'Found a route id collision on id "' + id + `".  Route id's must be globally unique within Data Router usages`);
     if (isIndexRoute(route)) {
-      let indexRoute = _extends({}, route, {
-        hasErrorBoundary: detectErrorBoundary2(route),
+      let indexRoute = _extends({}, route, mapRouteProperties2(route), {
         id
       });
       manifest[id] = indexRoute;
       return indexRoute;
     } else {
-      let pathOrLayoutRoute = _extends({}, route, {
+      let pathOrLayoutRoute = _extends({}, route, mapRouteProperties2(route), {
         id,
-        hasErrorBoundary: detectErrorBoundary2(route),
         children: void 0
       });
       manifest[id] = pathOrLayoutRoute;
       if (route.children) {
-        pathOrLayoutRoute.children = convertRoutesToDataRoutes(route.children, detectErrorBoundary2, treePath, manifest);
+        pathOrLayoutRoute.children = convertRoutesToDataRoutes(route.children, mapRouteProperties2, treePath, manifest);
       }
       return pathOrLayoutRoute;
     }
@@ -288,6 +295,12 @@ function matchRoutes(routes, locationArg, basename) {
   for (let i = 0; matches == null && i < branches.length; ++i) {
     matches = matchRouteBranch(
       branches[i],
+      // Incoming pathnames are generally encoded from either window.location
+      // or from router.navigate, but we want to match against the unencoded
+      // paths in the route definitions.  Memory router locations won't be
+      // encoded here but there also shouldn't be anything to decode so this
+      // should be a safe operation.  This avoids needing matchRoutes to be
+      // history-aware.
       safelyDecodeURI(pathname)
     );
   }
@@ -318,6 +331,8 @@ function flattenRoutes(routes, branches, parentsMeta, parentPath) {
     let routesMeta = parentsMeta.concat(meta);
     if (route.children && route.children.length > 0) {
       invariant(
+        // Our types know better, but runtime JS may not!
+        // @ts-expect-error
         route.index !== true,
         "Index routes must not have child routes. Please remove " + ('all child routes from route path "' + path + '".')
       );
@@ -378,7 +393,17 @@ function computeScore(path, index) {
 }
 function compareIndexes(a, b) {
   let siblings = a.length === b.length && a.slice(0, -1).every((n, i) => n === b[i]);
-  return siblings ? a[a.length - 1] - b[b.length - 1] : 0;
+  return siblings ? (
+    // If two routes are siblings, we should try to match the earlier sibling
+    // first. This allows people to have fine-grained control over the matching
+    // behavior by simply putting routes with identical paths in the order they
+    // want them tried.
+    a[a.length - 1] - b[b.length - 1]
+  ) : (
+    // Otherwise, it doesn't really make sense to rank non-siblings by index,
+    // so they sort equally.
+    0
+  );
 }
 function matchRouteBranch(branch, pathname) {
   let {
@@ -401,6 +426,7 @@ function matchRouteBranch(branch, pathname) {
     Object.assign(matchedParams, match.params);
     let route = meta.route;
     matches.push({
+      // TODO: Can this as be avoided?
       params: matchedParams,
       pathname: joinPaths([matchedPathname, match.pathname]),
       pathnameBase: normalizePathname(joinPaths([matchedPathname, match.pathnameBase])),
@@ -586,12 +612,24 @@ function isRouteErrorResponse(error) {
 }
 function createRouter(init) {
   invariant(init.routes.length > 0, "You must provide a non-empty routes array to createRouter");
-  let detectErrorBoundary2 = init.detectErrorBoundary || defaultDetectErrorBoundary;
+  let mapRouteProperties2;
+  if (init.mapRouteProperties) {
+    mapRouteProperties2 = init.mapRouteProperties;
+  } else if (init.detectErrorBoundary) {
+    let detectErrorBoundary = init.detectErrorBoundary;
+    mapRouteProperties2 = (route) => ({
+      hasErrorBoundary: detectErrorBoundary(route)
+    });
+  } else {
+    mapRouteProperties2 = defaultMapRouteProperties;
+  }
   let manifest = {};
-  let dataRoutes = convertRoutesToDataRoutes(init.routes, detectErrorBoundary2, void 0, manifest);
+  let dataRoutes = convertRoutesToDataRoutes(init.routes, mapRouteProperties2, void 0, manifest);
   let inFlightDataRoutes;
+  let basename = init.basename || "/";
   let future = _extends({
-    v7_normalizeFormMethod: false
+    v7_normalizeFormMethod: false,
+    v7_prependBasename: false
   }, init.future);
   let unlistenHistory = null;
   let subscribers = /* @__PURE__ */ new Set();
@@ -599,7 +637,7 @@ function createRouter(init) {
   let getScrollRestorationKey = null;
   let getScrollPosition = null;
   let initialScrollRestored = init.hydrationData != null;
-  let initialMatches = matchRoutes(dataRoutes, init.history.location, init.basename);
+  let initialMatches = matchRoutes(dataRoutes, init.history.location, basename);
   let initialErrors = null;
   if (initialMatches == null) {
     let error = getInternalRouterError(404, {
@@ -614,7 +652,12 @@ function createRouter(init) {
       [route.id]: error
     };
   }
-  let initialized = !initialMatches.some((m) => m.route.lazy) && (!initialMatches.some((m) => m.route.loader) || init.hydrationData != null);
+  let initialized = (
+    // All initialMatches need to be loaded before we're ready.  If we have lazy
+    // functions around still then we'll need to run them in initialize()
+    !initialMatches.some((m) => m.route.lazy) && // And we have to either have no loaders or have been provided hydrationData
+    (!initialMatches.some((m) => m.route.loader) || init.hydrationData != null)
+  );
   let router2;
   let state = {
     historyAction: init.history.action,
@@ -622,6 +665,7 @@ function createRouter(init) {
     matches: initialMatches,
     initialized,
     navigation: IDLE_NAVIGATION,
+    // Don't restore on initial updateState() if we were SSR'd
     restoreScrollPosition: init.hydrationData != null ? false : null,
     preventScrollReset: false,
     revalidation: "idle",
@@ -769,11 +813,12 @@ function createRouter(init) {
       init.history.go(to);
       return;
     }
+    let normalizedPath = normalizeTo(state.location, state.matches, basename, future.v7_prependBasename, to, opts == null ? void 0 : opts.fromRouteId, opts == null ? void 0 : opts.relative);
     let {
       path,
       submission,
       error
-    } = normalizeNavigateOptions(to, future, opts);
+    } = normalizeNavigateOptions(future.v7_normalizeFormMethod, false, normalizedPath, opts);
     let currentLocation = state.location;
     let nextLocation = createLocation(state.location, path, opts && opts.state);
     nextLocation = _extends({}, nextLocation, init.history.encodeLocation(nextLocation));
@@ -816,6 +861,8 @@ function createRouter(init) {
     }
     return await startNavigation(historyAction, nextLocation, {
       submission,
+      // Send through the formData serialization error if we have one so we can
+      // render at the right error boundary after we match routes
       pendingError: error,
       preventScrollReset,
       replace: opts && opts.replace
@@ -848,7 +895,7 @@ function createRouter(init) {
     pendingPreventScrollReset = (opts && opts.preventScrollReset) === true;
     let routesToUse = inFlightDataRoutes || dataRoutes;
     let loadingNavigation = opts && opts.overrideNavigation;
-    let matches = matchRoutes(routesToUse, location, init.basename);
+    let matches = matchRoutes(routesToUse, location, basename);
     if (!matches) {
       let error = getInternalRouterError(404, {
         pathname: location.pathname
@@ -938,7 +985,7 @@ function createRouter(init) {
         })
       };
     } else {
-      result = await callLoaderOrAction("action", request, actionMatch, matches, manifest, detectErrorBoundary2, router2.basename);
+      result = await callLoaderOrAction("action", request, actionMatch, matches, manifest, mapRouteProperties2, basename);
       if (request.signal.aborted) {
         return {
           shortCircuited: true
@@ -966,6 +1013,7 @@ function createRouter(init) {
         pendingAction = Action.Push;
       }
       return {
+        // Send back an empty object we can use to clear out any prior actionData
         pendingActionData: {},
         pendingActionError: {
           [boundaryMatch.route.id]: result.error
@@ -1003,15 +1051,19 @@ function createRouter(init) {
       formEncType: loadingNavigation.formEncType
     } : void 0;
     let routesToUse = inFlightDataRoutes || dataRoutes;
-    let [matchesToLoad, revalidatingFetchers] = getMatchesToLoad(init.history, state, matches, activeSubmission, location, isRevalidationRequired, cancelledDeferredRoutes, cancelledFetcherLoads, fetchLoadMatches, routesToUse, init.basename, pendingActionData, pendingError);
+    let [matchesToLoad, revalidatingFetchers] = getMatchesToLoad(init.history, state, matches, activeSubmission, location, isRevalidationRequired, cancelledDeferredRoutes, cancelledFetcherLoads, fetchLoadMatches, routesToUse, basename, pendingActionData, pendingError);
     cancelActiveDeferreds((routeId) => !(matches && matches.some((m) => m.route.id === routeId)) || matchesToLoad && matchesToLoad.some((m) => m.route.id === routeId));
     if (matchesToLoad.length === 0 && revalidatingFetchers.length === 0) {
+      let updatedFetchers2 = markFetchRedirectsDone();
       completeNavigation(location, _extends({
         matches,
         loaderData: {},
+        // Commit pending error if we're short circuiting
         errors: pendingError || null
       }, pendingActionData ? {
         actionData: pendingActionData
+      } : {}, updatedFetchers2 ? {
+        fetchers: new Map(state.fetchers)
       } : {}));
       return {
         shortCircuited: true
@@ -1043,7 +1095,15 @@ function createRouter(init) {
       } : {}));
     }
     pendingNavigationLoadId = ++incrementingLoadId;
-    revalidatingFetchers.forEach((rf) => fetchControllers.set(rf.key, pendingNavigationController));
+    revalidatingFetchers.forEach((rf) => {
+      if (rf.controller) {
+        fetchControllers.set(rf.key, rf.controller);
+      }
+    });
+    let abortPendingFetchRevalidations = () => revalidatingFetchers.forEach((f) => abortFetcher(f.key));
+    if (pendingNavigationController) {
+      pendingNavigationController.signal.addEventListener("abort", abortPendingFetchRevalidations);
+    }
     let {
       results,
       loaderResults,
@@ -1053,6 +1113,9 @@ function createRouter(init) {
       return {
         shortCircuited: true
       };
+    }
+    if (pendingNavigationController) {
+      pendingNavigationController.signal.removeEventListener("abort", abortPendingFetchRevalidations);
     }
     revalidatingFetchers.forEach((rf) => fetchControllers.delete(rf.key));
     let redirect3 = findRedirect(results);
@@ -1075,12 +1138,13 @@ function createRouter(init) {
         }
       });
     });
-    markFetchRedirectsDone();
+    let updatedFetchers = markFetchRedirectsDone();
     let didAbortFetchLoads = abortStaleFetchLoads(pendingNavigationLoadId);
+    let shouldUpdateFetchers = updatedFetchers || didAbortFetchLoads || revalidatingFetchers.length > 0;
     return _extends({
       loaderData,
       errors
-    }, didAbortFetchLoads || revalidatingFetchers.length > 0 ? {
+    }, shouldUpdateFetchers ? {
       fetchers: new Map(state.fetchers)
     } : {});
   }
@@ -1094,17 +1158,18 @@ function createRouter(init) {
     if (fetchControllers.has(key))
       abortFetcher(key);
     let routesToUse = inFlightDataRoutes || dataRoutes;
-    let matches = matchRoutes(routesToUse, href, init.basename);
+    let normalizedPath = normalizeTo(state.location, state.matches, basename, future.v7_prependBasename, href, routeId, opts == null ? void 0 : opts.relative);
+    let matches = matchRoutes(routesToUse, normalizedPath, basename);
     if (!matches) {
       setFetcherError(key, routeId, getInternalRouterError(404, {
-        pathname: href
+        pathname: normalizedPath
       }));
       return;
     }
     let {
       path,
       submission
-    } = normalizeNavigateOptions(href, future, opts, true);
+    } = normalizeNavigateOptions(future.v7_normalizeFormMethod, true, normalizedPath, opts);
     let match = getTargetMatch(matches, path);
     pendingPreventScrollReset = (opts && opts.preventScrollReset) === true;
     if (submission && isMutationMethod(submission.formMethod)) {
@@ -1143,7 +1208,7 @@ function createRouter(init) {
     let abortController = new AbortController();
     let fetchRequest = createClientSideRequest(init.history, path, abortController.signal, submission);
     fetchControllers.set(key, abortController);
-    let actionResult = await callLoaderOrAction("action", fetchRequest, match, requestMatches, manifest, detectErrorBoundary2, router2.basename);
+    let actionResult = await callLoaderOrAction("action", fetchRequest, match, requestMatches, manifest, mapRouteProperties2, basename);
     if (fetchRequest.signal.aborted) {
       if (fetchControllers.get(key) === abortController) {
         fetchControllers.delete(key);
@@ -1180,7 +1245,7 @@ function createRouter(init) {
     let nextLocation = state.navigation.location || state.location;
     let revalidationRequest = createClientSideRequest(init.history, nextLocation, abortController.signal);
     let routesToUse = inFlightDataRoutes || dataRoutes;
-    let matches = state.navigation.state !== "idle" ? matchRoutes(routesToUse, state.navigation.location, init.basename) : state.matches;
+    let matches = state.navigation.state !== "idle" ? matchRoutes(routesToUse, state.navigation.location, basename) : state.matches;
     invariant(matches, "Didn't find any matches after fetcher action");
     let loadId = ++incrementingLoadId;
     fetchReloadIds.set(key, loadId);
@@ -1202,11 +1267,12 @@ function createRouter(init) {
       cancelledFetcherLoads,
       fetchLoadMatches,
       routesToUse,
-      init.basename,
+      basename,
       {
         [match.route.id]: actionResult.data
       },
       void 0
+      // No need to send through errors since we short circuit above
     );
     revalidatingFetchers.filter((rf) => rf.key !== key).forEach((rf) => {
       let staleKey = rf.key;
@@ -1221,11 +1287,15 @@ function createRouter(init) {
         " _hasFetcherDoneAnything ": true
       };
       state.fetchers.set(staleKey, revalidatingFetcher);
-      fetchControllers.set(staleKey, abortController);
+      if (rf.controller) {
+        fetchControllers.set(staleKey, rf.controller);
+      }
     });
     updateState({
       fetchers: new Map(state.fetchers)
     });
+    let abortPendingFetchRevalidations = () => revalidatingFetchers.forEach((rf) => abortFetcher(rf.key));
+    abortController.signal.addEventListener("abort", abortPendingFetchRevalidations);
     let {
       results,
       loaderResults,
@@ -1234,6 +1304,7 @@ function createRouter(init) {
     if (abortController.signal.aborted) {
       return;
     }
+    abortController.signal.removeEventListener("abort", abortPendingFetchRevalidations);
     fetchReloadIds.delete(key);
     fetchControllers.delete(key);
     revalidatingFetchers.forEach((r) => fetchControllers.delete(r.key));
@@ -1294,7 +1365,7 @@ function createRouter(init) {
     let abortController = new AbortController();
     let fetchRequest = createClientSideRequest(init.history, path, abortController.signal);
     fetchControllers.set(key, abortController);
-    let result = await callLoaderOrAction("loader", fetchRequest, match, matches, manifest, detectErrorBoundary2, router2.basename);
+    let result = await callLoaderOrAction("loader", fetchRequest, match, matches, manifest, mapRouteProperties2, basename);
     if (isDeferredResult(result)) {
       result = await resolveDeferredData(result, fetchRequest.signal, true) || result;
     }
@@ -1305,6 +1376,7 @@ function createRouter(init) {
       return;
     }
     if (isRedirectResult(result)) {
+      fetchRedirectIds.add(key);
       await startRedirectNavigation(state, result);
       return;
     }
@@ -1347,6 +1419,7 @@ function createRouter(init) {
     let redirectLocation = createLocation(
       state2.location,
       redirect3.location,
+      // TODO: This can be removed once we get rid of useTransition in Remix v2
       _extends({
         _isRedirect: true
       }, isFetchActionRedirect ? {
@@ -1356,7 +1429,7 @@ function createRouter(init) {
     invariant(redirectLocation, "Expected a location on the redirect navigation");
     if (ABSOLUTE_URL_REGEX.test(redirect3.location) && isBrowser && typeof ((_window = window) == null ? void 0 : _window.location) !== "undefined") {
       let url = init.history.createURL(redirect3.location);
-      let isDifferentBasename = stripBasename(url.pathname, init.basename || "/") == null;
+      let isDifferentBasename = stripBasename(url.pathname, basename) == null;
       if (window.location.origin !== url.origin || isDifferentBasename) {
         if (replace) {
           window.location.replace(redirect3.location);
@@ -1387,6 +1460,7 @@ function createRouter(init) {
         submission: _extends({}, submission, {
           formAction: redirect3.location
         }),
+        // Preserve this flag across redirects
         preventScrollReset: pendingPreventScrollReset
       });
     } else if (isFetchActionRedirect) {
@@ -1400,6 +1474,7 @@ function createRouter(init) {
           formData: void 0
         },
         fetcherSubmission: submission,
+        // Preserve this flag across redirects
         preventScrollReset: pendingPreventScrollReset
       });
     } else {
@@ -1412,14 +1487,15 @@ function createRouter(init) {
           formEncType: submission ? submission.formEncType : void 0,
           formData: submission ? submission.formData : void 0
         },
+        // Preserve this flag across redirects
         preventScrollReset: pendingPreventScrollReset
       });
     }
   }
   async function callLoadersAndMaybeResolveData(currentMatches, matches, matchesToLoad, fetchersToLoad, request) {
-    let results = await Promise.all([...matchesToLoad.map((match) => callLoaderOrAction("loader", request, match, matches, manifest, detectErrorBoundary2, router2.basename)), ...fetchersToLoad.map((f) => {
-      if (f.matches && f.match) {
-        return callLoaderOrAction("loader", createClientSideRequest(init.history, f.path, request.signal), f.match, f.matches, manifest, detectErrorBoundary2, router2.basename);
+    let results = await Promise.all([...matchesToLoad.map((match) => callLoaderOrAction("loader", request, match, matches, manifest, mapRouteProperties2, basename)), ...fetchersToLoad.map((f) => {
+      if (f.matches && f.match && f.controller) {
+        return callLoaderOrAction("loader", createClientSideRequest(init.history, f.path, f.controller.signal), f.match, f.matches, manifest, mapRouteProperties2, basename);
       } else {
         let error = {
           type: ResultType.error,
@@ -1432,7 +1508,7 @@ function createRouter(init) {
     })]);
     let loaderResults = results.slice(0, matchesToLoad.length);
     let fetcherResults = results.slice(matchesToLoad.length);
-    await Promise.all([resolveDeferredResults(currentMatches, matchesToLoad, loaderResults, request.signal, false, state.loaderData), resolveDeferredResults(currentMatches, fetchersToLoad.map((f) => f.match), fetcherResults, request.signal, true)]);
+    await Promise.all([resolveDeferredResults(currentMatches, matchesToLoad, loaderResults, loaderResults.map(() => request.signal), false, state.loaderData), resolveDeferredResults(currentMatches, fetchersToLoad.map((f) => f.match), fetcherResults, fetchersToLoad.map((f) => f.controller ? f.controller.signal : null), true)]);
     return {
       results,
       loaderResults,
@@ -1490,15 +1566,18 @@ function createRouter(init) {
   }
   function markFetchRedirectsDone() {
     let doneKeys = [];
+    let updatedFetchers = false;
     for (let key of fetchRedirectIds) {
       let fetcher = state.fetchers.get(key);
       invariant(fetcher, "Expected fetcher: " + key);
       if (fetcher.state === "loading") {
         fetchRedirectIds.delete(key);
         doneKeys.push(key);
+        updatedFetchers = true;
       }
     }
     markFetchersDone(doneKeys);
+    return updatedFetchers;
   }
   function abortStaleFetchLoads(landedId) {
     let yeetedKeys = [];
@@ -1614,7 +1693,7 @@ function createRouter(init) {
   }
   router2 = {
     get basename() {
-      return init.basename;
+      return basename;
     },
     get state() {
       return state;
@@ -1628,6 +1707,8 @@ function createRouter(init) {
     navigate,
     fetch: fetch2,
     revalidate,
+    // Passthrough to history-aware createHref used by useHref so we get proper
+    // hash-aware URLs in DOM paths
     createHref: (to) => init.history.createHref(to),
     encodeLocation: (to) => init.history.encodeLocation(to),
     getFetcher,
@@ -1637,6 +1718,8 @@ function createRouter(init) {
     deleteBlocker,
     _internalFetchControllers: fetchControllers,
     _internalActiveDeferreds: activeDeferreds,
+    // TODO: Remove setRoutes, it's temporary to avoid dealing with
+    // updating the tree while validating the update algorithm.
     _internalSetRoutes
   };
   return router2;
@@ -1644,11 +1727,36 @@ function createRouter(init) {
 function isSubmissionNavigation(opts) {
   return opts != null && "formData" in opts;
 }
-function normalizeNavigateOptions(to, future, opts, isFetcher) {
-  if (isFetcher === void 0) {
-    isFetcher = false;
+function normalizeTo(location, matches, basename, prependBasename, to, fromRouteId, relative) {
+  let contextualMatches;
+  let activeRouteMatch;
+  if (fromRouteId != null && relative !== "path") {
+    contextualMatches = [];
+    for (let match of matches) {
+      contextualMatches.push(match);
+      if (match.route.id === fromRouteId) {
+        activeRouteMatch = match;
+        break;
+      }
+    }
+  } else {
+    contextualMatches = matches;
+    activeRouteMatch = matches[matches.length - 1];
   }
-  let path = typeof to === "string" ? to : createPath(to);
+  let path = resolveTo(to ? to : ".", getPathContributingMatches(contextualMatches).map((m) => m.pathnameBase), location.pathname, relative === "path");
+  if (to == null) {
+    path.search = location.search;
+    path.hash = location.hash;
+  }
+  if ((to == null || to === "" || to === ".") && activeRouteMatch && activeRouteMatch.route.index && !hasNakedIndexQuery(path.search)) {
+    path.search = path.search ? path.search.replace(/^\?/, "?index&") : "?index";
+  }
+  if (prependBasename && basename !== "/") {
+    path.pathname = path.pathname === "/" ? basename : joinPaths([basename, path.pathname]);
+  }
+  return createPath(path);
+}
+function normalizeNavigateOptions(normalizeFormMethod, isFetcher, path, opts) {
   if (!opts || !isSubmissionNavigation(opts)) {
     return {
       path
@@ -1666,7 +1774,7 @@ function normalizeNavigateOptions(to, future, opts, isFetcher) {
   if (opts.formData) {
     let formMethod = opts.formMethod || "get";
     submission = {
-      formMethod: future.v7_normalizeFormMethod ? formMethod.toUpperCase() : formMethod.toLowerCase(),
+      formMethod: normalizeFormMethod ? formMethod.toUpperCase() : formMethod.toLowerCase(),
       formAction: stripHashFromPath(path),
       formEncType: opts && opts.formEncType || "application/x-www-form-urlencoded",
       formData: opts.formData
@@ -1703,7 +1811,6 @@ function getMatchesToLoad(history, state, matches, submission, location, isReval
   let actionResult = pendingError ? Object.values(pendingError)[0] : pendingActionData ? Object.values(pendingActionData)[0] : void 0;
   let currentUrl = history.createURL(state.location);
   let nextUrl = history.createURL(location);
-  let defaultShouldRevalidate = isRevalidationRequired || currentUrl.toString() === nextUrl.toString() || currentUrl.search !== nextUrl.search;
   let boundaryId = pendingError ? Object.keys(pendingError)[0] : void 0;
   let boundaryMatches = getLoaderMatchesUntilBoundary(matches, boundaryId);
   let navigationMatches = boundaryMatches.filter((match, index) => {
@@ -1725,7 +1832,12 @@ function getMatchesToLoad(history, state, matches, submission, location, isReval
       nextParams: nextRouteMatch.params
     }, submission, {
       actionResult,
-      defaultShouldRevalidate: defaultShouldRevalidate || isNewRouteInstance(currentRouteMatch, nextRouteMatch)
+      defaultShouldRevalidate: (
+        // Forced revalidation due to submission, useRevalidator, or X-Remix-Revalidate
+        isRevalidationRequired || // Clicked the same link, resubmitted a GET form
+        currentUrl.toString() === nextUrl.toString() || // Search params affect all loaders
+        currentUrl.search !== nextUrl.search || isNewRouteInstance(currentRouteMatch, nextRouteMatch)
+      )
     }));
   });
   let revalidatingFetchers = [];
@@ -1735,21 +1847,26 @@ function getMatchesToLoad(history, state, matches, submission, location, isReval
     }
     let fetcherMatches = matchRoutes(routesToUse, f.path, basename);
     if (!fetcherMatches) {
-      revalidatingFetchers.push(_extends({
-        key
-      }, f, {
+      revalidatingFetchers.push({
+        key,
+        routeId: f.routeId,
+        path: f.path,
         matches: null,
-        match: null
-      }));
+        match: null,
+        controller: null
+      });
       return;
     }
     let fetcherMatch = getTargetMatch(fetcherMatches, f.path);
     if (cancelledFetcherLoads.includes(key)) {
-      revalidatingFetchers.push(_extends({
+      revalidatingFetchers.push({
         key,
+        routeId: f.routeId,
+        path: f.path,
         matches: fetcherMatches,
-        match: fetcherMatch
-      }, f));
+        match: fetcherMatch,
+        controller: new AbortController()
+      });
       return;
     }
     let shouldRevalidate = shouldRevalidateLoader(fetcherMatch, _extends({
@@ -1759,26 +1876,39 @@ function getMatchesToLoad(history, state, matches, submission, location, isReval
       nextParams: matches[matches.length - 1].params
     }, submission, {
       actionResult,
-      defaultShouldRevalidate
+      // Forced revalidation due to submission, useRevalidator, or X-Remix-Revalidate
+      defaultShouldRevalidate: isRevalidationRequired
     }));
     if (shouldRevalidate) {
-      revalidatingFetchers.push(_extends({
+      revalidatingFetchers.push({
         key,
+        routeId: f.routeId,
+        path: f.path,
         matches: fetcherMatches,
-        match: fetcherMatch
-      }, f));
+        match: fetcherMatch,
+        controller: new AbortController()
+      });
     }
   });
   return [navigationMatches, revalidatingFetchers];
 }
 function isNewLoader(currentLoaderData, currentMatch, match) {
-  let isNew = !currentMatch || match.route.id !== currentMatch.route.id;
+  let isNew = (
+    // [a] -> [a, b]
+    !currentMatch || // [a, b] -> [a, c]
+    match.route.id !== currentMatch.route.id
+  );
   let isMissingData = currentLoaderData[match.route.id] === void 0;
   return isNew || isMissingData;
 }
 function isNewRouteInstance(currentMatch, match) {
   let currentPath = currentMatch.route.path;
-  return currentMatch.pathname !== match.pathname || currentPath != null && currentPath.endsWith("*") && currentMatch.params["*"] !== match.params["*"];
+  return (
+    // param change for this match, /users/123 -> /users/456
+    currentMatch.pathname !== match.pathname || // splat param changed, which is not present in match.path
+    // e.g. /files/images/avatar.jpg -> files/finances.xls
+    currentPath != null && currentPath.endsWith("*") && currentMatch.params["*"] !== match.params["*"]
+  );
 }
 function shouldRevalidateLoader(loaderMatch, arg) {
   if (loaderMatch.route.shouldRevalidate) {
@@ -1789,7 +1919,7 @@ function shouldRevalidateLoader(loaderMatch, arg) {
   }
   return arg.defaultShouldRevalidate;
 }
-async function loadLazyRouteModule(route, detectErrorBoundary2, manifest) {
+async function loadLazyRouteModule(route, mapRouteProperties2, manifest) {
   if (!route.lazy) {
     return;
   }
@@ -1802,22 +1932,20 @@ async function loadLazyRouteModule(route, detectErrorBoundary2, manifest) {
   let routeUpdates = {};
   for (let lazyRouteProperty in lazyRoute) {
     let staticRouteValue = routeToUpdate[lazyRouteProperty];
-    let isPropertyStaticallyDefined = staticRouteValue !== void 0 && lazyRouteProperty !== "hasErrorBoundary";
+    let isPropertyStaticallyDefined = staticRouteValue !== void 0 && // This property isn't static since it should always be updated based
+    // on the route updates
+    lazyRouteProperty !== "hasErrorBoundary";
     warning(!isPropertyStaticallyDefined, 'Route "' + routeToUpdate.id + '" has a static property "' + lazyRouteProperty + '" defined but its lazy function is also returning a value for this property. ' + ('The lazy route property "' + lazyRouteProperty + '" will be ignored.'));
     if (!isPropertyStaticallyDefined && !immutableRouteKeys.has(lazyRouteProperty)) {
       routeUpdates[lazyRouteProperty] = lazyRoute[lazyRouteProperty];
     }
   }
   Object.assign(routeToUpdate, routeUpdates);
-  Object.assign(routeToUpdate, {
-    hasErrorBoundary: detectErrorBoundary2(_extends({}, routeToUpdate)),
+  Object.assign(routeToUpdate, _extends({}, mapRouteProperties2(routeToUpdate), {
     lazy: void 0
-  });
+  }));
 }
-async function callLoaderOrAction(type, request, match, matches, manifest, detectErrorBoundary2, basename, isStaticRequest, isRouteRequest, requestContext) {
-  if (basename === void 0) {
-    basename = "/";
-  }
+async function callLoaderOrAction(type, request, match, matches, manifest, mapRouteProperties2, basename, isStaticRequest, isRouteRequest, requestContext) {
   if (isStaticRequest === void 0) {
     isStaticRequest = false;
   }
@@ -1842,17 +1970,19 @@ async function callLoaderOrAction(type, request, match, matches, manifest, detec
     let handler = match.route[type];
     if (match.route.lazy) {
       if (handler) {
-        let values = await Promise.all([runHandler(handler), loadLazyRouteModule(match.route, detectErrorBoundary2, manifest)]);
+        let values = await Promise.all([runHandler(handler), loadLazyRouteModule(match.route, mapRouteProperties2, manifest)]);
         result = values[0];
       } else {
-        await loadLazyRouteModule(match.route, detectErrorBoundary2, manifest);
+        await loadLazyRouteModule(match.route, mapRouteProperties2, manifest);
         handler = match.route[type];
         if (handler) {
           result = await runHandler(handler);
         } else if (type === "action") {
+          let url = new URL(request.url);
+          let pathname = url.pathname + url.search;
           throw getInternalRouterError(405, {
             method: request.method,
-            pathname: new URL(request.url).pathname,
+            pathname,
             routeId: match.route.id
           });
         } else {
@@ -1862,8 +1992,13 @@ async function callLoaderOrAction(type, request, match, matches, manifest, detec
           };
         }
       }
+    } else if (!handler) {
+      let url = new URL(request.url);
+      let pathname = url.pathname + url.search;
+      throw getInternalRouterError(404, {
+        pathname
+      });
     } else {
-      invariant(handler, "Could not find the " + type + ' to run on the "' + match.route.id + '" route');
       result = await runHandler(handler);
     }
     invariant(result !== void 0, "You defined " + (type === "action" ? "an action" : "a loader") + " for route " + ('"' + match.route.id + "\" but didn't return anything from your `" + type + "` ") + "function. Please return a value or `null`.");
@@ -1881,15 +2016,7 @@ async function callLoaderOrAction(type, request, match, matches, manifest, detec
       let location = result.headers.get("Location");
       invariant(location, "Redirects returned/thrown from loaders/actions must have a Location header");
       if (!ABSOLUTE_URL_REGEX.test(location)) {
-        let activeMatches = matches.slice(0, matches.indexOf(match) + 1);
-        let routePathnames = getPathContributingMatches(activeMatches).map((match2) => match2.pathnameBase);
-        let resolvedLocation = resolveTo(location, routePathnames, new URL(request.url).pathname);
-        invariant(createPath(resolvedLocation), "Unable to resolve redirect location: " + location);
-        if (basename) {
-          let path = resolvedLocation.pathname;
-          resolvedLocation.pathname = path === "/" ? basename : joinPaths([basename, path]);
-        }
-        location = createPath(resolvedLocation);
+        location = normalizeTo(new URL(request.url), matches.slice(0, matches.indexOf(match) + 1), basename, true, location);
       } else if (!isStaticRequest) {
         let currentUrl = new URL(request.url);
         let url = location.startsWith("//") ? new URL(currentUrl.protocol + location) : new URL(location);
@@ -2041,11 +2168,14 @@ function processLoaderData(state, matches, matchesToLoad, results, pendingError,
   for (let index = 0; index < revalidatingFetchers.length; index++) {
     let {
       key,
-      match
+      match,
+      controller
     } = revalidatingFetchers[index];
     invariant(fetcherResults !== void 0 && fetcherResults[index] !== void 0, "Did not find corresponding fetcher result");
     let result = fetcherResults[index];
-    if (isErrorResult(result)) {
+    if (controller && controller.signal.aborted) {
+      continue;
+    } else if (isErrorResult(result)) {
       let boundaryMatch = findNearestBoundary(state.matches, match == null ? void 0 : match.route.id);
       if (!(errors && errors[boundaryMatch.route.id])) {
         errors = _extends({}, errors, {
@@ -2181,7 +2311,7 @@ function isValidMethod(method) {
 function isMutationMethod(method) {
   return validMutationMethods.has(method.toLowerCase());
 }
-async function resolveDeferredResults(currentMatches, matchesToLoad, results, signal, isFetcher, currentLoaderData) {
+async function resolveDeferredResults(currentMatches, matchesToLoad, results, signals, isFetcher, currentLoaderData) {
   for (let index = 0; index < results.length; index++) {
     let result = results[index];
     let match = matchesToLoad[index];
@@ -2191,6 +2321,8 @@ async function resolveDeferredResults(currentMatches, matchesToLoad, results, si
     let currentMatch = currentMatches.find((m) => m.route.id === match.route.id);
     let isRevalidatingLoader = currentMatch != null && !isNewRouteInstance(currentMatch, match) && (currentLoaderData && currentLoaderData[match.route.id]) !== void 0;
     if (isDeferredResult(result) && (isFetcher || isRevalidatingLoader)) {
+      let signal = signals[index];
+      invariant(signal, "Expected an AbortSignal for revalidating fetcher deferred result");
       await resolveDeferredData(result, signal, isFetcher).then((result2) => {
         if (result2) {
           results[index] = result2 || results[index];
@@ -2250,9 +2382,14 @@ function getTargetMatch(matches, location) {
   let pathMatches = getPathContributingMatches(matches);
   return pathMatches[pathMatches.length - 1];
 }
-var Action, PopStateEventType, ResultType, immutableRouteKeys, paramRe, dynamicSegmentValue, indexRouteValue, emptySegmentValue, staticSegmentValue, splatPenalty, isSplat, joinPaths, normalizePathname, normalizeSearch, normalizeHash, AbortedDeferredError, DeferredData, redirect, ErrorResponse, validMutationMethodsArr, validMutationMethods, validRequestMethodsArr, validRequestMethods, redirectStatusCodes, redirectPreserveMethodStatusCodes, IDLE_NAVIGATION, IDLE_FETCHER, IDLE_BLOCKER, ABSOLUTE_URL_REGEX, isBrowser, isServer, defaultDetectErrorBoundary, UNSAFE_DEFERRED_SYMBOL;
+var Action, PopStateEventType, ResultType, immutableRouteKeys, paramRe, dynamicSegmentValue, indexRouteValue, emptySegmentValue, staticSegmentValue, splatPenalty, isSplat, joinPaths, normalizePathname, normalizeSearch, normalizeHash, AbortedDeferredError, DeferredData, redirect, ErrorResponse, validMutationMethodsArr, validMutationMethods, validRequestMethodsArr, validRequestMethods, redirectStatusCodes, redirectPreserveMethodStatusCodes, IDLE_NAVIGATION, IDLE_FETCHER, IDLE_BLOCKER, ABSOLUTE_URL_REGEX, isBrowser, isServer, defaultMapRouteProperties, UNSAFE_DEFERRED_SYMBOL;
 var init_router = __esm({
   "node_modules/@remix-run/router/dist/router.js"() {
+    init_global();
+    init_dirname();
+    init_filename();
+    init_buffer();
+    init_process();
     (function(Action2) {
       Action2["Pop"] = "POP";
       Action2["Push"] = "PUSH";
@@ -2450,82 +2587,14 @@ var init_router = __esm({
     ABSOLUTE_URL_REGEX = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
     isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined";
     isServer = !isBrowser;
-    defaultDetectErrorBoundary = (route) => Boolean(route.hasErrorBoundary);
+    defaultMapRouteProperties = (route) => ({
+      hasErrorBoundary: Boolean(route.hasErrorBoundary)
+    });
     UNSAFE_DEFERRED_SYMBOL = Symbol("deferred");
   }
 });
 
 // node_modules/react-router/dist/index.js
-function isPolyfill(x, y) {
-  return x === y && (x !== 0 || 1 / x === 1 / y) || x !== x && y !== y;
-}
-function useSyncExternalStore$2(subscribe, getSnapshot, getServerSnapshot) {
-  if (true) {
-    if (!didWarnOld18Alpha) {
-      if ("startTransition" in React) {
-        didWarnOld18Alpha = true;
-        console.error("You are using an outdated, pre-release alpha of React 18 that does not support useSyncExternalStore. The use-sync-external-store shim will not work correctly. Upgrade to a newer pre-release.");
-      }
-    }
-  }
-  const value = getSnapshot();
-  if (true) {
-    if (!didWarnUncachedGetSnapshot) {
-      const cachedValue = getSnapshot();
-      if (!is(value, cachedValue)) {
-        console.error("The result of getSnapshot should be cached to avoid an infinite loop");
-        didWarnUncachedGetSnapshot = true;
-      }
-    }
-  }
-  const [{
-    inst
-  }, forceUpdate] = useState2({
-    inst: {
-      value,
-      getSnapshot
-    }
-  });
-  useLayoutEffect2(() => {
-    inst.value = value;
-    inst.getSnapshot = getSnapshot;
-    if (checkIfSnapshotChanged(inst)) {
-      forceUpdate({
-        inst
-      });
-    }
-  }, [subscribe, value, getSnapshot]);
-  useEffect2(() => {
-    if (checkIfSnapshotChanged(inst)) {
-      forceUpdate({
-        inst
-      });
-    }
-    const handleStoreChange = () => {
-      if (checkIfSnapshotChanged(inst)) {
-        forceUpdate({
-          inst
-        });
-      }
-    };
-    return subscribe(handleStoreChange);
-  }, [subscribe]);
-  useDebugValue(value);
-  return value;
-}
-function checkIfSnapshotChanged(inst) {
-  const latestGetSnapshot = inst.getSnapshot;
-  const prevValue = inst.value;
-  try {
-    const nextValue = latestGetSnapshot();
-    return !is(prevValue, nextValue);
-  } catch (error) {
-    return true;
-  }
-}
-function useSyncExternalStore$1(subscribe, getSnapshot, getServerSnapshot) {
-  return getSnapshot();
-}
 function _extends2() {
   _extends2 = Object.assign ? Object.assign.bind() : function(target) {
     for (var i = 1; i < arguments.length; i++) {
@@ -2546,6 +2615,8 @@ function useHref(to, _temp) {
   } = _temp === void 0 ? {} : _temp;
   !useInRouterContext() ? true ? invariant(
     false,
+    // TODO: This error is probably because they somehow have 2 versions of the
+    // router loaded. We can help them understand how to avoid that.
     "useHref() may be used only in the context of a <Router> component."
   ) : invariant(false) : void 0;
   let {
@@ -2575,13 +2646,27 @@ function useInRouterContext() {
 function useLocation() {
   !useInRouterContext() ? true ? invariant(
     false,
+    // TODO: This error is probably because they somehow have 2 versions of the
+    // router loaded. We can help them understand how to avoid that.
     "useLocation() may be used only in the context of a <Router> component."
   ) : invariant(false) : void 0;
   return React.useContext(LocationContext).location;
 }
+function useIsomorphicLayoutEffect(cb) {
+  let isStatic = React.useContext(NavigationContext).static;
+  if (!isStatic) {
+    React.useLayoutEffect(cb);
+  }
+}
 function useNavigate() {
+  let isDataRouter = React.useContext(DataRouterContext) != null;
+  return isDataRouter ? useNavigateStable() : useNavigateUnstable();
+}
+function useNavigateUnstable() {
   !useInRouterContext() ? true ? invariant(
     false,
+    // TODO: This error is probably because they somehow have 2 versions of the
+    // router loaded. We can help them understand how to avoid that.
     "useNavigate() may be used only in the context of a <Router> component."
   ) : invariant(false) : void 0;
   let {
@@ -2596,14 +2681,14 @@ function useNavigate() {
   } = useLocation();
   let routePathnamesJson = JSON.stringify(getPathContributingMatches(matches).map((match) => match.pathnameBase));
   let activeRef = React.useRef(false);
-  React.useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     activeRef.current = true;
   });
   let navigate = React.useCallback(function(to, options) {
     if (options === void 0) {
       options = {};
     }
-    true ? warning(activeRef.current, "You should call navigate() in a React.useEffect(), not when your component is first rendered.") : void 0;
+    true ? warning(activeRef.current, navigateEffectWarning) : void 0;
     if (!activeRef.current)
       return;
     if (typeof to === "number") {
@@ -2640,15 +2725,16 @@ function useResolvedPath(to, _temp2) {
   let routePathnamesJson = JSON.stringify(getPathContributingMatches(matches).map((match) => match.pathnameBase));
   return React.useMemo(() => resolveTo(to, JSON.parse(routePathnamesJson), locationPathname, relative === "path"), [to, routePathnamesJson, locationPathname, relative]);
 }
-function useRoutes(routes, locationArg) {
+function useRoutesImpl(routes, locationArg, dataRouterState) {
   !useInRouterContext() ? true ? invariant(
     false,
+    // TODO: This error is probably because they somehow have 2 versions of the
+    // router loaded. We can help them understand how to avoid that.
     "useRoutes() may be used only in the context of a <Router> component."
   ) : invariant(false) : void 0;
   let {
     navigator
   } = React.useContext(NavigationContext);
-  let dataRouterStateContext = React.useContext(DataRouterStateContext);
   let {
     matches: parentMatches
   } = React.useContext(RouteContext);
@@ -2686,13 +2772,15 @@ function useRoutes(routes, locationArg) {
     params: Object.assign({}, parentParams, match.params),
     pathname: joinPaths([
       parentPathnameBase,
+      // Re-encode pathnames that were decoded inside matchRoutes
       navigator.encodeLocation ? navigator.encodeLocation(match.pathname).pathname : match.pathname
     ]),
     pathnameBase: match.pathnameBase === "/" ? parentPathnameBase : joinPaths([
       parentPathnameBase,
+      // Re-encode pathnames that were decoded inside matchRoutes
       navigator.encodeLocation ? navigator.encodeLocation(match.pathnameBase).pathname : match.pathnameBase
     ])
-  })), parentMatches, dataRouterStateContext || void 0);
+  })), parentMatches, dataRouterState);
   if (locationArg && renderedMatches) {
     return /* @__PURE__ */ React.createElement(LocationContext.Provider, {
       value: {
@@ -2724,11 +2812,12 @@ function DefaultErrorComponent() {
   };
   let devInfo = null;
   if (true) {
-    devInfo = /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, "\u{1F4BF} Hey developer \u{1F44B}"), /* @__PURE__ */ React.createElement("p", null, "You can provide a way better UX than this when your app throws errors by providing your own\xA0", /* @__PURE__ */ React.createElement("code", {
+    console.error("Error handled by React Router default ErrorBoundary:", error);
+    devInfo = /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, "\u{1F4BF} Hey developer \u{1F44B}"), /* @__PURE__ */ React.createElement("p", null, "You can provide a way better UX than this when your app throws errors by providing your own ", /* @__PURE__ */ React.createElement("code", {
       style: codeStyles
-    }, "ErrorBoundary"), " prop on\xA0", /* @__PURE__ */ React.createElement("code", {
+    }, "ErrorBoundary"), " or", " ", /* @__PURE__ */ React.createElement("code", {
       style: codeStyles
-    }, "<Route>")));
+    }, "errorElement"), " prop on your route."));
   }
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h2", null, "Unexpected Application Error!"), /* @__PURE__ */ React.createElement("h3", {
     style: {
@@ -2753,44 +2842,43 @@ function RenderedRoute(_ref) {
   }, children);
 }
 function _renderMatches(matches, parentMatches, dataRouterState) {
+  var _dataRouterState2;
   if (parentMatches === void 0) {
     parentMatches = [];
   }
+  if (dataRouterState === void 0) {
+    dataRouterState = null;
+  }
   if (matches == null) {
-    if (dataRouterState != null && dataRouterState.errors) {
+    var _dataRouterState;
+    if ((_dataRouterState = dataRouterState) != null && _dataRouterState.errors) {
       matches = dataRouterState.matches;
     } else {
       return null;
     }
   }
   let renderedMatches = matches;
-  let errors = dataRouterState == null ? void 0 : dataRouterState.errors;
+  let errors = (_dataRouterState2 = dataRouterState) == null ? void 0 : _dataRouterState2.errors;
   if (errors != null) {
     let errorIndex = renderedMatches.findIndex((m) => m.route.id && (errors == null ? void 0 : errors[m.route.id]));
-    !(errorIndex >= 0) ? true ? invariant(false, "Could not find a matching route for the current errors: " + errors) : invariant(false) : void 0;
+    !(errorIndex >= 0) ? true ? invariant(false, "Could not find a matching route for errors on route IDs: " + Object.keys(errors).join(",")) : invariant(false) : void 0;
     renderedMatches = renderedMatches.slice(0, Math.min(renderedMatches.length, errorIndex + 1));
   }
   return renderedMatches.reduceRight((outlet, match, index) => {
     let error = match.route.id ? errors == null ? void 0 : errors[match.route.id] : null;
     let errorElement = null;
     if (dataRouterState) {
-      if (match.route.ErrorBoundary) {
-        errorElement = /* @__PURE__ */ React.createElement(match.route.ErrorBoundary, null);
-      } else if (match.route.errorElement) {
-        errorElement = match.route.errorElement;
-      } else {
-        errorElement = /* @__PURE__ */ React.createElement(DefaultErrorComponent, null);
-      }
+      errorElement = match.route.errorElement || defaultErrorElement;
     }
     let matches2 = parentMatches.concat(renderedMatches.slice(0, index + 1));
     let getChildren = () => {
-      let children = outlet;
+      let children;
       if (error) {
         children = errorElement;
-      } else if (match.route.Component) {
-        children = /* @__PURE__ */ React.createElement(match.route.Component, null);
       } else if (match.route.element) {
         children = match.route.element;
+      } else {
+        children = outlet;
       }
       return /* @__PURE__ */ React.createElement(RenderedRoute, {
         match,
@@ -2803,6 +2891,7 @@ function _renderMatches(matches, parentMatches, dataRouterState) {
     };
     return dataRouterState && (match.route.ErrorBoundary || match.route.errorElement || index === 0) ? /* @__PURE__ */ React.createElement(RenderErrorBoundary, {
       location: dataRouterState.location,
+      revalidation: dataRouterState.revalidation,
       component: errorElement,
       error,
       children: getChildren(),
@@ -2815,6 +2904,11 @@ function _renderMatches(matches, parentMatches, dataRouterState) {
 }
 function getDataRouterConsoleError(hookName) {
   return hookName + " must be used within a data router.  See https://reactrouter.com/routers/picking-a-router.";
+}
+function useDataRouterContext(hookName) {
+  let ctx = React.useContext(DataRouterContext);
+  !ctx ? true ? invariant(false, getDataRouterConsoleError(hookName)) : invariant(false) : void 0;
+  return ctx;
 }
 function useDataRouterState(hookName) {
   let state = React.useContext(DataRouterStateContext);
@@ -2831,6 +2925,9 @@ function useCurrentRouteId(hookName) {
   let thisRoute = route.matches[route.matches.length - 1];
   !thisRoute.route.id ? true ? invariant(false, hookName + ' can only be used on routes that contain a unique "id"') : invariant(false) : void 0;
   return thisRoute.route.id;
+}
+function useRouteId() {
+  return useCurrentRouteId(DataRouterStateHook.UseRouteId);
 }
 function useNavigation() {
   let state = useDataRouterState(DataRouterStateHook.UseNavigation);
@@ -2882,6 +2979,32 @@ function useAsyncError() {
   let value = React.useContext(AwaitContext);
   return value == null ? void 0 : value._error;
 }
+function useNavigateStable() {
+  let {
+    router: router2
+  } = useDataRouterContext(DataRouterHook.UseNavigateStable);
+  let id = useCurrentRouteId(DataRouterStateHook.UseNavigateStable);
+  let activeRef = React.useRef(false);
+  useIsomorphicLayoutEffect(() => {
+    activeRef.current = true;
+  });
+  let navigate = React.useCallback(function(to, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    true ? warning(activeRef.current, navigateEffectWarning) : void 0;
+    if (!activeRef.current)
+      return;
+    if (typeof to === "number") {
+      router2.navigate(to);
+    } else {
+      router2.navigate(to, _extends2({
+        fromRouteId: id
+      }, options));
+    }
+  }, [router2, id]);
+  return navigate;
+}
 function warningOnce(key, cond, message) {
   if (!cond && !alreadyWarned[key]) {
     alreadyWarned[key] = true;
@@ -2893,12 +3016,8 @@ function RouterProvider(_ref) {
     fallbackElement,
     router: router2
   } = _ref;
-  let getState = React.useCallback(() => router2.state, [router2]);
-  let state = useSyncExternalStore(
-    router2.subscribe,
-    getState,
-    getState
-  );
+  let [state, setState] = React.useState(router2.state);
+  React.useLayoutEffect(() => router2.subscribe(setState), [router2, setState]);
   let navigator = React.useMemo(() => {
     return {
       createHref: router2.createHref,
@@ -2931,15 +3050,22 @@ function RouterProvider(_ref) {
     location: router2.state.location,
     navigationType: router2.state.historyAction,
     navigator
-  }, router2.state.initialized ? /* @__PURE__ */ React.createElement(Routes, null) : fallbackElement))), null);
+  }, router2.state.initialized ? /* @__PURE__ */ React.createElement(DataRoutes, {
+    routes: router2.routes,
+    state
+  }) : fallbackElement))), null);
+}
+function DataRoutes(_ref2) {
+  let {
+    routes,
+    state
+  } = _ref2;
+  return useRoutesImpl(routes, void 0, state);
 }
 function Outlet(props) {
   return useOutlet(props.context);
 }
-function Route(_props) {
-  true ? invariant(false, "A <Route> is only ever to be used as the child of <Routes> element, never rendered directly. Please wrap your <Route> in a <Routes>.") : invariant(false);
-}
-function Router(_ref4) {
+function Router(_ref5) {
   let {
     basename: basenameProp = "/",
     children = null,
@@ -2947,7 +3073,7 @@ function Router(_ref4) {
     navigationType = Action.Pop,
     navigator,
     static: staticProp = false
-  } = _ref4;
+  } = _ref5;
   !!useInRouterContext() ? true ? invariant(false, "You cannot render a <Router> inside another <Router>. You should never have more than one in your app.") : invariant(false) : void 0;
   let basename = basenameProp.replace(/^\/*/, "/");
   let navigationContext = React.useMemo(() => ({
@@ -2992,103 +3118,66 @@ function Router(_ref4) {
     value: locationContext
   }));
 }
-function Routes(_ref5) {
-  let {
-    children,
-    location
-  } = _ref5;
-  let dataRouterContext = React.useContext(DataRouterContext);
-  let routes = dataRouterContext && !children ? dataRouterContext.router.routes : createRoutesFromChildren(children);
-  return useRoutes(routes, location);
-}
-function Await(_ref6) {
+function Await(_ref7) {
   let {
     children,
     errorElement,
     resolve
-  } = _ref6;
+  } = _ref7;
   return /* @__PURE__ */ React.createElement(AwaitErrorBoundary, {
     resolve,
     errorElement
   }, /* @__PURE__ */ React.createElement(ResolveAwait, null, children));
 }
-function ResolveAwait(_ref7) {
+function ResolveAwait(_ref8) {
   let {
     children
-  } = _ref7;
+  } = _ref8;
   let data = useAsyncValue();
   let toRender = typeof children === "function" ? children(data) : children;
   return /* @__PURE__ */ React.createElement(React.Fragment, null, toRender);
 }
-function createRoutesFromChildren(children, parentPath) {
-  if (parentPath === void 0) {
-    parentPath = [];
+function mapRouteProperties(route) {
+  let updates = {
+    // Note: this check also occurs in createRoutesFromChildren so update
+    // there if you change this -- please and thank you!
+    hasErrorBoundary: route.ErrorBoundary != null || route.errorElement != null
+  };
+  if (route.Component) {
+    if (true) {
+      if (route.element) {
+        true ? warning(false, "You should not include both `Component` and `element` on your route - `Component` will be used.") : void 0;
+      }
+    }
+    Object.assign(updates, {
+      element: /* @__PURE__ */ React.createElement(route.Component),
+      Component: void 0
+    });
   }
-  let routes = [];
-  React.Children.forEach(children, (element, index) => {
-    if (!/* @__PURE__ */ React.isValidElement(element)) {
-      return;
+  if (route.ErrorBoundary) {
+    if (true) {
+      if (route.errorElement) {
+        true ? warning(false, "You should not include both `ErrorBoundary` and `errorElement` on your route - `ErrorBoundary` will be used.") : void 0;
+      }
     }
-    let treePath = [...parentPath, index];
-    if (element.type === React.Fragment) {
-      routes.push.apply(routes, createRoutesFromChildren(element.props.children, treePath));
-      return;
-    }
-    !(element.type === Route) ? true ? invariant(false, "[" + (typeof element.type === "string" ? element.type : element.type.name) + "] is not a <Route> component. All component children of <Routes> must be a <Route> or <React.Fragment>") : invariant(false) : void 0;
-    !(!element.props.index || !element.props.children) ? true ? invariant(false, "An index route cannot have child routes.") : invariant(false) : void 0;
-    let route = {
-      id: element.props.id || treePath.join("-"),
-      caseSensitive: element.props.caseSensitive,
-      element: element.props.element,
-      Component: element.props.Component,
-      index: element.props.index,
-      path: element.props.path,
-      loader: element.props.loader,
-      action: element.props.action,
-      errorElement: element.props.errorElement,
-      ErrorBoundary: element.props.ErrorBoundary,
-      hasErrorBoundary: element.props.ErrorBoundary != null || element.props.errorElement != null,
-      shouldRevalidate: element.props.shouldRevalidate,
-      handle: element.props.handle,
-      lazy: element.props.lazy
-    };
-    if (element.props.children) {
-      route.children = createRoutesFromChildren(element.props.children, treePath);
-    }
-    routes.push(route);
-  });
-  return routes;
-}
-function detectErrorBoundary(route) {
-  if (true) {
-    if (route.Component && route.element) {
-      true ? warning(false, "You should not include both `Component` and `element` on your route - `element` will be ignored.") : void 0;
-    }
-    if (route.ErrorBoundary && route.errorElement) {
-      true ? warning(false, "You should not include both `ErrorBoundary` and `errorElement` on your route - `errorElement` will be ignored.") : void 0;
-    }
+    Object.assign(updates, {
+      errorElement: /* @__PURE__ */ React.createElement(route.ErrorBoundary),
+      ErrorBoundary: void 0
+    });
   }
-  return Boolean(route.ErrorBoundary) || Boolean(route.errorElement);
+  return updates;
 }
-var React, is, useState2, useEffect2, useLayoutEffect2, useDebugValue, didWarnOld18Alpha, didWarnUncachedGetSnapshot, canUseDOM, isServerEnvironment, shim, useSyncExternalStore, DataRouterContext, DataRouterStateContext, AwaitContext, NavigationContext, LocationContext, RouteContext, RouteErrorContext, OutletContext, RenderErrorBoundary, DataRouterHook, DataRouterStateHook, alreadyWarned, AwaitRenderStatus, neverSettledPromise, AwaitErrorBoundary;
+var React, DataRouterContext, DataRouterStateContext, AwaitContext, NavigationContext, LocationContext, RouteContext, RouteErrorContext, navigateEffectWarning, OutletContext, defaultErrorElement, RenderErrorBoundary, DataRouterHook, DataRouterStateHook, alreadyWarned, AwaitRenderStatus, neverSettledPromise, AwaitErrorBoundary;
 var init_dist = __esm({
   "node_modules/react-router/dist/index.js"() {
-    init_router();
-    init_router();
+    init_global();
+    init_dirname();
+    init_filename();
+    init_buffer();
+    init_process();
     React = __toESM(require_react());
-    is = typeof Object.is === "function" ? Object.is : isPolyfill;
-    ({
-      useState: useState2,
-      useEffect: useEffect2,
-      useLayoutEffect: useLayoutEffect2,
-      useDebugValue
-    } = React);
-    didWarnOld18Alpha = false;
-    didWarnUncachedGetSnapshot = false;
-    canUseDOM = !!(typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined");
-    isServerEnvironment = !canUseDOM;
-    shim = isServerEnvironment ? useSyncExternalStore$1 : useSyncExternalStore$2;
-    useSyncExternalStore = "useSyncExternalStore" in React ? ((module) => module.useSyncExternalStore)(React) : shim;
+    init_router();
+    init_router();
     DataRouterContext = /* @__PURE__ */ React.createContext(null);
     if (true) {
       DataRouterContext.displayName = "DataRouter";
@@ -3120,12 +3209,15 @@ var init_dist = __esm({
     if (true) {
       RouteErrorContext.displayName = "RouteError";
     }
+    navigateEffectWarning = "You should call navigate() in a React.useEffect(), not when your component is first rendered.";
     OutletContext = /* @__PURE__ */ React.createContext(null);
+    defaultErrorElement = /* @__PURE__ */ React.createElement(DefaultErrorComponent, null);
     RenderErrorBoundary = class extends React.Component {
       constructor(props) {
         super(props);
         this.state = {
           location: props.location,
+          revalidation: props.revalidation,
           error: props.error
         };
       }
@@ -3135,15 +3227,17 @@ var init_dist = __esm({
         };
       }
       static getDerivedStateFromProps(props, state) {
-        if (state.location !== props.location) {
+        if (state.location !== props.location || state.revalidation !== "idle" && props.revalidation === "idle") {
           return {
             error: props.error,
-            location: props.location
+            location: props.location,
+            revalidation: props.revalidation
           };
         }
         return {
           error: props.error || state.error,
-          location: state.location
+          location: state.location,
+          revalidation: props.revalidation || state.revalidation
         };
       }
       componentDidCatch(error, errorInfo) {
@@ -3161,6 +3255,7 @@ var init_dist = __esm({
     (function(DataRouterHook3) {
       DataRouterHook3["UseBlocker"] = "useBlocker";
       DataRouterHook3["UseRevalidator"] = "useRevalidator";
+      DataRouterHook3["UseNavigateStable"] = "useNavigate";
     })(DataRouterHook || (DataRouterHook = {}));
     (function(DataRouterStateHook3) {
       DataRouterStateHook3["UseBlocker"] = "useBlocker";
@@ -3171,6 +3266,8 @@ var init_dist = __esm({
       DataRouterStateHook3["UseRouteLoaderData"] = "useRouteLoaderData";
       DataRouterStateHook3["UseMatches"] = "useMatches";
       DataRouterStateHook3["UseRevalidator"] = "useRevalidator";
+      DataRouterStateHook3["UseNavigateStable"] = "useNavigate";
+      DataRouterStateHook3["UseRouteId"] = "useRouteId";
     })(DataRouterStateHook || (DataRouterStateHook = {}));
     alreadyWarned = {};
     (function(AwaitRenderStatus2) {
@@ -3306,7 +3403,9 @@ function isModifiedEvent(event) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
 }
 function shouldProcessLinkClick(event, target) {
-  return event.button === 0 && (!target || target === "_self") && !isModifiedEvent(event);
+  return event.button === 0 && // Ignore everything but left clicks
+  (!target || target === "_self") && // Let browser handle "target=_blank" etc.
+  !isModifiedEvent(event);
 }
 function createSearchParams(init) {
   if (init === void 0) {
@@ -3330,15 +3429,20 @@ function getSearchParamsForLocation(locationSearch, defaultSearchParams) {
   }
   return searchParams;
 }
-function getFormSubmissionInfo(target, defaultAction, options) {
+function getFormSubmissionInfo(target, options, basename) {
   let method;
-  let action;
+  let action = null;
   let encType;
   let formData;
   if (isFormElement(target)) {
     let submissionTrigger = options.submissionTrigger;
+    if (options.action) {
+      action = options.action;
+    } else {
+      let attr = target.getAttribute("action");
+      action = attr ? stripBasename(attr, basename) : null;
+    }
     method = options.method || target.getAttribute("method") || defaultMethod;
-    action = options.action || target.getAttribute("action") || defaultAction;
     encType = options.encType || target.getAttribute("enctype") || defaultEncType;
     formData = new FormData(target);
     if (submissionTrigger && submissionTrigger.name) {
@@ -3349,8 +3453,13 @@ function getFormSubmissionInfo(target, defaultAction, options) {
     if (form == null) {
       throw new Error('Cannot submit a <button> or <input type="submit"> without a <form>');
     }
+    if (options.action) {
+      action = options.action;
+    } else {
+      let attr = target.getAttribute("formaction") || form.getAttribute("action");
+      action = attr ? stripBasename(attr, basename) : null;
+    }
     method = options.method || target.getAttribute("formmethod") || form.getAttribute("method") || defaultMethod;
-    action = options.action || target.getAttribute("formaction") || form.getAttribute("action") || defaultAction;
     encType = options.encType || target.getAttribute("formenctype") || form.getAttribute("enctype") || defaultEncType;
     formData = new FormData(form);
     if (target.name) {
@@ -3360,7 +3469,7 @@ function getFormSubmissionInfo(target, defaultAction, options) {
     throw new Error('Cannot submit element that is not <form>, <button>, or <input type="submit|image">');
   } else {
     method = options.method || defaultMethod;
-    action = options.action || defaultAction;
+    action = options.action || null;
     encType = options.encType || defaultEncType;
     if (target instanceof FormData) {
       formData = target;
@@ -3377,13 +3486,8 @@ function getFormSubmissionInfo(target, defaultAction, options) {
       }
     }
   }
-  let {
-    protocol,
-    host
-  } = window.location;
-  let url = new URL(action, protocol + "//" + host);
   return {
-    url,
+    action,
     method: method.toLowerCase(),
     encType,
     formData
@@ -3392,13 +3496,15 @@ function getFormSubmissionInfo(target, defaultAction, options) {
 function createBrowserRouter(routes, opts) {
   return createRouter({
     basename: opts == null ? void 0 : opts.basename,
-    future: opts == null ? void 0 : opts.future,
+    future: _extends3({}, opts == null ? void 0 : opts.future, {
+      v7_prependBasename: true
+    }),
     history: createBrowserHistory({
       window: opts == null ? void 0 : opts.window
     }),
     hydrationData: (opts == null ? void 0 : opts.hydrationData) || parseHydrationData(),
     routes,
-    detectErrorBoundary
+    mapRouteProperties
   }).initialize();
 }
 function parseHydrationData() {
@@ -3462,7 +3568,7 @@ function ScrollRestoration(_ref7) {
 function getDataRouterConsoleError2(hookName) {
   return hookName + " must be used within a data router.  See https://reactrouter.com/routers/picking-a-router.";
 }
-function useDataRouterContext(hookName) {
+function useDataRouterContext2(hookName) {
   let ctx = React2.useContext(DataRouterContext);
   !ctx ? true ? invariant(false, getDataRouterConsoleError2(hookName)) : invariant(false) : void 0;
   return ctx;
@@ -3503,7 +3609,12 @@ function useSearchParams(defaultInit) {
   let defaultSearchParamsRef = React2.useRef(createSearchParams(defaultInit));
   let hasSetSearchParamsRef = React2.useRef(false);
   let location = useLocation();
-  let searchParams = React2.useMemo(() => getSearchParamsForLocation(location.search, hasSetSearchParamsRef.current ? null : defaultSearchParamsRef.current), [location.search]);
+  let searchParams = React2.useMemo(() => (
+    // Only merge in the defaults if we haven't yet called setSearchParams.
+    // Once we call that we want those to take precedence, otherwise you can't
+    // remove a param with setSearchParams({}) if it has an initial value
+    getSearchParamsForLocation(location.search, hasSetSearchParamsRef.current ? null : defaultSearchParamsRef.current)
+  ), [location.search]);
   let navigate = useNavigate();
   let setSearchParams = React2.useCallback((nextInit, navigateOptions) => {
     const newSearchParams = createSearchParams(typeof nextInit === "function" ? nextInit(searchParams) : nextInit);
@@ -3512,11 +3623,14 @@ function useSearchParams(defaultInit) {
   }, [navigate, searchParams]);
   return [searchParams, setSearchParams];
 }
-function useSubmitImpl(fetcherKey, routeId) {
+function useSubmitImpl(fetcherKey, fetcherRouteId) {
   let {
     router: router2
-  } = useDataRouterContext(DataRouterHook2.UseSubmitImpl);
-  let defaultAction = useFormAction();
+  } = useDataRouterContext2(DataRouterHook2.UseSubmitImpl);
+  let {
+    basename
+  } = React2.useContext(NavigationContext);
+  let currentRouteId = useRouteId();
   return React2.useCallback(function(target, options) {
     if (options === void 0) {
       options = {};
@@ -3525,26 +3639,27 @@ function useSubmitImpl(fetcherKey, routeId) {
       throw new Error("You are calling submit during the server render. Try calling submit within a `useEffect` or callback instead.");
     }
     let {
+      action,
       method,
       encType,
-      formData,
-      url
-    } = getFormSubmissionInfo(target, defaultAction, options);
-    let href = url.pathname + url.search;
+      formData
+    } = getFormSubmissionInfo(target, options, basename);
     let opts = {
-      replace: options.replace,
       preventScrollReset: options.preventScrollReset,
       formData,
       formMethod: method,
       formEncType: encType
     };
     if (fetcherKey) {
-      !(routeId != null) ? true ? invariant(false, "No routeId available for useFetcher()") : invariant(false) : void 0;
-      router2.fetch(fetcherKey, routeId, href, opts);
+      !(fetcherRouteId != null) ? true ? invariant(false, "No routeId available for useFetcher()") : invariant(false) : void 0;
+      router2.fetch(fetcherKey, fetcherRouteId, action, opts);
     } else {
-      router2.navigate(href, opts);
+      router2.navigate(action, _extends3({}, opts, {
+        replace: options.replace,
+        fromRouteId: currentRouteId
+      }));
     }
-  }, [defaultAction, router2, fetcherKey, routeId]);
+  }, [router2, basename, fetcherKey, fetcherRouteId, currentRouteId]);
 }
 function useFormAction(action, _temp2) {
   let {
@@ -3584,7 +3699,7 @@ function useScrollRestoration(_temp3) {
   } = _temp3 === void 0 ? {} : _temp3;
   let {
     router: router2
-  } = useDataRouterContext(DataRouterHook2.UseScrollRestoration);
+  } = useDataRouterContext2(DataRouterHook2.UseScrollRestoration);
   let {
     restoreScrollPosition,
     preventScrollReset
@@ -3659,6 +3774,11 @@ function usePageHide(callback, options) {
 var React2, defaultMethod, defaultEncType, _excluded, _excluded2, _excluded3, isBrowser2, ABSOLUTE_URL_REGEX2, Link, NavLink, Form, FormImpl, DataRouterHook2, DataRouterStateHook2, SCROLL_RESTORATION_STORAGE_KEY, savedScrollPositions;
 var init_dist2 = __esm({
   "node_modules/react-router-dom/dist/index.js"() {
+    init_global();
+    init_dirname();
+    init_filename();
+    init_buffer();
+    init_process();
     React2 = __toESM(require_react());
     init_dist();
     init_dist();
@@ -3692,13 +3812,17 @@ var init_dist2 = __esm({
       if (typeof to === "string" && ABSOLUTE_URL_REGEX2.test(to)) {
         absoluteHref = to;
         if (isBrowser2) {
-          let currentUrl = new URL(window.location.href);
-          let targetUrl = to.startsWith("//") ? new URL(currentUrl.protocol + to) : new URL(to);
-          let path = stripBasename(targetUrl.pathname, basename);
-          if (targetUrl.origin === currentUrl.origin && path != null) {
-            to = path + targetUrl.search + targetUrl.hash;
-          } else {
-            isExternal = true;
+          try {
+            let currentUrl = new URL(window.location.href);
+            let targetUrl = to.startsWith("//") ? new URL(currentUrl.protocol + to) : new URL(to);
+            let path = stripBasename(targetUrl.pathname, basename);
+            if (targetUrl.origin === currentUrl.origin && path != null) {
+              to = path + targetUrl.search + targetUrl.hash;
+            } else {
+              isExternal = true;
+            }
+          } catch (e) {
+            true ? warning(false, '<Link to="' + to + '"> contains an invalid URL which will probably break when clicked - please update to a valid URL path.') : void 0;
           }
         }
       }
@@ -3719,12 +3843,15 @@ var init_dist2 = __esm({
           internalOnClick(event);
         }
       }
-      return /* @__PURE__ */ React2.createElement("a", _extends3({}, rest, {
-        href: absoluteHref || href,
-        onClick: isExternal || reloadDocument ? onClick : handleClick,
-        ref,
-        target
-      }));
+      return (
+        // eslint-disable-next-line jsx-a11y/anchor-has-content
+        /* @__PURE__ */ React2.createElement("a", _extends3({}, rest, {
+          href: absoluteHref || href,
+          onClick: isExternal || reloadDocument ? onClick : handleClick,
+          ref,
+          target
+        }))
+      );
     });
     if (true) {
       Link.displayName = "Link";
@@ -3851,146 +3978,28 @@ var init_dist2 = __esm({
   }
 });
 
-// node_modules/use-sync-external-store/cjs/use-sync-external-store-shim.development.js
-var require_use_sync_external_store_shim_development = __commonJS({
-  "node_modules/use-sync-external-store/cjs/use-sync-external-store-shim.development.js"(exports) {
-    "use strict";
-    if (true) {
-      (function() {
-        "use strict";
-        if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function") {
-          __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
-        }
-        var React7 = require_react();
-        var ReactSharedInternals = React7.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
-        function error(format) {
-          {
-            {
-              for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-                args[_key2 - 1] = arguments[_key2];
-              }
-              printWarning("error", format, args);
-            }
-          }
-        }
-        function printWarning(level, format, args) {
-          {
-            var ReactDebugCurrentFrame = ReactSharedInternals.ReactDebugCurrentFrame;
-            var stack = ReactDebugCurrentFrame.getStackAddendum();
-            if (stack !== "") {
-              format += "%s";
-              args = args.concat([stack]);
-            }
-            var argsWithFormat = args.map(function(item) {
-              return String(item);
-            });
-            argsWithFormat.unshift("Warning: " + format);
-            Function.prototype.apply.call(console[level], console, argsWithFormat);
-          }
-        }
-        function is2(x, y) {
-          return x === y && (x !== 0 || 1 / x === 1 / y) || x !== x && y !== y;
-        }
-        var objectIs = typeof Object.is === "function" ? Object.is : is2;
-        var useState5 = React7.useState, useEffect5 = React7.useEffect, useLayoutEffect4 = React7.useLayoutEffect, useDebugValue2 = React7.useDebugValue;
-        var didWarnOld18Alpha2 = false;
-        var didWarnUncachedGetSnapshot2 = false;
-        function useSyncExternalStore3(subscribe, getSnapshot, getServerSnapshot) {
-          {
-            if (!didWarnOld18Alpha2) {
-              if (React7.startTransition !== void 0) {
-                didWarnOld18Alpha2 = true;
-                error("You are using an outdated, pre-release alpha of React 18 that does not support useSyncExternalStore. The use-sync-external-store shim will not work correctly. Upgrade to a newer pre-release.");
-              }
-            }
-          }
-          var value = getSnapshot();
-          {
-            if (!didWarnUncachedGetSnapshot2) {
-              var cachedValue = getSnapshot();
-              if (!objectIs(value, cachedValue)) {
-                error("The result of getSnapshot should be cached to avoid an infinite loop");
-                didWarnUncachedGetSnapshot2 = true;
-              }
-            }
-          }
-          var _useState = useState5({
-            inst: {
-              value,
-              getSnapshot
-            }
-          }), inst = _useState[0].inst, forceUpdate = _useState[1];
-          useLayoutEffect4(function() {
-            inst.value = value;
-            inst.getSnapshot = getSnapshot;
-            if (checkIfSnapshotChanged2(inst)) {
-              forceUpdate({
-                inst
-              });
-            }
-          }, [subscribe, value, getSnapshot]);
-          useEffect5(function() {
-            if (checkIfSnapshotChanged2(inst)) {
-              forceUpdate({
-                inst
-              });
-            }
-            var handleStoreChange = function() {
-              if (checkIfSnapshotChanged2(inst)) {
-                forceUpdate({
-                  inst
-                });
-              }
-            };
-            return subscribe(handleStoreChange);
-          }, [subscribe]);
-          useDebugValue2(value);
-          return value;
-        }
-        function checkIfSnapshotChanged2(inst) {
-          var latestGetSnapshot = inst.getSnapshot;
-          var prevValue = inst.value;
-          try {
-            var nextValue = latestGetSnapshot();
-            return !objectIs(prevValue, nextValue);
-          } catch (error2) {
-            return true;
-          }
-        }
-        function useSyncExternalStore$12(subscribe, getSnapshot, getServerSnapshot) {
-          return getSnapshot();
-        }
-        var canUseDOM2 = !!(typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined");
-        var isServerEnvironment2 = !canUseDOM2;
-        var shim2 = isServerEnvironment2 ? useSyncExternalStore$12 : useSyncExternalStore3;
-        var useSyncExternalStore$22 = React7.useSyncExternalStore !== void 0 ? React7.useSyncExternalStore : shim2;
-        exports.useSyncExternalStore = useSyncExternalStore$22;
-        if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop === "function") {
-          __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(new Error());
-        }
-      })();
-    }
-  }
-});
-
-// node_modules/use-sync-external-store/shim/index.js
-var require_shim = __commonJS({
-  "node_modules/use-sync-external-store/shim/index.js"(exports, module) {
-    "use strict";
-    if (false) {
-      module.exports = null;
-    } else {
-      module.exports = require_use_sync_external_store_shim_development();
-    }
-  }
-});
-
 // node_modules/@remix-run/react/dist/esm/browser.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 var React5 = __toESM(require_react());
 init_dist2();
-var import_shim = __toESM(require_shim());
+
+// node_modules/@remix-run/react/dist/esm/components.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 
 // node_modules/@remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 function _extends4() {
   _extends4 = Object.assign ? Object.assign.bind() : function(target) {
     for (var i = 1; i < arguments.length; i++) {
@@ -4011,6 +4020,11 @@ var React3 = __toESM(require_react());
 init_dist2();
 
 // node_modules/@remix-run/react/dist/esm/errorBoundaries.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 var import_react = __toESM(require_react());
 init_dist2();
 var RemixErrorBoundary = class extends import_react.default.Component {
@@ -4151,6 +4165,11 @@ function RemixRootDefaultCatchBoundaryImpl({
 }
 
 // node_modules/@remix-run/react/dist/esm/invariant.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 function invariant2(value, message) {
   if (value === false || value === null || typeof value === "undefined") {
     throw new Error(message);
@@ -4158,9 +4177,19 @@ function invariant2(value, message) {
 }
 
 // node_modules/@remix-run/react/dist/esm/links.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 init_dist2();
 
 // node_modules/@remix-run/react/dist/esm/routeModules.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 async function loadRouteModule(route, routeModulesCache) {
   if (route.id in routeModulesCache) {
     return routeModulesCache[route.id];
@@ -4262,31 +4291,40 @@ function getNewMatchesForLinks(page, nextMatches, currentMatches, manifest, loca
   };
   let matchPathChanged = (match, index) => {
     var _currentMatches$index;
-    return currentMatches[index].pathname !== match.pathname || ((_currentMatches$index = currentMatches[index].route.path) === null || _currentMatches$index === void 0 ? void 0 : _currentMatches$index.endsWith("*")) && currentMatches[index].params["*"] !== match.params["*"];
+    return (
+      // param change, /users/123 -> /users/456
+      currentMatches[index].pathname !== match.pathname || // splat param changed, which is not present in match.path
+      // e.g. /files/images/avatar.jpg -> files/finances.xls
+      ((_currentMatches$index = currentMatches[index].route.path) === null || _currentMatches$index === void 0 ? void 0 : _currentMatches$index.endsWith("*")) && currentMatches[index].params["*"] !== match.params["*"]
+    );
   };
-  let newMatches = mode === "data" && location.search !== path.search ? nextMatches.filter((match, index) => {
-    let manifestRoute = manifest.routes[match.route.id];
-    if (!manifestRoute.hasLoader) {
-      return false;
-    }
-    if (isNew(match, index) || matchPathChanged(match, index)) {
-      return true;
-    }
-    if (match.route.shouldRevalidate) {
-      var _currentMatches$;
-      let routeChoice = match.route.shouldRevalidate({
-        currentUrl: new URL(location.pathname + location.search + location.hash, window.origin),
-        currentParams: ((_currentMatches$ = currentMatches[0]) === null || _currentMatches$ === void 0 ? void 0 : _currentMatches$.params) || {},
-        nextUrl: new URL(page, window.origin),
-        nextParams: match.params,
-        defaultShouldRevalidate: true
-      });
-      if (typeof routeChoice === "boolean") {
-        return routeChoice;
+  let newMatches = mode === "data" && location.search !== path.search ? (
+    // this is really similar to stuff in transition.ts, maybe somebody smarter
+    // than me (or in less of a hurry) can share some of it. You're the best.
+    nextMatches.filter((match, index) => {
+      let manifestRoute = manifest.routes[match.route.id];
+      if (!manifestRoute.hasLoader) {
+        return false;
       }
-    }
-    return true;
-  }) : nextMatches.filter((match, index) => {
+      if (isNew(match, index) || matchPathChanged(match, index)) {
+        return true;
+      }
+      if (match.route.shouldRevalidate) {
+        var _currentMatches$;
+        let routeChoice = match.route.shouldRevalidate({
+          currentUrl: new URL(location.pathname + location.search + location.hash, window.origin),
+          currentParams: ((_currentMatches$ = currentMatches[0]) === null || _currentMatches$ === void 0 ? void 0 : _currentMatches$.params) || {},
+          nextUrl: new URL(page, window.origin),
+          nextParams: match.params,
+          defaultShouldRevalidate: true
+        });
+        if (typeof routeChoice === "boolean") {
+          return routeChoice;
+        }
+      }
+      return true;
+    })
+  ) : nextMatches.filter((match, index) => {
     let manifestRoute = manifest.routes[match.route.id];
     return (mode === "assets" || manifestRoute.hasLoader) && (isNew(match, index) || matchPathChanged(match, index));
   });
@@ -4351,6 +4389,11 @@ function parsePathPatch(href) {
 }
 
 // node_modules/@remix-run/react/dist/esm/markup.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 var ESCAPE_LOOKUP = {
   "&": "\\u0026",
   ">": "\\u003e",
@@ -4369,6 +4412,11 @@ function createHtml(html) {
 }
 
 // node_modules/@remix-run/react/dist/esm/warnings.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 var alreadyWarned2 = {};
 function logDeprecationOnce(message, key = message) {
   if (!alreadyWarned2[key]) {
@@ -4378,7 +4426,7 @@ function logDeprecationOnce(message, key = message) {
 }
 
 // node_modules/@remix-run/react/dist/esm/components.js
-function useDataRouterContext2() {
+function useDataRouterContext3() {
   let context = React3.useContext(DataRouterContext);
   invariant2(context, "You must render this element inside a <DataRouterContext.Provider> element");
   return context;
@@ -4399,12 +4447,18 @@ function RemixRoute({
   id
 }) {
   let {
-    routeModules
+    routeModules,
+    future
   } = useRemixContext();
   invariant2(routeModules, "Cannot initialize 'routeModules'. This normally occurs when you have server code in your client modules.\nCheck this link for more details:\nhttps://remix.run/pages/gotchas#server-code-in-client-bundles");
   let {
-    default: Component2
+    default: Component2,
+    ErrorBoundary,
+    CatchBoundary
   } = routeModules[id];
+  if (!Component2 && (ErrorBoundary || !future.v2_errorBoundary && CatchBoundary)) {
+    Component2 = Outlet;
+  }
   invariant2(Component2, `Route "${id}" has no component! Please go add a \`default\` export in the route module file.
 If you were trying to navigate or submit to a resource route, use \`<a>\` instead of \`<Link>\` or \`<Form reloadDocument>\`.`);
   return /* @__PURE__ */ React3.createElement(Component2, null);
@@ -4548,8 +4602,10 @@ function Links() {
     routeModules
   } = useRemixContext();
   let {
-    matches
+    errors,
+    matches: routerMatches
   } = useDataRouterStateContext();
+  let matches = errors ? routerMatches.slice(0, routerMatches.findIndex((m) => errors[m.route.id]) + 1) : routerMatches;
   let links = React3.useMemo(() => getLinksForMatches(matches, routeModules, manifest), [matches, routeModules, manifest]);
   React3.useEffect(() => {
     if (links.some((link) => "imagesizes" in link || "imagesrcset" in link)) {
@@ -4593,7 +4649,7 @@ function PrefetchPageLinks({
 }) {
   let {
     router: router2
-  } = useDataRouterContext2();
+  } = useDataRouterContext3();
   let matches = React3.useMemo(() => matchRoutes(router2.routes, page), [router2.routes, page]);
   if (!matches) {
     console.warn(`Tried to prefetch ${page} but no routes matched.`);
@@ -4648,19 +4704,25 @@ function PrefetchPageLinksImpl({
     key: href,
     rel: "modulepreload",
     href
-  }, linkProps))), styleLinks.map((link) => /* @__PURE__ */ React3.createElement("link", _extends4({
-    key: link.href
-  }, link))));
+  }, linkProps))), styleLinks.map((link) => (
+    // these don't spread `linkProps` because they are full link descriptors
+    // already with their own props
+    /* @__PURE__ */ React3.createElement("link", _extends4({
+      key: link.href
+    }, link))
+  )));
 }
 function V1Meta() {
   let {
     routeModules
   } = useRemixContext();
   let {
-    matches,
+    errors,
+    matches: routerMatches,
     loaderData
   } = useDataRouterStateContext();
   let location = useLocation();
+  let matches = errors ? routerMatches.slice(0, routerMatches.findIndex((m) => errors[m.route.id]) + 1) : routerMatches;
   let meta = {};
   let parentsData = {};
   for (let match of matches) {
@@ -4678,6 +4740,8 @@ function V1Meta() {
       if (routeMeta && Array.isArray(routeMeta)) {
         throw new Error(
           "The route at " + match.route.path + " returns an array. This is only supported with the `v2_meta` future flag in the Remix config. Either set the flag to `true` or update the route's meta function to return an object.\n\nTo reference the v1 meta function API, see https://remix.run/route/meta"
+          // TODO: Add link to the docs once they are written
+          // + "\n\nTo reference future flags and the v2 meta API, see https://remix.run/file-conventions/remix-config#future-v2-meta."
         );
       }
       Object.assign(meta, routeMeta);
@@ -4726,10 +4790,12 @@ function V2Meta() {
     routeModules
   } = useRemixContext();
   let {
-    matches: _matches,
+    errors,
+    matches: routerMatches,
     loaderData
   } = useDataRouterStateContext();
   let location = useLocation();
+  let _matches = errors ? routerMatches.slice(0, routerMatches.findIndex((m) => errors[m.route.id]) + 1) : routerMatches;
   let meta = [];
   let leafMeta = null;
   let matches = [];
@@ -4747,6 +4813,10 @@ function V2Meta() {
       params: _match.params,
       pathname: _match.pathname,
       handle: _match.route.handle,
+      // TODO: Remove in v2. Only leaving it for now because we used it in
+      // examples and there's no reason to crash someone's build for one line.
+      // They'll get a TS error from the type updates anyway.
+      // @ts-expect-error
       get route() {
         console.warn("The meta function in " + _match.route.path + " accesses the `route` property on `matches`. This is deprecated and will be removed in Remix version 2. See");
         return _match.route;
@@ -4845,7 +4915,7 @@ function Scripts(props) {
     router: router2,
     static: isStatic,
     staticContext
-  } = useDataRouterContext2();
+  } = useDataRouterContext3();
   let {
     matches
   } = useDataRouterStateContext();
@@ -4950,13 +5020,18 @@ function DeferredHydrationScript({
     invariant2(deferredData.pendingKeys.includes(dataKey), `Deferred data for route ${routeId} with key ${dataKey} was not pending but tried to render a script for it.`);
   }
   return /* @__PURE__ */ React3.createElement(React3.Suspense, {
-    fallback: typeof document === "undefined" && deferredData && dataKey && routeId ? null : /* @__PURE__ */ React3.createElement("script", {
-      async: true,
-      suppressHydrationWarning: true,
-      dangerouslySetInnerHTML: {
-        __html: " "
-      }
-    })
+    fallback: (
+      // This makes absolutely no sense. The server renders null as a fallback,
+      // but when hydrating, we need to render a script tag to avoid a hydration issue.
+      // To reproduce a hydration mismatch, just render null as a fallback.
+      typeof document === "undefined" && deferredData && dataKey && routeId ? null : /* @__PURE__ */ React3.createElement("script", {
+        async: true,
+        suppressHydrationWarning: true,
+        dangerouslySetInnerHTML: {
+          __html: " "
+        }
+      })
+    )
   }, typeof document === "undefined" && deferredData && dataKey && routeId ? /* @__PURE__ */ React3.createElement(Await2, {
     resolve: deferredData.data[dataKey],
     errorElement: /* @__PURE__ */ React3.createElement(ErrorDeferredHydrationScript, {
@@ -5011,6 +5086,8 @@ function useMatches2() {
       pathname: match.pathname,
       params: match.params,
       data: match.data,
+      // Need to grab handle here since we don't have it at client-side route
+      // creation time
       handle: routeModules[match.id].handle
     };
     return remixMatch;
@@ -5020,6 +5097,7 @@ function useLoaderData2() {
   return useLoaderData();
 }
 var LiveReload = false ? () => null : function LiveReload2({
+  // TODO: remove REMIX_DEV_SERVER_WS_PORT in v2
   port = Number(8002),
   timeoutMs = 1e3,
   nonce = void 0
@@ -5033,7 +5111,7 @@ var LiveReload = false ? () => null : function LiveReload2({
                 function remixLiveReloadConnect(config) {
                   let protocol = location.protocol === "https:" ? "wss:" : "ws:";
                   let host = location.hostname;
-                  let port = (window.__remixContext && window.__remixContext.dev && window.__remixContext.dev.liveReloadPort) || ${String(port)};
+                  let port = (window.__remixContext && window.__remixContext.dev && window.__remixContext.dev.websocketPort) || ${String(port)};
                   let socketPath = protocol + "//" + host + ":" + port + "/socket";
                   let ws = new WebSocket(socketPath);
                   ws.onmessage = async (message) => {
@@ -5053,9 +5131,11 @@ var LiveReload = false ? () => null : function LiveReload2({
                       }
                       if (!event.updates || !event.updates.length) return;
                       let updateAccepted = false;
+                      let needsRevalidation = false;
                       for (let update of event.updates) {
                         console.log("[HMR] " + update.reason + " [" + update.id +"]")
                         if (update.revalidate) {
+                          needsRevalidation = true;
                           console.log("[HMR] Revalidating [" + update.id + "]");
                         }
                         let imported = await import(update.url +  '?t=' + event.assetsManifest.hmr.timestamp);
@@ -5071,7 +5151,7 @@ var LiveReload = false ? () => null : function LiveReload2({
                       }
                       if (event.assetsManifest && window.__hmr__.contexts["remix:manifest"]) {
                         let accepted = window.__hmr__.contexts["remix:manifest"].emit(
-                          event.assetsManifest
+                          { needsRevalidation, assetsManifest: event.assetsManifest }
                         );
                         if (accepted) {
                           console.log("[HMR] Updated accepted by", "remix:manifest");
@@ -5113,6 +5193,11 @@ var LiveReload = false ? () => null : function LiveReload2({
 };
 
 // node_modules/@remix-run/react/dist/esm/errors.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 init_router();
 function deserializeErrors2(errors) {
   if (!errors)
@@ -5134,10 +5219,20 @@ function deserializeErrors2(errors) {
 }
 
 // node_modules/@remix-run/react/dist/esm/routes.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 var React4 = __toESM(require_react());
 init_dist2();
 
 // node_modules/@remix-run/react/dist/esm/data.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 init_router();
 function isCatchResponse(response) {
   return response instanceof Response && response.headers.get("X-Remix-Catch") != null;
@@ -5161,7 +5256,9 @@ async function fetchData(request, routeId) {
   if (request.method !== "GET") {
     init.method = request.method;
     let contentType = request.headers.get("Content-Type");
-    init.body = contentType && /\bapplication\/x-www-form-urlencoded\b/.test(contentType) ? new URLSearchParams(await request.text()) : await request.formData();
+    init.body = // Check between word boundaries instead of startsWith() due to the last
+    // paragraph of https://httpwg.org/specs/rfc9110.html#field.content-type
+    contentType && /\bapplication\/x-www-form-urlencoded\b/.test(contentType) ? new URLSearchParams(await request.text()) : await request.formData();
   }
   let response = await fetch(url.href, init);
   if (isErrorResponse(response)) {
@@ -5317,7 +5414,10 @@ function groupRoutesByParentId(manifest) {
   });
   return routes;
 }
-function createClientRoutes(manifest, routeModulesCache, future, parentId = "", routesByParentId = groupRoutesByParentId(manifest)) {
+function createClientRoutesWithHMRRevalidationOptOut(needsRevalidation, manifest, routeModulesCache, future) {
+  return createClientRoutes(manifest, routeModulesCache, future, "", groupRoutesByParentId(manifest), needsRevalidation);
+}
+function createClientRoutes(manifest, routeModulesCache, future, parentId = "", routesByParentId = groupRoutesByParentId(manifest), needsRevalidation = void 0) {
   return (routesByParentId[parentId] || []).map((route) => {
     let hasErrorBoundary = future.v2_errorBoundary === true ? route.id === "root" || route.hasErrorBoundary : route.id === "root" || route.hasCatchBoundary || route.hasErrorBoundary;
     let dataRoute = {
@@ -5331,10 +5431,12 @@ function createClientRoutes(manifest, routeModulesCache, future, parentId = "", 
       id: route.id,
       index: route.index,
       path: route.path,
+      // handle gets added in via useMatches since we aren't guaranteed to
+      // have the route module available here
       handle: void 0,
       loader: createDataFunction(route, routeModulesCache, false),
       action: createDataFunction(route, routeModulesCache, true),
-      shouldRevalidate: createShouldRevalidate(route, routeModulesCache)
+      shouldRevalidate: createShouldRevalidate(route, routeModulesCache, needsRevalidation)
     };
     let children = createClientRoutes(manifest, routeModulesCache, future, route.id);
     if (children.length > 0)
@@ -5342,12 +5444,24 @@ function createClientRoutes(manifest, routeModulesCache, future, parentId = "", 
     return dataRoute;
   });
 }
-function createShouldRevalidate(route, routeModules) {
+function createShouldRevalidate(route, routeModules, needsRevalidation) {
+  let handledRevalidation = false;
   return function(arg) {
     let module = routeModules[route.id];
     invariant2(module, `Expected route module to be loaded for ${route.id}`);
     if (module.shouldRevalidate) {
+      if (typeof needsRevalidation === "boolean" && !handledRevalidation) {
+        handledRevalidation = true;
+        return module.shouldRevalidate({
+          ...arg,
+          defaultShouldRevalidate: needsRevalidation
+        });
+      }
       return module.shouldRevalidate(arg);
+    }
+    if (typeof needsRevalidation === "boolean" && !handledRevalidation) {
+      handledRevalidation = true;
+      return needsRevalidation;
     }
     return arg.defaultShouldRevalidate;
   };
@@ -5407,34 +5521,43 @@ function getRedirect(response) {
 var router;
 var hmrAbortController;
 if (import.meta && import.meta.hot) {
-  import.meta.hot.accept("remix:manifest", async (newManifest) => {
+  import.meta.hot.accept("remix:manifest", async ({
+    assetsManifest,
+    needsRevalidation
+  }) => {
     let routeIds = [...new Set(router.state.matches.map((m) => m.route.id).concat(Object.keys(window.__remixRouteModules)))];
+    if (hmrAbortController) {
+      hmrAbortController.abort();
+    }
+    hmrAbortController = new AbortController();
+    let signal = hmrAbortController.signal;
     let newRouteModules = Object.assign({}, window.__remixRouteModules, Object.fromEntries((await Promise.all(routeIds.map(async (id) => {
-      var _newManifest$hmr, _window$__remixRouteM, _window$__remixRouteM2, _window$__remixRouteM3;
-      if (!newManifest.routes[id]) {
+      var _assetsManifest$hmr, _window$__remixRouteM, _window$__remixRouteM2, _window$__remixRouteM3;
+      if (!assetsManifest.routes[id]) {
         return null;
       }
-      let imported = await import(newManifest.routes[id].module + `?t=${(_newManifest$hmr = newManifest.hmr) === null || _newManifest$hmr === void 0 ? void 0 : _newManifest$hmr.timestamp}`);
+      let imported = await import(assetsManifest.routes[id].module + `?t=${(_assetsManifest$hmr = assetsManifest.hmr) === null || _assetsManifest$hmr === void 0 ? void 0 : _assetsManifest$hmr.timestamp}`);
       return [id, {
         ...imported,
+        // react-refresh takes care of updating these in-place,
+        // if we don't preserve existing values we'll loose state.
         default: imported.default ? ((_window$__remixRouteM = window.__remixRouteModules[id]) === null || _window$__remixRouteM === void 0 ? void 0 : _window$__remixRouteM.default) ?? imported.default : imported.default,
         CatchBoundary: imported.CatchBoundary ? ((_window$__remixRouteM2 = window.__remixRouteModules[id]) === null || _window$__remixRouteM2 === void 0 ? void 0 : _window$__remixRouteM2.CatchBoundary) ?? imported.CatchBoundary : imported.CatchBoundary,
         ErrorBoundary: imported.ErrorBoundary ? ((_window$__remixRouteM3 = window.__remixRouteModules[id]) === null || _window$__remixRouteM3 === void 0 ? void 0 : _window$__remixRouteM3.ErrorBoundary) ?? imported.ErrorBoundary : imported.ErrorBoundary
       }];
     }))).filter(Boolean)));
     Object.assign(window.__remixRouteModules, newRouteModules);
-    let routes = createClientRoutes(newManifest.routes, window.__remixRouteModules, window.__remixContext.future);
+    let routes = createClientRoutesWithHMRRevalidationOptOut(needsRevalidation, assetsManifest.routes, window.__remixRouteModules, window.__remixContext.future);
     router._internalSetRoutes(routes);
-    if (hmrAbortController) {
-      hmrAbortController.abort();
-    }
-    hmrAbortController = new AbortController();
-    let signal = hmrAbortController.signal;
     let unsub = router.subscribe((state) => {
-      if (state.revalidation === "idle" && !signal.aborted) {
+      if (state.revalidation === "idle") {
         unsub();
-        Object.assign(window.__remixManifest, newManifest);
-        window.$RefreshRuntime$.performReactRefresh();
+        if (signal.aborted)
+          return;
+        setTimeout(() => {
+          Object.assign(window.__remixManifest, assetsManifest);
+          window.$RefreshRuntime$.performReactRefresh();
+        }, 1);
       }
     });
     router.revalidate();
@@ -5453,11 +5576,23 @@ function RemixBrowser(_props) {
     router = createBrowserRouter(routes, {
       hydrationData,
       future: {
+        // Pass through the Remix future flag to avoid a v1 breaking change in
+        // useNavigation() - users can control the casing via the flag in v1.
+        // useFetcher still always uppercases in the back-compat layer in v1.
+        // In v2 we can just always pass true here and remove the back-compat
+        // layer
         v7_normalizeFormMethod: window.__remixContext.future.v2_normalizeFormMethod
       }
     });
   }
-  let location = (0, import_shim.useSyncExternalStore)(router.subscribe, () => router.state.location, () => router.state.location);
+  let [location, setLocation] = React5.useState(router.state.location);
+  React5.useLayoutEffect(() => {
+    return router.subscribe((newState) => {
+      if (newState.location !== location) {
+        setLocation(newState.location);
+      }
+    });
+  }, [location]);
   return /* @__PURE__ */ React5.createElement(RemixContext.Provider, {
     value: {
       manifest: window.__remixManifest,
@@ -5474,9 +5609,19 @@ function RemixBrowser(_props) {
 }
 
 // node_modules/@remix-run/react/dist/esm/index.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 init_dist2();
 
 // node_modules/@remix-run/react/dist/esm/scroll-restoration.js
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 var React6 = __toESM(require_react());
 init_dist2();
 var STORAGE_KEY = "positions";
@@ -5497,6 +5642,8 @@ function ScrollRestoration2({
       let userKey = getKey(location, matches);
       return userKey !== location.key ? userKey : null;
     },
+    // Nah, we only need this the first time for the SSR render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
   let restoreScroll = ((STORAGE_KEY2, restoreKey) => {
@@ -5536,4 +5683,210 @@ export {
   RemixBrowser,
   ScrollRestoration2 as ScrollRestoration
 };
-//# sourceMappingURL=/build/_shared/chunk-OTWBB2NH.js.map
+/*! Bundled license information:
+
+@remix-run/router/dist/router.js:
+  (**
+   * @remix-run/router v1.6.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+react-router/dist/index.js:
+  (**
+   * React Router v6.11.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+react-router-dom/dist/index.js:
+  (**
+   * React Router DOM v6.11.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/errorBoundaries.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/invariant.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/routeModules.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/links.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/markup.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/warnings.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/components.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/errors.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/data.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/routes.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/browser.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/scroll-restoration.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/index.js:
+  (**
+   * @remix-run/react v1.16.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+*/
+//# sourceMappingURL=/build/_shared/chunk-62MKTFXD.js.map

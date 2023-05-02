@@ -1,20 +1,37 @@
 import {
   EventDetails
-} from "/build/_shared/chunk-Q4V7EJS5.js";
+} from "/build/_shared/chunk-HPK5MWYB.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-L3DBNCDU.js";
+} from "/build/_shared/chunk-I3VYIGH5.js";
 import {
   useLoaderData
-} from "/build/_shared/chunk-OTWBB2NH.js";
+} from "/build/_shared/chunk-62MKTFXD.js";
 import {
+  init_buffer,
+  init_dirname,
+  init_filename,
+  init_global,
+  init_process,
   require_jsx_dev_runtime
-} from "/build/_shared/chunk-VIPVJV6J.js";
+} from "/build/_shared/chunk-6GQJD64I.js";
 import {
   __toESM
-} from "/build/_shared/chunk-5KL4PAQL.js";
+} from "/build/_shared/chunk-IU43IUTG.js";
+
+// browser-route-module:routes/_index.tsx?browser
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 
 // app/routes/_index.tsx
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
 var meta = () => {
   return [{ title: "Philly JS Club" }];
@@ -85,4 +102,4 @@ export {
   Index as default,
   meta
 };
-//# sourceMappingURL=/build/routes/_index-7O7D4DYG.js.map
+//# sourceMappingURL=/build/routes/_index-OZFABACC.js.map

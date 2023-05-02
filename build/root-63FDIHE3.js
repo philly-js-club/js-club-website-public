@@ -5,13 +5,32 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration
-} from "/build/_shared/chunk-OTWBB2NH.js";
+} from "/build/_shared/chunk-62MKTFXD.js";
 import {
+  init_buffer,
+  init_dirname,
+  init_filename,
+  init_global,
+  init_process,
   require_jsx_dev_runtime
-} from "/build/_shared/chunk-VIPVJV6J.js";
+} from "/build/_shared/chunk-6GQJD64I.js";
 import {
   __toESM
-} from "/build/_shared/chunk-5KL4PAQL.js";
+} from "/build/_shared/chunk-IU43IUTG.js";
+
+// browser-route-module:root.tsx?browser
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
+
+// app/root.tsx
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
 
 // app/root.css
 var root_default = "/build/_assets/root-CUFBW2AD.css";
@@ -37,11 +56,13 @@ var metaTags = [
 function App() {
   return /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("html", { lang: "en", children: [
     /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("head", { children: [
-      metaTags.map((meta) => /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("meta", { ...meta }, JSON.stringify(meta), false, {
-        fileName: "app/root.tsx",
-        lineNumber: 36,
-        columnNumber: 6
-      }, this)),
+      metaTags.map(
+        (meta) => /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("meta", { ...meta }, JSON.stringify(meta), false, {
+          fileName: "app/root.tsx",
+          lineNumber: 36,
+          columnNumber: 9
+        }, this)
+      ),
       /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("link", { href: "https://fonts.googleapis.com", rel: "preconnect" }, void 0, false, {
         fileName: "app/root.tsx",
         lineNumber: 38,
@@ -96,10 +117,10 @@ function App() {
   ] }, void 0, true, {
     fileName: "app/root.tsx",
     lineNumber: 33,
-    columnNumber: 3
+    columnNumber: 5
   }, this);
 }
 export {
   App as default
 };
-//# sourceMappingURL=/build/root-DF6ZQ272.js.map
+//# sourceMappingURL=/build/root-63FDIHE3.js.map
