@@ -1,12 +1,16 @@
 import {
   EventDetails
-} from "/build/_shared/chunk-PN232BDI.js";
+} from "/build/_shared/chunk-CQS2RAXO.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-DC63RHJT.js";
+} from "/build/_shared/chunk-EQMRJHMY.js";
 import {
   useLoaderData
 } from "/build/_shared/chunk-62MKTFXD.js";
+import {
+  constructSiteTitle
+} from "/build/_shared/chunk-N5XEZFQ3.js";
+import "/build/_shared/chunk-27XL7EJ2.js";
 import {
   init_buffer,
   init_dirname,
@@ -34,7 +38,7 @@ init_buffer();
 init_process();
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
 var meta = () => {
-  return [{ title: "Events | Philly JS Club" }];
+  return [{ title: constructSiteTitle("Events") }];
 };
 function Events() {
   const data = useLoaderData();
@@ -44,7 +48,7 @@ function Events() {
       left: /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("ol", { className: "events-year", children: Object.entries(data).sort(([a], [b]) => +b - +a).map(([year, events]) => /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("li", { className: "events-year-list", children: [
         /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("h2", { className: "events-year-heading", children: year }, void 0, false, {
           fileName: "app/routes/events.tsx",
-          lineNumber: 44,
+          lineNumber: 32,
           columnNumber: 9
         }, this),
         /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("ol", { className: "events-year-events-list", children: events.map((event) => /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(
@@ -60,22 +64,22 @@ function Events() {
           false,
           {
             fileName: "app/routes/events.tsx",
-            lineNumber: 47,
+            lineNumber: 35,
             columnNumber: 11
           },
           this
         )) }, void 0, false, {
           fileName: "app/routes/events.tsx",
-          lineNumber: 45,
+          lineNumber: 33,
           columnNumber: 9
         }, this)
       ] }, year, true, {
         fileName: "app/routes/events.tsx",
-        lineNumber: 43,
+        lineNumber: 31,
         columnNumber: 8
       }, this)) }, void 0, false, {
         fileName: "app/routes/events.tsx",
-        lineNumber: 39,
+        lineNumber: 27,
         columnNumber: 5
       }, this),
       subtitle: true,
@@ -85,7 +89,7 @@ function Events() {
     false,
     {
       fileName: "app/routes/events.tsx",
-      lineNumber: 37,
+      lineNumber: 25,
       columnNumber: 3
     },
     this
@@ -95,4 +99,4 @@ export {
   Events as default,
   meta
 };
-//# sourceMappingURL=/build/routes/events-NJ2D3ADY.js.map
+//# sourceMappingURL=/build/routes/events-ULU57ZY6.js.map

@@ -1,12 +1,16 @@
 import {
   EventDetails
-} from "/build/_shared/chunk-PN232BDI.js";
+} from "/build/_shared/chunk-CQS2RAXO.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-DC63RHJT.js";
+} from "/build/_shared/chunk-EQMRJHMY.js";
 import {
   useLoaderData
 } from "/build/_shared/chunk-62MKTFXD.js";
+import {
+  constructSiteTitle
+} from "/build/_shared/chunk-N5XEZFQ3.js";
+import "/build/_shared/chunk-27XL7EJ2.js";
 import {
   init_buffer,
   init_dirname,
@@ -34,7 +38,7 @@ init_buffer();
 init_process();
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
 var meta = () => {
-  return [{ title: "Philly JS Club" }];
+  return [{ title: constructSiteTitle() }];
 };
 function Index() {
   const events = useLoaderData();
@@ -47,7 +51,7 @@ function Index() {
           events.length === 1 ? "" : "s"
         ] }, void 0, true, {
           fileName: "app/routes/_index.tsx",
-          lineNumber: 38,
+          lineNumber: 39,
           columnNumber: 6
         }, this),
         events.map((event, index) => /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(
@@ -64,27 +68,27 @@ function Index() {
           false,
           {
             fileName: "app/routes/_index.tsx",
-            lineNumber: 40,
+            lineNumber: 41,
             columnNumber: 7
           },
           this
         ))
       ] }, void 0, true, {
         fileName: "app/routes/_index.tsx",
-        lineNumber: 37,
+        lineNumber: 38,
         columnNumber: 5
       }, this),
       title: /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(import_jsx_dev_runtime.Fragment, { children: [
         "PHILLY",
         /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("br", {}, void 0, false, {
           fileName: "app/routes/_index.tsx",
-          lineNumber: 55,
+          lineNumber: 56,
           columnNumber: 6
         }, this),
         "JS CLUB"
       ] }, void 0, true, {
         fileName: "app/routes/_index.tsx",
-        lineNumber: 53,
+        lineNumber: 54,
         columnNumber: 5
       }, this)
     },
@@ -92,7 +96,7 @@ function Index() {
     false,
     {
       fileName: "app/routes/_index.tsx",
-      lineNumber: 35,
+      lineNumber: 36,
       columnNumber: 3
     },
     this
@@ -102,4 +106,4 @@ export {
   Index as default,
   meta
 };
-//# sourceMappingURL=/build/routes/_index-FRCOZAK5.js.map
+//# sourceMappingURL=/build/routes/_index-YBCSVVIE.js.map
