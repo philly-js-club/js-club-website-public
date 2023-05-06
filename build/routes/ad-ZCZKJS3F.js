@@ -2,6 +2,13 @@ import {
   useSearchParams
 } from "/build/_shared/chunk-62MKTFXD.js";
 import {
+  constructSiteTitle,
+  upperFirst
+} from "/build/_shared/chunk-N5XEZFQ3.js";
+import {
+  site
+} from "/build/_shared/chunk-27XL7EJ2.js";
+import {
   init_buffer,
   init_dirname,
   init_filename,
@@ -118,10 +125,12 @@ var import_jsx_dev_runtime2 = __toESM(require_jsx_dev_runtime());
 var meta = ({ location }) => {
   const params = new URLSearchParams(location.search);
   const { month, year } = getMonthAndYear(params);
+  let pageTitle = "Ad";
   if (!isValidMonth(month) || !isValidYear(year)) {
-    return [{ title: "Ad | Philly JS Club" }];
+    return [{ title: constructSiteTitle(pageTitle) }];
   }
-  return [{ title: `Ad (${upperFirst(month)} ${year}) | Philly JS Club` }];
+  pageTitle = `Ad (${upperFirst(month)} ${year})`;
+  return [{ title: constructSiteTitle(pageTitle) }];
 };
 function Ad() {
   const [params] = useSearchParams();
@@ -135,17 +144,17 @@ function Ad() {
   return /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("main", { className: "ad-main", children: [
     /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("div", { className: "ad-img-area", children: /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(AdLogo, { className: "ad-img" }, void 0, false, {
       fileName: "app/routes/ad.tsx",
-      lineNumber: 32,
+      lineNumber: 35,
       columnNumber: 5
     }, this) }, void 0, false, {
       fileName: "app/routes/ad.tsx",
-      lineNumber: 31,
+      lineNumber: 34,
       columnNumber: 4
     }, this),
     /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("div", { className: "ad-text", children: [
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("h1", { children: "Philly JS Club" }, void 0, false, {
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("h1", { children: site.title }, void 0, false, {
         fileName: "app/routes/ad.tsx",
-        lineNumber: 35,
+        lineNumber: 38,
         columnNumber: 5
       }, this),
       /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("p", { children: [
@@ -154,22 +163,19 @@ function Ad() {
         year
       ] }, void 0, true, {
         fileName: "app/routes/ad.tsx",
-        lineNumber: 36,
+        lineNumber: 39,
         columnNumber: 5
       }, this)
     ] }, void 0, true, {
       fileName: "app/routes/ad.tsx",
-      lineNumber: 34,
+      lineNumber: 37,
       columnNumber: 4
     }, this)
   ] }, void 0, true, {
     fileName: "app/routes/ad.tsx",
-    lineNumber: 30,
+    lineNumber: 33,
     columnNumber: 3
   }, this);
-}
-function upperFirst(text) {
-  return text[0].toUpperCase() + text.slice(1);
 }
 function getMonthAndYear(params) {
   const month = params.get("month")?.toLowerCase() ?? "idk";
@@ -200,4 +206,4 @@ export {
   Ad as default,
   meta
 };
-//# sourceMappingURL=/build/routes/ad-N77UNQUD.js.map
+//# sourceMappingURL=/build/routes/ad-ZCZKJS3F.js.map
