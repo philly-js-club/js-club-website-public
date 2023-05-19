@@ -3,7 +3,7 @@ import {
 } from "/build/_shared/chunk-EQMRJHMY.js";
 import {
   useLoaderData
-} from "/build/_shared/chunk-62MKTFXD.js";
+} from "/build/_shared/chunk-UUY4LFKJ.js";
 import {
   constructSiteTitle
 } from "/build/_shared/chunk-N5XEZFQ3.js";
@@ -131,4 +131,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/about-P75ELVCY.js.map
+//# sourceMappingURL=/build/routes/about-YAOT7F6S.js.map

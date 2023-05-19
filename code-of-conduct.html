@@ -15,12 +15,12 @@
       console.error(error);
       sessionStorage.removeItem(STORAGE_KEY);
     }
-  })("positions", null)</script><link rel="modulepreload" href="/build/manifest-DC6B9D6E.js"/><link rel="modulepreload" href="/build/entry.client-QQ6MXQET.js"/><link rel="modulepreload" href="/build/_shared/chunk-62MKTFXD.js"/><link rel="modulepreload" href="/build/_shared/chunk-6GQJD64I.js"/><link rel="modulepreload" href="/build/_shared/chunk-IU43IUTG.js"/><link rel="modulepreload" href="/build/_shared/chunk-27XL7EJ2.js"/><link rel="modulepreload" href="/build/root-IT2M7VFL.js"/><link rel="modulepreload" href="/build/_shared/chunk-EQMRJHMY.js"/><link rel="modulepreload" href="/build/_shared/chunk-N5XEZFQ3.js"/><link rel="modulepreload" href="/build/routes/code-of-conduct-WCGVVOA4.js"/><script>window.__remixContext = {"state":{"loaderData":{"root":null,"routes/code-of-conduct":null},"actionData":null,"errors":null},"future":{"unstable_dev":false,"unstable_postcss":false,"unstable_tailwind":false,"v2_errorBoundary":true,"v2_meta":true,"v2_normalizeFormMethod":true,"v2_routeConvention":true}};</script><script type="module" async="">import "/build/manifest-DC6B9D6E.js";
-import * as route0 from "/build/root-IT2M7VFL.js";
+  })("positions", null)</script><link rel="modulepreload" href="/build/manifest-E5DAB8D0.js"/><link rel="modulepreload" href="/build/entry.client-CZI34GLD.js"/><link rel="modulepreload" href="/build/_shared/chunk-UUY4LFKJ.js"/><link rel="modulepreload" href="/build/_shared/chunk-6GQJD64I.js"/><link rel="modulepreload" href="/build/_shared/chunk-IU43IUTG.js"/><link rel="modulepreload" href="/build/_shared/chunk-27XL7EJ2.js"/><link rel="modulepreload" href="/build/root-CY3JW2UU.js"/><link rel="modulepreload" href="/build/_shared/chunk-EQMRJHMY.js"/><link rel="modulepreload" href="/build/_shared/chunk-N5XEZFQ3.js"/><link rel="modulepreload" href="/build/routes/code-of-conduct-WCGVVOA4.js"/><script>window.__remixContext = {"state":{"loaderData":{"root":null,"routes/code-of-conduct":null},"actionData":null,"errors":null},"future":{"unstable_dev":false,"unstable_postcss":false,"unstable_tailwind":false,"v2_errorBoundary":true,"v2_meta":true,"v2_normalizeFormMethod":true,"v2_routeConvention":true}};</script><script type="module" async="">import "/build/manifest-E5DAB8D0.js";
+import * as route0 from "/build/root-CY3JW2UU.js";
 import * as route1 from "/build/routes/code-of-conduct-WCGVVOA4.js";
 window.__remixRouteModules = {"root":route0,"routes/code-of-conduct":route1};
 
-import("/build/entry.client-QQ6MXQET.js");</script><script>
+import("/build/entry.client-CZI34GLD.js");</script><script>
                 function remixLiveReloadConnect(config) {
                   let protocol = location.protocol === "https:" ? "wss:" : "ws:";
                   let host = location.hostname;
@@ -44,12 +44,12 @@ import("/build/entry.client-QQ6MXQET.js");</script><script>
                       }
                       if (!event.updates || !event.updates.length) return;
                       let updateAccepted = false;
-                      let needsRevalidation = false;
+                      let needsRevalidation = new Set();
                       for (let update of event.updates) {
                         console.log("[HMR] " + update.reason + " [" + update.id +"]")
                         if (update.revalidate) {
-                          needsRevalidation = true;
-                          console.log("[HMR] Revalidating [" + update.id + "]");
+                          needsRevalidation.add(update.routeId);
+                          console.log("[HMR] Revalidating [" + update.routeId + "]");
                         }
                         let imported = await import(update.url +  '?t=' + event.assetsManifest.hmr.timestamp);
                         if (window.__hmr__.contexts[update.id]) {
