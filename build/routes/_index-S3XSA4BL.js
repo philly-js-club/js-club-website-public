@@ -6,7 +6,7 @@ import {
 } from "/build/_shared/chunk-EQMRJHMY.js";
 import {
   useLoaderData
-} from "/build/_shared/chunk-62MKTFXD.js";
+} from "/build/_shared/chunk-UUY4LFKJ.js";
 import {
   constructSiteTitle
 } from "/build/_shared/chunk-N5XEZFQ3.js";
@@ -106,4 +106,4 @@ export {
   Index as default,
   meta
 };
-//# sourceMappingURL=/build/routes/_index-YBCSVVIE.js.map
+//# sourceMappingURL=/build/routes/_index-S3XSA4BL.js.map

@@ -914,7 +914,7 @@ function createRouter(init) {
       });
       return;
     }
-    if (isHashChangeOnly(state.location, location) && !(opts && opts.submission && isMutationMethod(opts.submission.formMethod))) {
+    if (state.initialized && isHashChangeOnly(state.location, location) && !(opts && opts.submission && isMutationMethod(opts.submission.formMethod))) {
       completeNavigation(location, {
         matches
       });
@@ -1689,7 +1689,8 @@ function createRouter(init) {
     return null;
   }
   function _internalSetRoutes(newRoutes) {
-    inFlightDataRoutes = newRoutes;
+    manifest = {};
+    inFlightDataRoutes = convertRoutesToDataRoutes(newRoutes, mapRouteProperties2, void 0, manifest);
   }
   router2 = {
     get basename() {
@@ -1743,7 +1744,7 @@ function normalizeTo(location, matches, basename, prependBasename, to, fromRoute
     contextualMatches = matches;
     activeRouteMatch = matches[matches.length - 1];
   }
-  let path = resolveTo(to ? to : ".", getPathContributingMatches(contextualMatches).map((m) => m.pathnameBase), location.pathname, relative === "path");
+  let path = resolveTo(to ? to : ".", getPathContributingMatches(contextualMatches).map((m) => m.pathnameBase), stripBasename(location.pathname, basename) || location.pathname, relative === "path");
   if (to == null) {
     path.search = location.search;
     path.hash = location.hash;
@@ -1835,7 +1836,7 @@ function getMatchesToLoad(history, state, matches, submission, location, isReval
       defaultShouldRevalidate: (
         // Forced revalidation due to submission, useRevalidator, or X-Remix-Revalidate
         isRevalidationRequired || // Clicked the same link, resubmitted a GET form
-        currentUrl.toString() === nextUrl.toString() || // Search params affect all loaders
+        currentUrl.pathname + currentUrl.search === nextUrl.pathname + nextUrl.search || // Search params affect all loaders
         currentUrl.search !== nextUrl.search || isNewRouteInstance(currentRouteMatch, nextRouteMatch)
       )
     }));
@@ -2287,7 +2288,17 @@ function stripHashFromPath(path) {
   }));
 }
 function isHashChangeOnly(a, b) {
-  return a.pathname === b.pathname && a.search === b.search && a.hash !== b.hash;
+  if (a.pathname !== b.pathname || a.search !== b.search) {
+    return false;
+  }
+  if (a.hash === "") {
+    return b.hash !== "";
+  } else if (a.hash === b.hash) {
+    return true;
+  } else if (b.hash !== "") {
+    return true;
+  }
+  return false;
 }
 function isDeferredResult(result) {
   return result.type === ResultType.deferred;
@@ -2659,8 +2670,10 @@ function useIsomorphicLayoutEffect(cb) {
   }
 }
 function useNavigate() {
-  let isDataRouter = React.useContext(DataRouterContext) != null;
-  return isDataRouter ? useNavigateStable() : useNavigateUnstable();
+  let {
+    isDataRoute
+  } = React.useContext(RouteContext);
+  return isDataRoute ? useNavigateStable() : useNavigateUnstable();
 }
 function useNavigateUnstable() {
   !useInRouterContext() ? true ? invariant(
@@ -2669,6 +2682,7 @@ function useNavigateUnstable() {
     // router loaded. We can help them understand how to avoid that.
     "useNavigate() may be used only in the context of a <Router> component."
   ) : invariant(false) : void 0;
+  let dataRouterContext = React.useContext(DataRouterContext);
   let {
     basename,
     navigator
@@ -2696,11 +2710,11 @@ function useNavigateUnstable() {
       return;
     }
     let path = resolveTo(to, JSON.parse(routePathnamesJson), locationPathname, options.relative === "path");
-    if (basename !== "/") {
+    if (dataRouterContext == null && basename !== "/") {
       path.pathname = path.pathname === "/" ? basename : joinPaths([basename, path.pathname]);
     }
     (!!options.replace ? navigator.replace : navigator.push)(path, options.state, options);
-  }, [basename, navigator, routePathnamesJson, locationPathname]);
+  }, [basename, navigator, routePathnamesJson, locationPathname, dataRouterContext]);
   return navigate;
 }
 function useOutlet(context) {
@@ -2875,6 +2889,8 @@ function _renderMatches(matches, parentMatches, dataRouterState) {
       let children;
       if (error) {
         children = errorElement;
+      } else if (match.route.Component) {
+        children = /* @__PURE__ */ React.createElement(match.route.Component, null);
       } else if (match.route.element) {
         children = match.route.element;
       } else {
@@ -2884,7 +2900,8 @@ function _renderMatches(matches, parentMatches, dataRouterState) {
         match,
         routeContext: {
           outlet,
-          matches: matches2
+          matches: matches2,
+          isDataRoute: dataRouterState != null
         },
         children
       });
@@ -2897,7 +2914,8 @@ function _renderMatches(matches, parentMatches, dataRouterState) {
       children: getChildren(),
       routeContext: {
         outlet: null,
-        matches: matches2
+        matches: matches2,
+        isDataRoute: true
       }
     }) : getChildren();
   }, null);
@@ -3200,7 +3218,8 @@ var init_dist = __esm({
     }
     RouteContext = /* @__PURE__ */ React.createContext({
       outlet: null,
-      matches: []
+      matches: [],
+      isDataRoute: false
     });
     if (true) {
       RouteContext.displayName = "Route";
@@ -4072,7 +4091,7 @@ function RemixRootDefaultErrorBoundary({
     charSet: "utf-8"
   }), /* @__PURE__ */ import_react.default.createElement("meta", {
     name: "viewport",
-    content: "width=device-width,initial-scale=1,viewport-fit=cover"
+    content: "width=device-width, initial-scale=1, viewport-fit=cover"
   }), /* @__PURE__ */ import_react.default.createElement("title", null, "Application Error!")), /* @__PURE__ */ import_react.default.createElement("body", null, /* @__PURE__ */ import_react.default.createElement("main", {
     style: {
       fontFamily: "system-ui, sans-serif",
@@ -4147,7 +4166,7 @@ function RemixRootDefaultCatchBoundaryImpl({
     charSet: "utf-8"
   }), /* @__PURE__ */ import_react.default.createElement("meta", {
     name: "viewport",
-    content: "width=device-width,initial-scale=1,viewport-fit=cover"
+    content: "width=device-width, initial-scale=1, viewport-fit=cover"
   }), /* @__PURE__ */ import_react.default.createElement("title", null, "Unhandled Thrown Response!")), /* @__PURE__ */ import_react.default.createElement("body", null, /* @__PURE__ */ import_react.default.createElement("h1", {
     style: {
       fontFamily: "system-ui, sans-serif",
@@ -5131,12 +5150,12 @@ var LiveReload = false ? () => null : function LiveReload2({
                       }
                       if (!event.updates || !event.updates.length) return;
                       let updateAccepted = false;
-                      let needsRevalidation = false;
+                      let needsRevalidation = new Set();
                       for (let update of event.updates) {
                         console.log("[HMR] " + update.reason + " [" + update.id +"]")
                         if (update.revalidate) {
-                          needsRevalidation = true;
-                          console.log("[HMR] Revalidating [" + update.id + "]");
+                          needsRevalidation.add(update.routeId);
+                          console.log("[HMR] Revalidating [" + update.routeId + "]");
                         }
                         let imported = await import(update.url +  '?t=' + event.assetsManifest.hmr.timestamp);
                         if (window.__hmr__.contexts[update.id]) {
@@ -5417,7 +5436,7 @@ function groupRoutesByParentId(manifest) {
 function createClientRoutesWithHMRRevalidationOptOut(needsRevalidation, manifest, routeModulesCache, future) {
   return createClientRoutes(manifest, routeModulesCache, future, "", groupRoutesByParentId(manifest), needsRevalidation);
 }
-function createClientRoutes(manifest, routeModulesCache, future, parentId = "", routesByParentId = groupRoutesByParentId(manifest), needsRevalidation = void 0) {
+function createClientRoutes(manifest, routeModulesCache, future, parentId = "", routesByParentId = groupRoutesByParentId(manifest), needsRevalidation) {
   return (routesByParentId[parentId] || []).map((route) => {
     let hasErrorBoundary = future.v2_errorBoundary === true ? route.id === "root" || route.hasErrorBoundary : route.id === "root" || route.hasCatchBoundary || route.hasErrorBoundary;
     let dataRoute = {
@@ -5438,7 +5457,7 @@ function createClientRoutes(manifest, routeModulesCache, future, parentId = "", 
       action: createDataFunction(route, routeModulesCache, true),
       shouldRevalidate: createShouldRevalidate(route, routeModulesCache, needsRevalidation)
     };
-    let children = createClientRoutes(manifest, routeModulesCache, future, route.id);
+    let children = createClientRoutes(manifest, routeModulesCache, future, route.id, routesByParentId, needsRevalidation);
     if (children.length > 0)
       dataRoute.children = children;
     return dataRoute;
@@ -5449,19 +5468,12 @@ function createShouldRevalidate(route, routeModules, needsRevalidation) {
   return function(arg) {
     let module = routeModules[route.id];
     invariant2(module, `Expected route module to be loaded for ${route.id}`);
-    if (module.shouldRevalidate) {
-      if (typeof needsRevalidation === "boolean" && !handledRevalidation) {
-        handledRevalidation = true;
-        return module.shouldRevalidate({
-          ...arg,
-          defaultShouldRevalidate: needsRevalidation
-        });
-      }
-      return module.shouldRevalidate(arg);
-    }
-    if (typeof needsRevalidation === "boolean" && !handledRevalidation) {
+    if (needsRevalidation !== void 0 && !handledRevalidation) {
       handledRevalidation = true;
-      return needsRevalidation;
+      return needsRevalidation.has(route.id);
+    }
+    if (module.shouldRevalidate) {
+      return module.shouldRevalidate(arg);
     }
     return arg.defaultShouldRevalidate;
   };
@@ -5687,7 +5699,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.6.0
+   * @remix-run/router v1.6.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5699,7 +5711,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.11.0
+   * React Router v6.11.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5711,7 +5723,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.11.0
+   * React Router DOM v6.11.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5723,7 +5735,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5735,7 +5747,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5747,7 +5759,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5759,7 +5771,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5771,7 +5783,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5783,7 +5795,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5795,7 +5807,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/warnings.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5807,7 +5819,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5819,7 +5831,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5831,7 +5843,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5843,7 +5855,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5855,7 +5867,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5867,7 +5879,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5879,7 +5891,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v1.16.0
+   * @remix-run/react v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5889,4 +5901,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-62MKTFXD.js.map
+//# sourceMappingURL=/build/_shared/chunk-UUY4LFKJ.js.map
