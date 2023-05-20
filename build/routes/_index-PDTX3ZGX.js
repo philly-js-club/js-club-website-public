@@ -51,7 +51,7 @@ function Index() {
           events.length === 1 ? "" : "s"
         ] }, void 0, true, {
           fileName: "app/routes/_index.tsx",
-          lineNumber: 39,
+          lineNumber: 42,
           columnNumber: 6
         }, this),
         events.map((event, index) => /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(
@@ -68,27 +68,27 @@ function Index() {
           false,
           {
             fileName: "app/routes/_index.tsx",
-            lineNumber: 41,
+            lineNumber: 44,
             columnNumber: 7
           },
           this
         ))
       ] }, void 0, true, {
         fileName: "app/routes/_index.tsx",
-        lineNumber: 38,
+        lineNumber: 41,
         columnNumber: 5
       }, this),
       title: /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(import_jsx_dev_runtime.Fragment, { children: [
         "PHILLY",
         /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("br", {}, void 0, false, {
           fileName: "app/routes/_index.tsx",
-          lineNumber: 56,
+          lineNumber: 59,
           columnNumber: 6
         }, this),
         "JS CLUB"
       ] }, void 0, true, {
         fileName: "app/routes/_index.tsx",
-        lineNumber: 54,
+        lineNumber: 57,
         columnNumber: 5
       }, this)
     },
@@ -96,7 +96,7 @@ function Index() {
     false,
     {
       fileName: "app/routes/_index.tsx",
-      lineNumber: 36,
+      lineNumber: 39,
       columnNumber: 3
     },
     this
@@ -106,4 +106,4 @@ export {
   Index as default,
   meta
 };
-//# sourceMappingURL=/build/routes/_index-S3XSA4BL.js.map
+//# sourceMappingURL=/build/routes/_index-PDTX3ZGX.js.map
