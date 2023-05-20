@@ -55,9 +55,11 @@
   margin: .25em 0;
 }
 .page-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 4rem;
+  display: grid;
+  grid-gap: 0 4rem;
+  grid-template-areas: "header" "left" "footer";
+  grid-template-columns: minmax(100%, 1fr);
+  grid-template-rows: minmax(min-content, max-content);
   height: 100%;
   margin: auto;
   padding: 2rem;
@@ -67,6 +69,7 @@
 .page-grid-header {
   display: flex;
   flex-direction: column;
+  grid-area: header;
 }
 .page-grid-title {
   font-size: var(--font-size-title);
@@ -81,6 +84,9 @@
   line-height: var(--line-height-larger);
   text-transform: uppercase;
 }
+.page-grid-left {
+  grid-area: left;
+}
 .page-grid-footer {
   align-content: flex-end;
   align-items: baseline;
@@ -88,6 +94,7 @@
   flex-wrap: wrap;
   font-size: var(--font-size-medium);
   font-weight: var(--font-weight-large);
+  grid-area: footer;
   height: 100%;
   justify-content: flex-start;
 }
@@ -109,7 +116,7 @@
 }
 @media (width >= 1000px) {
   .page-grid {
-    max-width: var(--width-main-max);
+    grid-template-columns: minmax(40%, 1fr) 1fr;
   }
   .page-grid-header,
   .page-grid-footer {
@@ -120,15 +127,14 @@
   .page-grid-header {
     text-align: right;
     top: 2rem;
+    z-index: 1;
   }
   .page-grid-footer {
-    bottom: 2rem;
-    height: 50%;
+    align-self: flex-end;
     justify-content: flex-end;
   }
   .page-grid-left {
     padding-bottom: 2rem;
-    width: calc(50% - 2rem);
   }
 }
 .about-the-website {
