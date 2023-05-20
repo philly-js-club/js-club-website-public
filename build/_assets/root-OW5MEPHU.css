@@ -137,9 +137,12 @@
     padding-bottom: 2rem;
   }
 }
-.about-the-website {
+.about-page-text {
   font-size: var(--font-size-small);
   margin: 1rem 0 2rem;
+}
+.about-page-text a {
+  text-decoration: underline;
 }
 .events-year {
   list-style-type: none;

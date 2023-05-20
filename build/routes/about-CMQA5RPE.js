@@ -99,14 +99,33 @@ function About() {
           lineNumber: 52,
           columnNumber: 6
         }, this),
-        /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("h3", { className: "large", children: "The Website" }, void 0, false, {
+        /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("h3", { className: "large", children: "Get In Touch" }, void 0, false, {
           fileName: "app/routes/about.tsx",
           lineNumber: 57,
           columnNumber: 6
         }, this),
-        /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("p", { className: "about-the-website", children: "Courtesy of Josh using Figma, Remix, and TypeScript." }, void 0, false, {
+        /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("p", { className: "about-page-text", children: [
+          "You can reach out to",
+          " ",
+          /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("a", { href: "mailto:phillyjs@joewoods.dev", children: "Joe over email" }, void 0, false, {
+            fileName: "app/routes/about.tsx",
+            lineNumber: 60,
+            columnNumber: 7
+          }, this),
+          " with any questions or comments."
+        ] }, void 0, true, {
           fileName: "app/routes/about.tsx",
           lineNumber: 58,
+          columnNumber: 6
+        }, this),
+        /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("h3", { className: "large", children: "The Website" }, void 0, false, {
+          fileName: "app/routes/about.tsx",
+          lineNumber: 63,
+          columnNumber: 6
+        }, this),
+        /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("p", { className: "about-page-text", children: "Courtesy of Josh using Figma, Remix, and TypeScript." }, void 0, false, {
+          fileName: "app/routes/about.tsx",
+          lineNumber: 64,
           columnNumber: 6
         }, this)
       ] }, void 0, true, {
@@ -131,4 +150,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/about-YAOT7F6S.js.map
+//# sourceMappingURL=/build/routes/about-CMQA5RPE.js.map
