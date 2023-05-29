@@ -1,6 +1,6 @@
 import {
   PageGrid
-} from "/build/_shared/chunk-EQMRJHMY.js";
+} from "/build/_shared/chunk-B7RJXTVZ.js";
 import {
   useLoaderData
 } from "/build/_shared/chunk-UUY4LFKJ.js";
@@ -150,4 +150,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/about-CMQA5RPE.js.map
+//# sourceMappingURL=/build/routes/about-RQJT3QYL.js.map

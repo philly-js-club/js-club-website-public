@@ -1,6 +1,6 @@
 import {
   PageGrid
-} from "/build/_shared/chunk-EQMRJHMY.js";
+} from "/build/_shared/chunk-B7RJXTVZ.js";
 import {
   constructSiteTitle
 } from "/build/_shared/chunk-N5XEZFQ3.js";
@@ -122,4 +122,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/code-of-conduct-WCGVVOA4.js.map
+//# sourceMappingURL=/build/routes/code-of-conduct-7G4TEYFP.js.map
