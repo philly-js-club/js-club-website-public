@@ -36,7 +36,7 @@ init_buffer();
 init_process();
 
 // app/root.css
-var root_default = "/build/_assets/root-C4WNHEA5.css";
+var root_default = "/build/_assets/root-IODOAZKR.css";
 
 // app/root.tsx
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
@@ -125,4 +125,4 @@ function App() {
 export {
   App as default
 };
-//# sourceMappingURL=/build/root-FEOPFA4M.js.map
+//# sourceMappingURL=/build/root-KG2OZWKY.js.map
