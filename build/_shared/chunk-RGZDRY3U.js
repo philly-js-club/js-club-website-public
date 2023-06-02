@@ -4,7 +4,7 @@ import {
   init_filename,
   init_global,
   init_process
-} from "/build/_shared/chunk-6GQJD64I.js";
+} from "/build/_shared/chunk-OXIDVDL3.js";
 
 // app/config.ts
 init_global();
@@ -16,7 +16,8 @@ var site = {
   title: "Philly JS Club",
   longTitle: "Philadelphia JavaScript Club",
   description: "A local community for talking about the things that excite us about Javascript development and the web.",
-  baseURL: "https://phillyjs.com"
+  baseURL: "https://phillyjs.com",
+  domain: "phillyjs.com"
 };
 var region = {
   locale: "en-US",
@@ -27,4 +28,4 @@ export {
   site,
   region
 };
-//# sourceMappingURL=/build/_shared/chunk-27XL7EJ2.js.map
+//# sourceMappingURL=/build/_shared/chunk-RGZDRY3U.js.map

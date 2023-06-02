@@ -1,11 +1,13 @@
 import {
+  require_react
+} from "/build/_shared/chunk-ARZZKGUF.js";
+import {
   init_buffer,
   init_dirname,
   init_filename,
   init_global,
-  init_process,
-  require_react
-} from "/build/_shared/chunk-6GQJD64I.js";
+  init_process
+} from "/build/_shared/chunk-OXIDVDL3.js";
 import {
   __esm,
   __toESM
@@ -5901,4 +5903,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-UUY4LFKJ.js.map
+//# sourceMappingURL=/build/_shared/chunk-7O6BMA6M.js.map
