@@ -15,6 +15,13 @@ import {
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
 
+// app/components/PageGrid.tsx
+init_global();
+init_dirname();
+init_filename();
+init_buffer();
+init_process();
+
 // app/components/Arrow.tsx
 init_global();
 init_dirname();
@@ -87,11 +94,6 @@ function Arrow({ className, label, rotate }) {
 }
 
 // app/components/PageGrid.tsx
-init_global();
-init_dirname();
-init_filename();
-init_buffer();
-init_process();
 var import_jsx_dev_runtime2 = __toESM(require_jsx_dev_runtime());
 function PageGrid({ left, subtitle, title }) {
   return /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("div", { className: "page-grid", children: [
@@ -140,180 +142,36 @@ function PageGrid({ left, subtitle, title }) {
         lineNumber: 29,
         columnNumber: 5
       }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(
-        "a",
-        {
-          className: "page-grid-footer-link",
-          href: "https://github.com/philly-js-club",
-          rel: "noreferrer",
-          target: "_blank",
-          children: [
-            "GitHub",
-            /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(
-              Arrow,
-              {
-                className: "arrow-out",
-                label: "External link indication arrow",
-                rotate: -45
-              },
-              void 0,
-              false,
-              {
-                fileName: "app/components/PageGrid.tsx",
-                lineNumber: 39,
-                columnNumber: 6
-              },
-              this
-            )
-          ]
-        },
-        void 0,
-        true,
-        {
-          fileName: "app/components/PageGrid.tsx",
-          lineNumber: 32,
-          columnNumber: 5
-        },
-        this
-      ),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("span", { className: "page-grid-footer-separator" }, void 0, false, {
-        fileName: "app/components/PageGrid.tsx",
-        lineNumber: 45,
-        columnNumber: 5
-      }, this),
       /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/code-of-conduct", children: "Code of Conduct" }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 46,
+        lineNumber: 32,
         columnNumber: 5
       }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(
-        "a",
-        {
-          className: "page-grid-footer-link",
-          href: "https://forms.gle/NDLyNNE51RHoXgMC7",
-          rel: "noreferrer",
-          target: "_blank",
-          children: [
-            "Slack",
-            /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(
-              Arrow,
-              {
-                className: "arrow-out",
-                label: "External link indication arrow",
-                rotate: -45
-              },
-              void 0,
-              false,
-              {
-                fileName: "app/components/PageGrid.tsx",
-                lineNumber: 56,
-                columnNumber: 6
-              },
-              this
-            )
-          ]
-        },
-        void 0,
-        true,
-        {
-          fileName: "app/components/PageGrid.tsx",
-          lineNumber: 49,
-          columnNumber: 5
-        },
-        this
-      ),
       /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("span", { className: "page-grid-footer-separator" }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 62,
+        lineNumber: 35,
         columnNumber: 5
       }, this),
       /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/events", children: "Events" }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 63,
-        columnNumber: 5
-      }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(
-        "a",
-        {
-          className: "page-grid-footer-link",
-          href: "https://jawns.club/@jsclub",
-          rel: "me noreferrer",
-          target: "_blank",
-          children: [
-            "Mastodon",
-            /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(
-              Arrow,
-              {
-                className: "arrow-out",
-                label: "External link indication arrow",
-                rotate: -45
-              },
-              void 0,
-              false,
-              {
-                fileName: "app/components/PageGrid.tsx",
-                lineNumber: 73,
-                columnNumber: 6
-              },
-              this
-            )
-          ]
-        },
-        void 0,
-        true,
-        {
-          fileName: "app/components/PageGrid.tsx",
-          lineNumber: 66,
-          columnNumber: 5
-        },
-        this
-      ),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("span", { className: "page-grid-footer-separator" }, void 0, false, {
-        fileName: "app/components/PageGrid.tsx",
-        lineNumber: 79,
+        lineNumber: 36,
         columnNumber: 5
       }, this),
       /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/sponsors", children: "Sponsors" }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 80,
+        lineNumber: 39,
         columnNumber: 5
       }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(
-        "a",
-        {
-          className: "page-grid-footer-link",
-          href: "https://www.linkedin.com/groups/12846035/",
-          rel: "me noreferrer",
-          target: "_blank",
-          children: [
-            "LinkedIn",
-            /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(
-              Arrow,
-              {
-                className: "arrow-out",
-                label: "External link indication arrow",
-                rotate: -45
-              },
-              void 0,
-              false,
-              {
-                fileName: "app/components/PageGrid.tsx",
-                lineNumber: 90,
-                columnNumber: 6
-              },
-              this
-            )
-          ]
-        },
-        void 0,
-        true,
-        {
-          fileName: "app/components/PageGrid.tsx",
-          lineNumber: 83,
-          columnNumber: 5
-        },
-        this
-      )
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("span", { className: "page-grid-footer-separator" }, void 0, false, {
+        fileName: "app/components/PageGrid.tsx",
+        lineNumber: 42,
+        columnNumber: 5
+      }, this),
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/join-us", children: "Join Us" }, void 0, false, {
+        fileName: "app/components/PageGrid.tsx",
+        lineNumber: 43,
+        columnNumber: 5
+      }, this)
     ] }, void 0, true, {
       fileName: "app/components/PageGrid.tsx",
       lineNumber: 28,
@@ -330,4 +188,4 @@ export {
   Arrow,
   PageGrid
 };
-//# sourceMappingURL=/build/_shared/chunk-TFQRX5Y4.js.map
+//# sourceMappingURL=/build/_shared/chunk-X4GCUBDS.js.map
