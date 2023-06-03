@@ -1,12 +1,12 @@
 import {
   EventDetails
-} from "/build/_shared/chunk-F6TDRTRX.js";
+} from "/build/_shared/chunk-XBAQ2H6Q.js";
 import {
   useLoaderData
 } from "/build/_shared/chunk-7O6BMA6M.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-TFQRX5Y4.js";
+} from "/build/_shared/chunk-X4GCUBDS.js";
 import {
   constructSiteTitle
 } from "/build/_shared/chunk-6Q5F5BI6.js";
@@ -181,4 +181,4 @@ export {
   Events as default,
   meta
 };
-//# sourceMappingURL=/build/routes/events-44HZSZNC.js.map
+//# sourceMappingURL=/build/routes/events-N2GL4UKX.js.map

@@ -1,6 +1,6 @@
 import {
   Arrow
-} from "/build/_shared/chunk-TFQRX5Y4.js";
+} from "/build/_shared/chunk-X4GCUBDS.js";
 import {
   region
 } from "/build/_shared/chunk-RGZDRY3U.js";
@@ -91,4 +91,4 @@ function EventDetails({
 export {
   EventDetails
 };
-//# sourceMappingURL=/build/_shared/chunk-F6TDRTRX.js.map
+//# sourceMappingURL=/build/_shared/chunk-XBAQ2H6Q.js.map

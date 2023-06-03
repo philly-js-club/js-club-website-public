@@ -1,6 +1,6 @@
 import {
   PageGrid
-} from "/build/_shared/chunk-TFQRX5Y4.js";
+} from "/build/_shared/chunk-X4GCUBDS.js";
 import {
   constructSiteTitle
 } from "/build/_shared/chunk-6Q5F5BI6.js";
@@ -108,7 +108,7 @@ function About() {
         columnNumber: 5
       }, this),
       subtitle: true,
-      title: "Code of Conduct"
+      title: "CoC"
     },
     void 0,
     false,
@@ -124,4 +124,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/code-of-conduct-Y6ZLKK6P.js.map
+//# sourceMappingURL=/build/routes/code-of-conduct-UQBPQEYN.js.map

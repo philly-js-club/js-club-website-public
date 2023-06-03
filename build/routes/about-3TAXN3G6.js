@@ -3,7 +3,7 @@ import {
 } from "/build/_shared/chunk-7O6BMA6M.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-TFQRX5Y4.js";
+} from "/build/_shared/chunk-X4GCUBDS.js";
 import {
   constructSiteTitle
 } from "/build/_shared/chunk-6Q5F5BI6.js";
@@ -152,4 +152,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/about-KL6YYNBD.js.map
+//# sourceMappingURL=/build/routes/about-3TAXN3G6.js.map
