@@ -1,19 +1,17 @@
 import {
   EventDetails
-} from "/build/_shared/chunk-XBAQ2H6Q.js";
-import {
-  useLoaderData
-} from "/build/_shared/chunk-7O6BMA6M.js";
+} from "/build/_shared/chunk-PQWQ7MYT.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-X4GCUBDS.js";
+} from "/build/_shared/chunk-KY4DZDIW.js";
 import {
   constructSiteTitle
 } from "/build/_shared/chunk-6Q5F5BI6.js";
 import "/build/_shared/chunk-RGZDRY3U.js";
 import {
-  require_jsx_dev_runtime
-} from "/build/_shared/chunk-ARZZKGUF.js";
+  require_jsx_dev_runtime,
+  useLoaderData
+} from "/build/_shared/chunk-WL3M2UO4.js";
 import {
   init_buffer,
   init_dirname,
@@ -108,4 +106,4 @@ export {
   Index as default,
   meta
 };
-//# sourceMappingURL=/build/routes/_index-2KTRV54K.js.map
+//# sourceMappingURL=/build/routes/_index-QPWVJGAJ.js.map
