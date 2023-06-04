@@ -2,9 +2,8 @@ import {
   site
 } from "/build/_shared/chunk-RGZDRY3U.js";
 import {
-  NavLink,
   require_jsx_dev_runtime
-} from "/build/_shared/chunk-WL3M2UO4.js";
+} from "/build/_shared/chunk-ARZZKGUF.js";
 import {
   init_buffer,
   init_dirname,
@@ -101,10 +100,10 @@ function PageGrid({ left, subtitle, title }) {
     /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("header", { className: "page-grid-header", children: [
       /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("h1", { className: "page-grid-title", children: title }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 17,
+        lineNumber: 15,
         columnNumber: 5
       }, this),
-      subtitle && /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(NavLink, { className: "page-grid-subtitle", to: "/", children: [
+      subtitle && /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-subtitle", href: "/", children: [
         site.title,
         /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(
           Arrow,
@@ -117,70 +116,70 @@ function PageGrid({ left, subtitle, title }) {
           false,
           {
             fileName: "app/components/PageGrid.tsx",
-            lineNumber: 21,
+            lineNumber: 19,
             columnNumber: 7
           },
           this
         )
       ] }, void 0, true, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 19,
+        lineNumber: 17,
         columnNumber: 6
       }, this)
     ] }, void 0, true, {
       fileName: "app/components/PageGrid.tsx",
-      lineNumber: 16,
+      lineNumber: 14,
       columnNumber: 4
     }, this),
     /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("main", { className: "page-grid-left", children: left }, void 0, false, {
       fileName: "app/components/PageGrid.tsx",
-      lineNumber: 29,
+      lineNumber: 27,
       columnNumber: 4
     }, this),
     /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("footer", { className: "page-grid-footer", children: [
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(NavLink, { className: "page-grid-footer-link", to: "/about", children: "About" }, void 0, false, {
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/about", children: "About" }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 31,
+        lineNumber: 29,
         columnNumber: 5
       }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(NavLink, { className: "page-grid-footer-link", to: "/code-of-conduct", children: "Code of Conduct" }, void 0, false, {
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/code-of-conduct", children: "Code of Conduct" }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 34,
-        columnNumber: 5
-      }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("span", { className: "page-grid-footer-separator" }, void 0, false, {
-        fileName: "app/components/PageGrid.tsx",
-        lineNumber: 37,
-        columnNumber: 5
-      }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(NavLink, { className: "page-grid-footer-link", to: "/events", children: "Events" }, void 0, false, {
-        fileName: "app/components/PageGrid.tsx",
-        lineNumber: 38,
-        columnNumber: 5
-      }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(NavLink, { className: "page-grid-footer-link", to: "/sponsors", children: "Sponsors" }, void 0, false, {
-        fileName: "app/components/PageGrid.tsx",
-        lineNumber: 41,
+        lineNumber: 32,
         columnNumber: 5
       }, this),
       /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("span", { className: "page-grid-footer-separator" }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 44,
+        lineNumber: 35,
         columnNumber: 5
       }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(NavLink, { className: "page-grid-footer-link", to: "/join-us", children: "Join Us" }, void 0, false, {
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/events", children: "Events" }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 45,
+        lineNumber: 36,
+        columnNumber: 5
+      }, this),
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/sponsors", children: "Sponsors" }, void 0, false, {
+        fileName: "app/components/PageGrid.tsx",
+        lineNumber: 39,
+        columnNumber: 5
+      }, this),
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("span", { className: "page-grid-footer-separator" }, void 0, false, {
+        fileName: "app/components/PageGrid.tsx",
+        lineNumber: 42,
+        columnNumber: 5
+      }, this),
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/join-us", children: "Join Us" }, void 0, false, {
+        fileName: "app/components/PageGrid.tsx",
+        lineNumber: 43,
         columnNumber: 5
       }, this)
     ] }, void 0, true, {
       fileName: "app/components/PageGrid.tsx",
-      lineNumber: 30,
+      lineNumber: 28,
       columnNumber: 4
     }, this)
   ] }, void 0, true, {
     fileName: "app/components/PageGrid.tsx",
-    lineNumber: 15,
+    lineNumber: 13,
     columnNumber: 3
   }, this);
 }
@@ -189,4 +188,4 @@ export {
   Arrow,
   PageGrid
 };
-//# sourceMappingURL=/build/_shared/chunk-KY4DZDIW.js.map
+//# sourceMappingURL=/build/_shared/chunk-X4GCUBDS.js.map
