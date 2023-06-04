@@ -1,12 +1,12 @@
 import {
   Arrow
-} from "/build/_shared/chunk-X4GCUBDS.js";
+} from "/build/_shared/chunk-KY4DZDIW.js";
 import {
   region
 } from "/build/_shared/chunk-RGZDRY3U.js";
 import {
   require_jsx_dev_runtime
-} from "/build/_shared/chunk-ARZZKGUF.js";
+} from "/build/_shared/chunk-WL3M2UO4.js";
 import {
   init_buffer,
   init_dirname,
@@ -91,4 +91,4 @@ function EventDetails({
 export {
   EventDetails
 };
-//# sourceMappingURL=/build/_shared/chunk-XBAQ2H6Q.js.map
+//# sourceMappingURL=/build/_shared/chunk-PQWQ7MYT.js.map
