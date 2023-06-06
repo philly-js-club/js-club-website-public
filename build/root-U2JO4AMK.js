@@ -5,7 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration
-} from "/build/_shared/chunk-7O6BMA6M.js";
+} from "/build/_shared/chunk-XQYDVGPP.js";
 import {
   site
 } from "/build/_shared/chunk-RGZDRY3U.js";
@@ -127,4 +127,4 @@ function App() {
 export {
   App as default
 };
-//# sourceMappingURL=/build/root-PLZ2KY4J.js.map
+//# sourceMappingURL=/build/root-U2JO4AMK.js.map

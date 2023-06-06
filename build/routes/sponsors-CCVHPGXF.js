@@ -3,7 +3,7 @@ import {
 } from "/build/_shared/chunk-Z3OG25IX.js";
 import {
   useLoaderData
-} from "/build/_shared/chunk-7O6BMA6M.js";
+} from "/build/_shared/chunk-XQYDVGPP.js";
 import {
   PageGrid
 } from "/build/_shared/chunk-X4GCUBDS.js";
@@ -103,4 +103,4 @@ export {
   Sponsors as default,
   meta
 };
-//# sourceMappingURL=/build/routes/sponsors-CSUKVON5.js.map
+//# sourceMappingURL=/build/routes/sponsors-CCVHPGXF.js.map
