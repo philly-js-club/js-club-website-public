@@ -1,6 +1,6 @@
 import {
   useSearchParams
-} from "/build/_shared/chunk-7O6BMA6M.js";
+} from "/build/_shared/chunk-XQYDVGPP.js";
 import {
   constructSiteTitle,
   upperFirst
@@ -208,4 +208,4 @@ export {
   Ad as default,
   meta
 };
-//# sourceMappingURL=/build/routes/ad-BP23QWZO.js.map
+//# sourceMappingURL=/build/routes/ad-KERSENZ3.js.map

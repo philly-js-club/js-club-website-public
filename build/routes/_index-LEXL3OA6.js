@@ -3,7 +3,7 @@ import {
 } from "/build/_shared/chunk-XBAQ2H6Q.js";
 import {
   useLoaderData
-} from "/build/_shared/chunk-7O6BMA6M.js";
+} from "/build/_shared/chunk-XQYDVGPP.js";
 import {
   PageGrid
 } from "/build/_shared/chunk-X4GCUBDS.js";
@@ -108,4 +108,4 @@ export {
   Index as default,
   meta
 };
-//# sourceMappingURL=/build/routes/_index-2KTRV54K.js.map
+//# sourceMappingURL=/build/routes/_index-LEXL3OA6.js.map
