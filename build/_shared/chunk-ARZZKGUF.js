@@ -4,14 +4,14 @@ import {
   init_filename,
   init_global,
   init_process
-} from "/build/_shared/chunk-ZTVRCKAT.js";
+} from "/build/_shared/chunk-OXIDVDL3.js";
 import {
   __commonJS
 } from "/build/_shared/chunk-IU43IUTG.js";
 
-// node_modules/.pnpm/react@18.2.0/node_modules/react/cjs/react.development.js
+// node_modules/react/cjs/react.development.js
 var require_react_development = __commonJS({
-  "node_modules/.pnpm/react@18.2.0/node_modules/react/cjs/react.development.js"(exports, module) {
+  "node_modules/react/cjs/react.development.js"(exports, module) {
     "use strict";
     init_global();
     init_dirname();
@@ -1887,9 +1887,9 @@ var require_react_development = __commonJS({
   }
 });
 
-// node_modules/.pnpm/react@18.2.0/node_modules/react/index.js
+// node_modules/react/index.js
 var require_react = __commonJS({
-  "node_modules/.pnpm/react@18.2.0/node_modules/react/index.js"(exports, module) {
+  "node_modules/react/index.js"(exports, module) {
     "use strict";
     init_global();
     init_dirname();
@@ -1904,9 +1904,9 @@ var require_react = __commonJS({
   }
 });
 
-// node_modules/.pnpm/react@18.2.0/node_modules/react/cjs/react-jsx-dev-runtime.development.js
+// node_modules/react/cjs/react-jsx-dev-runtime.development.js
 var require_react_jsx_dev_runtime_development = __commonJS({
-  "node_modules/.pnpm/react@18.2.0/node_modules/react/cjs/react-jsx-dev-runtime.development.js"(exports) {
+  "node_modules/react/cjs/react-jsx-dev-runtime.development.js"(exports) {
     "use strict";
     init_global();
     init_dirname();
@@ -2775,9 +2775,9 @@ var require_react_jsx_dev_runtime_development = __commonJS({
   }
 });
 
-// node_modules/.pnpm/react@18.2.0/node_modules/react/jsx-dev-runtime.js
+// node_modules/react/jsx-dev-runtime.js
 var require_jsx_dev_runtime = __commonJS({
-  "node_modules/.pnpm/react@18.2.0/node_modules/react/jsx-dev-runtime.js"(exports, module) {
+  "node_modules/react/jsx-dev-runtime.js"(exports, module) {
     "use strict";
     init_global();
     init_dirname();
@@ -2820,4 +2820,4 @@ react/cjs/react-jsx-dev-runtime.development.js:
    * LICENSE file in the root directory of this source tree.
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-MMWTRQXG.js.map
+//# sourceMappingURL=/build/_shared/chunk-ARZZKGUF.js.map
