@@ -4,7 +4,7 @@ import {
   init_filename,
   init_global,
   init_process
-} from "/build/_shared/chunk-OXIDVDL3.js";
+} from "/build/_shared/chunk-ZTVRCKAT.js";
 
 // app/config.ts
 init_global();
@@ -28,4 +28,4 @@ export {
   site,
   region
 };
-//# sourceMappingURL=/build/_shared/chunk-RGZDRY3U.js.map
+//# sourceMappingURL=/build/_shared/chunk-MOJPNVST.js.map
