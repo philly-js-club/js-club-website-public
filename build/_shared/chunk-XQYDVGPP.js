@@ -1,19 +1,19 @@
 import {
   require_react
-} from "/build/_shared/chunk-MMWTRQXG.js";
+} from "/build/_shared/chunk-ARZZKGUF.js";
 import {
   init_buffer,
   init_dirname,
   init_filename,
   init_global,
   init_process
-} from "/build/_shared/chunk-ZTVRCKAT.js";
+} from "/build/_shared/chunk-OXIDVDL3.js";
 import {
   __esm,
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
 
-// node_modules/.pnpm/@remix-run+router@1.6.2/node_modules/@remix-run/router/dist/router.js
+// node_modules/@remix-run/router/dist/router.js
 function _extends() {
   _extends = Object.assign ? Object.assign.bind() : function(target) {
     for (var i = 1; i < arguments.length; i++) {
@@ -177,6 +177,9 @@ function getUrlBasedHistory(getLocation, createHref, validateLocation, options) 
     try {
       globalHistory.pushState(historyState, "", url);
     } catch (error) {
+      if (error instanceof DOMException && error.name === "DataCloneError") {
+        throw error;
+      }
       window2.location.assign(url);
     }
     if (v5Compat && listener) {
@@ -613,6 +616,9 @@ function isRouteErrorResponse(error) {
   return error != null && typeof error.status === "number" && typeof error.statusText === "string" && typeof error.internal === "boolean" && "data" in error;
 }
 function createRouter(init) {
+  const routerWindow = init.window ? init.window : typeof window !== "undefined" ? window : void 0;
+  const isBrowser2 = typeof routerWindow !== "undefined" && typeof routerWindow.document !== "undefined" && typeof routerWindow.document.createElement !== "undefined";
+  const isServer = !isBrowser2;
   invariant(init.routes.length > 0, "You must provide a non-empty routes array to createRouter");
   let mapRouteProperties2;
   if (init.mapRouteProperties) {
@@ -916,7 +922,7 @@ function createRouter(init) {
       });
       return;
     }
-    if (state.initialized && isHashChangeOnly(state.location, location) && !(opts && opts.submission && isMutationMethod(opts.submission.formMethod))) {
+    if (state.initialized && !isRevalidationRequired && isHashChangeOnly(state.location, location) && !(opts && opts.submission && isMutationMethod(opts.submission.formMethod))) {
       completeNavigation(location, {
         matches
       });
@@ -1318,16 +1324,18 @@ function createRouter(init) {
       loaderData,
       errors
     } = processLoaderData(state, state.matches, matchesToLoad, loaderResults, void 0, revalidatingFetchers, fetcherResults, activeDeferreds);
-    let doneFetcher = {
-      state: "idle",
-      data: actionResult.data,
-      formMethod: void 0,
-      formAction: void 0,
-      formEncType: void 0,
-      formData: void 0,
-      " _hasFetcherDoneAnything ": true
-    };
-    state.fetchers.set(key, doneFetcher);
+    if (state.fetchers.has(key)) {
+      let doneFetcher = {
+        state: "idle",
+        data: actionResult.data,
+        formMethod: void 0,
+        formAction: void 0,
+        formEncType: void 0,
+        formData: void 0,
+        " _hasFetcherDoneAnything ": true
+      };
+      state.fetchers.set(key, doneFetcher);
+    }
     let didAbortFetchLoads = abortStaleFetchLoads(loadId);
     if (state.navigation.state === "loading" && loadId > pendingNavigationLoadId) {
       invariant(pendingAction, "Expected pending action");
@@ -1342,7 +1350,7 @@ function createRouter(init) {
       updateState(_extends({
         errors,
         loaderData: mergeLoaderData(state.loaderData, loaderData, matches, errors)
-      }, didAbortFetchLoads ? {
+      }, didAbortFetchLoads || revalidatingFetchers.length > 0 ? {
         fetchers: new Map(state.fetchers)
       } : {}));
       isRevalidationRequired = false;
@@ -1409,7 +1417,6 @@ function createRouter(init) {
     });
   }
   async function startRedirectNavigation(state2, redirect3, _temp) {
-    var _window;
     let {
       submission,
       replace,
@@ -1429,14 +1436,14 @@ function createRouter(init) {
       } : {})
     );
     invariant(redirectLocation, "Expected a location on the redirect navigation");
-    if (ABSOLUTE_URL_REGEX.test(redirect3.location) && isBrowser && typeof ((_window = window) == null ? void 0 : _window.location) !== "undefined") {
+    if (ABSOLUTE_URL_REGEX.test(redirect3.location) && isBrowser2) {
       let url = init.history.createURL(redirect3.location);
       let isDifferentBasename = stripBasename(url.pathname, basename) == null;
-      if (window.location.origin !== url.origin || isDifferentBasename) {
+      if (routerWindow.location.origin !== url.origin || isDifferentBasename) {
         if (replace) {
-          window.location.replace(redirect3.location);
+          routerWindow.location.replace(redirect3.location);
         } else {
-          window.location.assign(redirect3.location);
+          routerWindow.location.assign(redirect3.location);
         }
         return;
       }
@@ -1538,8 +1545,10 @@ function createRouter(init) {
     });
   }
   function deleteFetcher(key) {
-    if (fetchControllers.has(key))
+    let fetcher = state.fetchers.get(key);
+    if (fetchControllers.has(key) && !(fetcher && fetcher.state === "loading" && fetchReloadIds.has(key))) {
       abortFetcher(key);
+    }
     fetchLoadMatches.delete(key);
     fetchReloadIds.delete(key);
     fetchRedirectIds.delete(key);
@@ -2395,9 +2404,9 @@ function getTargetMatch(matches, location) {
   let pathMatches = getPathContributingMatches(matches);
   return pathMatches[pathMatches.length - 1];
 }
-var Action, PopStateEventType, ResultType, immutableRouteKeys, paramRe, dynamicSegmentValue, indexRouteValue, emptySegmentValue, staticSegmentValue, splatPenalty, isSplat, joinPaths, normalizePathname, normalizeSearch, normalizeHash, AbortedDeferredError, DeferredData, redirect, ErrorResponse, validMutationMethodsArr, validMutationMethods, validRequestMethodsArr, validRequestMethods, redirectStatusCodes, redirectPreserveMethodStatusCodes, IDLE_NAVIGATION, IDLE_FETCHER, IDLE_BLOCKER, ABSOLUTE_URL_REGEX, isBrowser, isServer, defaultMapRouteProperties, UNSAFE_DEFERRED_SYMBOL;
+var Action, PopStateEventType, ResultType, immutableRouteKeys, paramRe, dynamicSegmentValue, indexRouteValue, emptySegmentValue, staticSegmentValue, splatPenalty, isSplat, joinPaths, normalizePathname, normalizeSearch, normalizeHash, AbortedDeferredError, DeferredData, redirect, ErrorResponse, validMutationMethodsArr, validMutationMethods, validRequestMethodsArr, validRequestMethods, redirectStatusCodes, redirectPreserveMethodStatusCodes, IDLE_NAVIGATION, IDLE_FETCHER, IDLE_BLOCKER, ABSOLUTE_URL_REGEX, defaultMapRouteProperties, UNSAFE_DEFERRED_SYMBOL;
 var init_router = __esm({
-  "node_modules/.pnpm/@remix-run+router@1.6.2/node_modules/@remix-run/router/dist/router.js"() {
+  "node_modules/@remix-run/router/dist/router.js"() {
     init_global();
     init_dirname();
     init_filename();
@@ -2598,8 +2607,6 @@ var init_router = __esm({
       location: void 0
     };
     ABSOLUTE_URL_REGEX = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
-    isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined";
-    isServer = !isBrowser;
     defaultMapRouteProperties = (route) => ({
       hasErrorBoundary: Boolean(route.hasErrorBoundary)
     });
@@ -2607,7 +2614,7 @@ var init_router = __esm({
   }
 });
 
-// node_modules/.pnpm/react-router@6.11.2_react@18.2.0/node_modules/react-router/dist/index.js
+// node_modules/react-router/dist/index.js
 function _extends2() {
   _extends2 = Object.assign ? Object.assign.bind() : function(target) {
     for (var i = 1; i < arguments.length; i++) {
@@ -3036,7 +3043,10 @@ function RouterProvider(_ref) {
     fallbackElement,
     router: router2
   } = _ref;
-  let [state, setState] = React.useState(router2.state);
+  let [state, setStateImpl] = React.useState(router2.state);
+  let setState = React.useCallback((newState) => {
+    "startTransition" in React ? React.startTransition(() => setStateImpl(newState)) : setStateImpl(newState);
+  }, [setStateImpl]);
   React.useLayoutEffect(() => router2.subscribe(setState), [router2, setState]);
   let navigator = React.useMemo(() => {
     return {
@@ -3066,11 +3076,11 @@ function RouterProvider(_ref) {
   }, /* @__PURE__ */ React.createElement(DataRouterStateContext.Provider, {
     value: state
   }, /* @__PURE__ */ React.createElement(Router, {
-    basename: router2.basename,
-    location: router2.state.location,
-    navigationType: router2.state.historyAction,
+    basename,
+    location: state.location,
+    navigationType: state.historyAction,
     navigator
-  }, router2.state.initialized ? /* @__PURE__ */ React.createElement(DataRoutes, {
+  }, state.initialized ? /* @__PURE__ */ React.createElement(DataRoutes, {
     routes: router2.routes,
     state
   }) : fallbackElement))), null);
@@ -3189,7 +3199,7 @@ function mapRouteProperties(route) {
 }
 var React, DataRouterContext, DataRouterStateContext, AwaitContext, NavigationContext, LocationContext, RouteContext, RouteErrorContext, navigateEffectWarning, OutletContext, defaultErrorElement, RenderErrorBoundary, DataRouterHook, DataRouterStateHook, alreadyWarned, AwaitRenderStatus, neverSettledPromise, AwaitErrorBoundary;
 var init_dist = __esm({
-  "node_modules/.pnpm/react-router@6.11.2_react@18.2.0/node_modules/react-router/dist/index.js"() {
+  "node_modules/react-router/dist/index.js"() {
     init_global();
     init_dirname();
     init_filename();
@@ -3379,7 +3389,7 @@ var init_dist = __esm({
   }
 });
 
-// node_modules/.pnpm/react-router-dom@6.11.2_react-dom@18.2.0_react@18.2.0/node_modules/react-router-dom/dist/index.js
+// node_modules/react-router-dom/dist/index.js
 function _extends3() {
   _extends3 = Object.assign ? Object.assign.bind() : function(target) {
     for (var i = 1; i < arguments.length; i++) {
@@ -3562,11 +3572,14 @@ function HistoryRouter(_ref3) {
     children,
     history
   } = _ref3;
-  const [state, setState] = React2.useState({
+  let [state, setStateImpl] = React2.useState({
     action: history.action,
     location: history.location
   });
-  React2.useLayoutEffect(() => history.listen(setState), [history]);
+  let setState = React2.useCallback((newState) => {
+    "startTransition" in React2 ? React2.startTransition(() => setStateImpl(newState)) : setStateImpl(newState);
+  }, [setStateImpl]);
+  React2.useLayoutEffect(() => history.listen(setState), [history, setState]);
   return /* @__PURE__ */ React2.createElement(Router, {
     basename,
     children,
@@ -3792,9 +3805,9 @@ function usePageHide(callback, options) {
     };
   }, [callback, capture]);
 }
-var React2, defaultMethod, defaultEncType, _excluded, _excluded2, _excluded3, isBrowser2, ABSOLUTE_URL_REGEX2, Link, NavLink, Form, FormImpl, DataRouterHook2, DataRouterStateHook2, SCROLL_RESTORATION_STORAGE_KEY, savedScrollPositions;
+var React2, defaultMethod, defaultEncType, _excluded, _excluded2, _excluded3, isBrowser, ABSOLUTE_URL_REGEX2, Link, NavLink, Form, FormImpl, DataRouterHook2, DataRouterStateHook2, SCROLL_RESTORATION_STORAGE_KEY, savedScrollPositions;
 var init_dist2 = __esm({
-  "node_modules/.pnpm/react-router-dom@6.11.2_react-dom@18.2.0_react@18.2.0/node_modules/react-router-dom/dist/index.js"() {
+  "node_modules/react-router-dom/dist/index.js"() {
     init_global();
     init_dirname();
     init_filename();
@@ -3812,7 +3825,7 @@ var init_dist2 = __esm({
     if (true) {
       HistoryRouter.displayName = "unstable_HistoryRouter";
     }
-    isBrowser2 = typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined";
+    isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined";
     ABSOLUTE_URL_REGEX2 = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
     Link = /* @__PURE__ */ React2.forwardRef(function LinkWithRef(_ref4, ref) {
       let {
@@ -3832,7 +3845,7 @@ var init_dist2 = __esm({
       let isExternal = false;
       if (typeof to === "string" && ABSOLUTE_URL_REGEX2.test(to)) {
         absoluteHref = to;
-        if (isBrowser2) {
+        if (isBrowser) {
           try {
             let currentUrl = new URL(window.location.href);
             let targetUrl = to.startsWith("//") ? new URL(currentUrl.protocol + to) : new URL(to);
@@ -3999,7 +4012,7 @@ var init_dist2 = __esm({
   }
 });
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/browser.js
+// node_modules/@remix-run/react/dist/esm/browser.js
 init_global();
 init_dirname();
 init_filename();
@@ -4008,14 +4021,14 @@ init_process();
 var React5 = __toESM(require_react());
 init_dist2();
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/components.js
+// node_modules/@remix-run/react/dist/esm/components.js
 init_global();
 init_dirname();
 init_filename();
 init_buffer();
 init_process();
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js
+// node_modules/@remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js
 init_global();
 init_dirname();
 init_filename();
@@ -4036,11 +4049,11 @@ function _extends4() {
   return _extends4.apply(this, arguments);
 }
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/components.js
+// node_modules/@remix-run/react/dist/esm/components.js
 var React3 = __toESM(require_react());
 init_dist2();
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/errorBoundaries.js
+// node_modules/@remix-run/react/dist/esm/errorBoundaries.js
 init_global();
 init_dirname();
 init_filename();
@@ -4086,7 +4099,9 @@ var RemixErrorBoundary = class extends import_react.default.Component {
 function RemixRootDefaultErrorBoundary({
   error
 }) {
-  console.error(error);
+  import_react.default.useEffect(() => {
+    console.error(error);
+  }, [error]);
   return /* @__PURE__ */ import_react.default.createElement("html", {
     lang: "en"
   }, /* @__PURE__ */ import_react.default.createElement("head", null, /* @__PURE__ */ import_react.default.createElement("meta", {
@@ -4103,14 +4118,14 @@ function RemixRootDefaultErrorBoundary({
     style: {
       fontSize: "24px"
     }
-  }, "Application Error"), /* @__PURE__ */ import_react.default.createElement("pre", {
+  }, "Application Error"), error.stack ? /* @__PURE__ */ import_react.default.createElement("pre", {
     style: {
       padding: "2rem",
       background: "hsla(10, 50%, 50%, 0.1)",
       color: "red",
       overflow: "auto"
     }
-  }, error.stack)), /* @__PURE__ */ import_react.default.createElement("script", {
+  }, error.stack) : null), /* @__PURE__ */ import_react.default.createElement("script", {
     dangerouslySetInnerHTML: {
       __html: `
               console.log(
@@ -4185,7 +4200,7 @@ function RemixRootDefaultCatchBoundaryImpl({
   })));
 }
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/invariant.js
+// node_modules/@remix-run/react/dist/esm/invariant.js
 init_global();
 init_dirname();
 init_filename();
@@ -4197,7 +4212,7 @@ function invariant2(value, message) {
   }
 }
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/links.js
+// node_modules/@remix-run/react/dist/esm/links.js
 init_global();
 init_dirname();
 init_filename();
@@ -4205,7 +4220,7 @@ init_buffer();
 init_process();
 init_dist2();
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/routeModules.js
+// node_modules/@remix-run/react/dist/esm/routeModules.js
 init_global();
 init_dirname();
 init_filename();
@@ -4229,7 +4244,7 @@ async function loadRouteModule(route, routeModulesCache) {
   }
 }
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/links.js
+// node_modules/@remix-run/react/dist/esm/links.js
 function getLinksForMatches(matches, routeModules, manifest) {
   let descriptors = matches.map((match) => {
     var _module$links;
@@ -4409,7 +4424,7 @@ function parsePathPatch(href) {
   return path;
 }
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/markup.js
+// node_modules/@remix-run/react/dist/esm/markup.js
 init_global();
 init_dirname();
 init_filename();
@@ -4432,7 +4447,7 @@ function createHtml(html) {
   };
 }
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/warnings.js
+// node_modules/@remix-run/react/dist/esm/warnings.js
 init_global();
 init_dirname();
 init_filename();
@@ -4446,7 +4461,7 @@ function logDeprecationOnce(message, key = message) {
   }
 }
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/components.js
+// node_modules/@remix-run/react/dist/esm/components.js
 function useDataRouterContext3() {
   let context = React3.useContext(DataRouterContext);
   invariant2(context, "You must render this element inside a <DataRouterContext.Provider> element");
@@ -4512,15 +4527,15 @@ function RemixRouteError({
   }
   if (isRouteErrorResponse(error)) {
     let tError = error;
-    if ((tError === null || tError === void 0 ? void 0 : tError.error) instanceof Error && tError.status !== 404 && ErrorBoundary) {
+    if (!!(tError !== null && tError !== void 0 && tError.error) && tError.status !== 404 && ErrorBoundary) {
       return /* @__PURE__ */ React3.createElement(ErrorBoundary, {
         error: tError.error
       });
     }
     if (CatchBoundary) {
       return /* @__PURE__ */ React3.createElement(RemixCatchBoundary, {
-        component: CatchBoundary,
-        catch: error
+        catch: error,
+        component: CatchBoundary
       });
     }
   }
@@ -4616,7 +4631,7 @@ function composeEventHandlers(theirHandler, ourHandler) {
     }
   };
 }
-var linksWarning = "\u26A0\uFE0F REMIX FUTURE CHANGE: The behavior of links `imagesizes` and `imagesrcset` will be changing in v2. Only the React camel case versions will be valid. Please change to `imageSizes` and `imageSrcSet`.For instructions on making this change see https://remix.run/docs/en/v1.15.0/pages/v2#links-imagesizes-and-imagesrcset";
+var linksWarning = "\u26A0\uFE0F REMIX FUTURE CHANGE: The behavior of links `imagesizes` and `imagesrcset` will be changing in v2. Only the React camel case versions will be valid. Please change to `imageSizes` and `imageSrcSet`. For instructions on making this change see https://remix.run/docs/en/v1.15.0/pages/v2#links-imagesizes-and-imagesrcset";
 function Links() {
   let {
     manifest,
@@ -5017,11 +5032,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
     return (route.imports || []).concat([route.module]);
   }).flat(1);
   let preloads = isHydrated ? [] : manifest.entry.imports.concat(routePreloads);
-  return /* @__PURE__ */ React3.createElement(React3.Fragment, null, /* @__PURE__ */ React3.createElement("link", {
-    rel: "modulepreload",
-    href: manifest.url,
-    crossOrigin: props.crossOrigin
-  }), /* @__PURE__ */ React3.createElement("link", {
+  return isHydrated ? null : /* @__PURE__ */ React3.createElement(React3.Fragment, null, /* @__PURE__ */ React3.createElement("link", {
     rel: "modulepreload",
     href: manifest.entry.module,
     crossOrigin: props.crossOrigin
@@ -5030,7 +5041,7 @@ import(${JSON.stringify(manifest.entry.module)});`;
     rel: "modulepreload",
     href: path,
     crossOrigin: props.crossOrigin
-  })), !isHydrated && initialScripts, !isHydrated && deferredScripts);
+  })), initialScripts, deferredScripts);
 }
 function DeferredHydrationScript({
   dataKey,
@@ -5119,7 +5130,7 @@ function useLoaderData2() {
 }
 var LiveReload = false ? () => null : function LiveReload2({
   // TODO: remove REMIX_DEV_SERVER_WS_PORT in v2
-  port = Number(63778),
+  port,
   timeoutMs = 1e3,
   nonce = void 0
 }) {
@@ -5132,7 +5143,7 @@ var LiveReload = false ? () => null : function LiveReload2({
                 function remixLiveReloadConnect(config) {
                   let protocol = location.protocol === "https:" ? "wss:" : "ws:";
                   let host = location.hostname;
-                  let port = (window.__remixContext && window.__remixContext.dev && window.__remixContext.dev.websocketPort) || ${String(port)};
+                  let port = ${port} || (window.__remixContext && window.__remixContext.dev && window.__remixContext.dev.port) || ${Number(8002)};
                   let socketPath = protocol + "//" + host + ":" + port + "/socket";
                   let ws = new WebSocket(socketPath);
                   ws.onmessage = async (message) => {
@@ -5213,7 +5224,7 @@ var LiveReload = false ? () => null : function LiveReload2({
   });
 };
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/errors.js
+// node_modules/@remix-run/react/dist/esm/errors.js
 init_global();
 init_dirname();
 init_filename();
@@ -5239,7 +5250,7 @@ function deserializeErrors2(errors) {
   return serialized;
 }
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/routes.js
+// node_modules/@remix-run/react/dist/esm/routes.js
 init_global();
 init_dirname();
 init_filename();
@@ -5248,7 +5259,7 @@ init_process();
 var React4 = __toESM(require_react());
 init_dist2();
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/data.js
+// node_modules/@remix-run/react/dist/esm/data.js
 init_global();
 init_dirname();
 init_filename();
@@ -5256,19 +5267,19 @@ init_buffer();
 init_process();
 init_router();
 function isCatchResponse(response) {
-  return response instanceof Response && response.headers.get("X-Remix-Catch") != null;
+  return response.headers.get("X-Remix-Catch") != null;
 }
 function isErrorResponse(response) {
-  return response instanceof Response && response.headers.get("X-Remix-Error") != null;
+  return response.headers.get("X-Remix-Error") != null;
 }
 function isRedirectResponse(response) {
-  return response instanceof Response && response.headers.get("X-Remix-Redirect") != null;
+  return response.headers.get("X-Remix-Redirect") != null;
 }
 function isDeferredResponse(response) {
   var _response$headers$get;
-  return response instanceof Response && !!((_response$headers$get = response.headers.get("Content-Type")) !== null && _response$headers$get !== void 0 && _response$headers$get.match(/text\/remix-deferred/));
+  return !!((_response$headers$get = response.headers.get("Content-Type")) !== null && _response$headers$get !== void 0 && _response$headers$get.match(/text\/remix-deferred/));
 }
-async function fetchData(request, routeId) {
+async function fetchData(request, routeId, retry = 0) {
   let url = new URL(request.url);
   url.searchParams.set("_data", routeId);
   let init = {
@@ -5281,7 +5292,16 @@ async function fetchData(request, routeId) {
     // paragraph of https://httpwg.org/specs/rfc9110.html#field.content-type
     contentType && /\bapplication\/x-www-form-urlencoded\b/.test(contentType) ? new URLSearchParams(await request.text()) : await request.formData();
   }
-  let response = await fetch(url.href, init);
+  if (retry > 0) {
+    await new Promise((resolve) => setTimeout(resolve, 5 ** retry * 10));
+  }
+  let revalidation = window.__remixRevalidation;
+  let response = await fetch(url.href, init).catch((error) => {
+    if (typeof revalidation === "number" && revalidation === window.__remixRevalidation && (error === null || error === void 0 ? void 0 : error.name) === "TypeError" && retry < 3) {
+      return fetchData(request, routeId, retry + 1);
+    }
+    throw error;
+  });
   if (isErrorResponse(response)) {
     let data = await response.json();
     let error = new Error(data.message);
@@ -5423,7 +5443,7 @@ function mergeArrays(...arrays) {
   return out;
 }
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/routes.js
+// node_modules/@remix-run/react/dist/esm/routes.js
 function groupRoutesByParentId(manifest) {
   let routes = {};
   Object.values(manifest).forEach((route) => {
@@ -5531,7 +5551,7 @@ function getRedirect(response) {
   });
 }
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/browser.js
+// node_modules/@remix-run/react/dist/esm/browser.js
 var router;
 var hmrAbortController;
 if (import.meta && import.meta.hot) {
@@ -5574,6 +5594,7 @@ if (import.meta && import.meta.hot) {
         }, 1);
       }
     });
+    window.__remixRevalidation = (window.__remixRevalidation || 0) + 1;
     router.revalidate();
   });
 }
@@ -5622,7 +5643,7 @@ function RemixBrowser(_props) {
   })));
 }
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/index.js
+// node_modules/@remix-run/react/dist/esm/index.js
 init_global();
 init_dirname();
 init_filename();
@@ -5630,7 +5651,7 @@ init_buffer();
 init_process();
 init_dist2();
 
-// node_modules/.pnpm/@remix-run+react@1.16.1_react-dom@18.2.0_react@18.2.0/node_modules/@remix-run/react/dist/esm/scroll-restoration.js
+// node_modules/@remix-run/react/dist/esm/scroll-restoration.js
 init_global();
 init_dirname();
 init_filename();
@@ -5701,7 +5722,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.6.2
+   * @remix-run/router v1.6.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5713,7 +5734,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.11.2
+   * React Router v6.12.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5725,7 +5746,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.11.2
+   * React Router DOM v6.12.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5737,7 +5758,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5749,7 +5770,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5761,7 +5782,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5773,7 +5794,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5785,7 +5806,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5797,7 +5818,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5809,7 +5830,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/warnings.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5821,7 +5842,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5833,7 +5854,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5845,7 +5866,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5857,7 +5878,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5869,7 +5890,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5881,7 +5902,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5893,7 +5914,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v1.16.1
+   * @remix-run/react v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5903,4 +5924,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-CMSMWOTM.js.map
+//# sourceMappingURL=/build/_shared/chunk-XQYDVGPP.js.map
