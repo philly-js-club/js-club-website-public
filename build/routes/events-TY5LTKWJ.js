@@ -1,53 +1,27 @@
 import {
   EventDetails
-} from "/build/_shared/chunk-6VMKHIKD.js";
+} from "/build/_shared/chunk-65SB3BG2.js";
 import {
   useLoaderData
-} from "/build/_shared/chunk-7LENSBE2.js";
+} from "/build/_shared/chunk-4NTKSZ6U.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-S42QROOI.js";
+} from "/build/_shared/chunk-KD7IWGWX.js";
 import {
   constructSiteTitle
-} from "/build/_shared/chunk-LD3F2TNA.js";
+} from "/build/_shared/chunk-EJOKRSYP.js";
 import {
   site
-} from "/build/_shared/chunk-MOJPNVST.js";
+} from "/build/_shared/chunk-B4YQL3S4.js";
 import {
   require_jsx_dev_runtime,
   require_react
-} from "/build/_shared/chunk-MMWTRQXG.js";
-import {
-  init_buffer,
-  init_dirname,
-  init_filename,
-  init_global,
-  init_process
-} from "/build/_shared/chunk-ZTVRCKAT.js";
+} from "/build/_shared/chunk-HYDBX6IC.js";
 import {
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
 
-// browser-route-module:routes/events.tsx?browser
-init_global();
-init_dirname();
-init_filename();
-init_buffer();
-init_process();
-
-// app/routes/events.tsx
-init_global();
-init_dirname();
-init_filename();
-init_buffer();
-init_process();
-
 // app/components/CalendarSubscriptionLinks.tsx
-init_global();
-init_dirname();
-init_filename();
-init_buffer();
-init_process();
 var import_react = __toESM(require_react());
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
 function CalendarSubscriptionLinks({
@@ -181,4 +155,4 @@ export {
   Events as default,
   meta
 };
-//# sourceMappingURL=/build/routes/events-3JZQIMK5.js.map
+//# sourceMappingURL=/build/routes/events-TY5LTKWJ.js.map

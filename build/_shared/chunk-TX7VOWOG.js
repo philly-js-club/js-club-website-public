@@ -1,26 +1,14 @@
 import {
   Arrow
-} from "/build/_shared/chunk-S42QROOI.js";
+} from "/build/_shared/chunk-KD7IWGWX.js";
 import {
   require_jsx_dev_runtime
-} from "/build/_shared/chunk-MMWTRQXG.js";
-import {
-  init_buffer,
-  init_dirname,
-  init_filename,
-  init_global,
-  init_process
-} from "/build/_shared/chunk-ZTVRCKAT.js";
+} from "/build/_shared/chunk-HYDBX6IC.js";
 import {
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
 
 // app/components/Icons.tsx
-init_global();
-init_dirname();
-init_filename();
-init_buffer();
-init_process();
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
 function Icons({ icons, imageClassName }) {
   return /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("ol", { className: "icons", children: icons.map(({ description, href, imageHref, name }) => /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("li", { className: "icon-list", children: /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("div", { className: "icon", children: [
@@ -97,4 +85,4 @@ function Icons({ icons, imageClassName }) {
 export {
   Icons
 };
-//# sourceMappingURL=/build/_shared/chunk-PSLW5V3W.js.map
+//# sourceMappingURL=/build/_shared/chunk-TX7VOWOG.js.map

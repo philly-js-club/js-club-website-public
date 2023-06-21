@@ -1,31 +1,19 @@
 import {
   RemixBrowser
-} from "/build/_shared/chunk-CMSMWOTM.js";
+} from "/build/_shared/chunk-4NTKSZ6U.js";
 import {
   require_jsx_dev_runtime,
   require_react
-} from "/build/_shared/chunk-MMWTRQXG.js";
-import {
-  init_buffer,
-  init_dirname,
-  init_filename,
-  init_global,
-  init_process
-} from "/build/_shared/chunk-ZTVRCKAT.js";
+} from "/build/_shared/chunk-HYDBX6IC.js";
 import {
   __commonJS,
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
 
-// node_modules/.pnpm/scheduler@0.23.0/node_modules/scheduler/cjs/scheduler.development.js
+// node_modules/scheduler/cjs/scheduler.development.js
 var require_scheduler_development = __commonJS({
-  "node_modules/.pnpm/scheduler@0.23.0/node_modules/scheduler/cjs/scheduler.development.js"(exports) {
+  "node_modules/scheduler/cjs/scheduler.development.js"(exports) {
     "use strict";
-    init_global();
-    init_dirname();
-    init_filename();
-    init_buffer();
-    init_process();
     if (true) {
       (function() {
         "use strict";
@@ -472,15 +460,10 @@ var require_scheduler_development = __commonJS({
   }
 });
 
-// node_modules/.pnpm/scheduler@0.23.0/node_modules/scheduler/index.js
+// node_modules/scheduler/index.js
 var require_scheduler = __commonJS({
-  "node_modules/.pnpm/scheduler@0.23.0/node_modules/scheduler/index.js"(exports, module) {
+  "node_modules/scheduler/index.js"(exports, module) {
     "use strict";
-    init_global();
-    init_dirname();
-    init_filename();
-    init_buffer();
-    init_process();
     if (false) {
       module.exports = null;
     } else {
@@ -489,15 +472,10 @@ var require_scheduler = __commonJS({
   }
 });
 
-// node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/cjs/react-dom.development.js
+// node_modules/react-dom/cjs/react-dom.development.js
 var require_react_dom_development = __commonJS({
-  "node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/cjs/react-dom.development.js"(exports) {
+  "node_modules/react-dom/cjs/react-dom.development.js"(exports) {
     "use strict";
-    init_global();
-    init_dirname();
-    init_filename();
-    init_buffer();
-    init_process();
     if (true) {
       (function() {
         "use strict";
@@ -21585,15 +21563,10 @@ var require_react_dom_development = __commonJS({
   }
 });
 
-// node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/index.js
+// node_modules/react-dom/index.js
 var require_react_dom = __commonJS({
-  "node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/index.js"(exports, module) {
+  "node_modules/react-dom/index.js"(exports, module) {
     "use strict";
-    init_global();
-    init_dirname();
-    init_filename();
-    init_buffer();
-    init_process();
     if (false) {
       checkDCE();
       module.exports = null;
@@ -21603,15 +21576,10 @@ var require_react_dom = __commonJS({
   }
 });
 
-// node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/client.js
+// node_modules/react-dom/client.js
 var require_client = __commonJS({
-  "node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/client.js"(exports) {
+  "node_modules/react-dom/client.js"(exports) {
     "use strict";
-    init_global();
-    init_dirname();
-    init_filename();
-    init_buffer();
-    init_process();
     var m = require_react_dom();
     if (false) {
       exports.createRoot = m.createRoot;
@@ -21640,11 +21608,6 @@ var require_client = __commonJS({
 });
 
 // app/entry.client.tsx
-init_global();
-init_dirname();
-init_filename();
-init_buffer();
-init_process();
 var import_react2 = __toESM(require_react());
 var import_client = __toESM(require_client());
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
@@ -21699,4 +21662,4 @@ react-dom/cjs/react-dom.development.js:
    * @license Modernizr 3.0.0pre (Custom Build) | MIT
    *)
 */
-//# sourceMappingURL=/build/entry.client-H6QCGOGF.js.map
+//# sourceMappingURL=/build/entry.client-NE4BDR74.js.map

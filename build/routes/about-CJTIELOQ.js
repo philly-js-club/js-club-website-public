@@ -1,40 +1,21 @@
 import {
   useLoaderData
-} from "/build/_shared/chunk-7LENSBE2.js";
+} from "/build/_shared/chunk-4NTKSZ6U.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-S42QROOI.js";
+} from "/build/_shared/chunk-KD7IWGWX.js";
 import {
   constructSiteTitle
-} from "/build/_shared/chunk-LD3F2TNA.js";
-import "/build/_shared/chunk-MOJPNVST.js";
+} from "/build/_shared/chunk-EJOKRSYP.js";
+import "/build/_shared/chunk-B4YQL3S4.js";
 import {
   require_jsx_dev_runtime
-} from "/build/_shared/chunk-MMWTRQXG.js";
-import {
-  init_buffer,
-  init_dirname,
-  init_filename,
-  init_global,
-  init_process
-} from "/build/_shared/chunk-ZTVRCKAT.js";
+} from "/build/_shared/chunk-HYDBX6IC.js";
 import {
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
 
-// browser-route-module:routes/about.tsx?browser
-init_global();
-init_dirname();
-init_filename();
-init_buffer();
-init_process();
-
 // app/routes/about.tsx
-init_global();
-init_dirname();
-init_filename();
-init_buffer();
-init_process();
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
 var meta = () => {
   return [{ title: constructSiteTitle("About") }];
@@ -152,4 +133,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/about-OBOCOKNL.js.map
+//# sourceMappingURL=/build/routes/about-CJTIELOQ.js.map
