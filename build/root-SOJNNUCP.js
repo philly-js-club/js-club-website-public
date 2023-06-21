@@ -5,37 +5,16 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration
-} from "/build/_shared/chunk-CMSMWOTM.js";
+} from "/build/_shared/chunk-4NTKSZ6U.js";
 import {
   site
-} from "/build/_shared/chunk-MOJPNVST.js";
+} from "/build/_shared/chunk-B4YQL3S4.js";
 import {
   require_jsx_dev_runtime
-} from "/build/_shared/chunk-MMWTRQXG.js";
-import {
-  init_buffer,
-  init_dirname,
-  init_filename,
-  init_global,
-  init_process
-} from "/build/_shared/chunk-ZTVRCKAT.js";
+} from "/build/_shared/chunk-HYDBX6IC.js";
 import {
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
-
-// browser-route-module:root.tsx?browser
-init_global();
-init_dirname();
-init_filename();
-init_buffer();
-init_process();
-
-// app/root.tsx
-init_global();
-init_dirname();
-init_filename();
-init_buffer();
-init_process();
 
 // app/root.css
 var root_default = "/build/_assets/root-TVBK7GC4.css";
@@ -127,4 +106,4 @@ function App() {
 export {
   App as default
 };
-//# sourceMappingURL=/build/root-Y5DKOIVJ.js.map
+//# sourceMappingURL=/build/root-SOJNNUCP.js.map

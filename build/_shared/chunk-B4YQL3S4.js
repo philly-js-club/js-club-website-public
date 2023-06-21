@@ -1,17 +1,4 @@
-import {
-  init_buffer,
-  init_dirname,
-  init_filename,
-  init_global,
-  init_process
-} from "/build/_shared/chunk-ZTVRCKAT.js";
-
 // app/config.ts
-init_global();
-init_dirname();
-init_filename();
-init_buffer();
-init_process();
 var site = {
   title: "Philly JS Club",
   longTitle: "Philadelphia JavaScript Club",
@@ -28,4 +15,4 @@ export {
   site,
   region
 };
-//# sourceMappingURL=/build/_shared/chunk-MOJPNVST.js.map
+//# sourceMappingURL=/build/_shared/chunk-B4YQL3S4.js.map
