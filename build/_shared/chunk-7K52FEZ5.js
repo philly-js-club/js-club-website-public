@@ -8,8 +8,16 @@ import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-HYDBX6IC.js";
 import {
+  __commonJS,
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
+
+// empty-module:@remix-run/node
+var require_node = __commonJS({
+  "empty-module:@remix-run/node"(exports, module) {
+    module.exports = {};
+  }
+});
 
 // app/components/EventDetails.tsx
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
@@ -77,6 +85,7 @@ function EventDetails({
 }
 
 export {
+  require_node,
   EventDetails
 };
-//# sourceMappingURL=/build/_shared/chunk-65SB3BG2.js.map
+//# sourceMappingURL=/build/_shared/chunk-7K52FEZ5.js.map

@@ -1,9 +1,10 @@
 import {
-  EventDetails
-} from "/build/_shared/chunk-65SB3BG2.js";
+  EventDetails,
+  require_node
+} from "/build/_shared/chunk-7K52FEZ5.js";
 import {
   useLoaderData
-} from "/build/_shared/chunk-4NTKSZ6U.js";
+} from "/build/_shared/chunk-DWHOMYJP.js";
 import {
   PageGrid
 } from "/build/_shared/chunk-KD7IWGWX.js";
@@ -19,6 +20,7 @@ import {
 } from "/build/_shared/chunk-IU43IUTG.js";
 
 // app/routes/_index.tsx
+var import_node = __toESM(require_node());
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
 var meta = () => {
   return [{ title: constructSiteTitle() }];
@@ -89,4 +91,4 @@ export {
   Index as default,
   meta
 };
-//# sourceMappingURL=/build/routes/_index-NPZAEOKR.js.map
+//# sourceMappingURL=/build/routes/_index-FJKWM4CP.js.map
