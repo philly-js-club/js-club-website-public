@@ -1,9 +1,10 @@
 import {
-  EventDetails
-} from "/build/_shared/chunk-65SB3BG2.js";
+  EventDetails,
+  require_node
+} from "/build/_shared/chunk-7K52FEZ5.js";
 import {
   useLoaderData
-} from "/build/_shared/chunk-4NTKSZ6U.js";
+} from "/build/_shared/chunk-DWHOMYJP.js";
 import {
   PageGrid
 } from "/build/_shared/chunk-KD7IWGWX.js";
@@ -20,6 +21,9 @@ import {
 import {
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
+
+// app/routes/events.tsx
+var import_node = __toESM(require_node());
 
 // app/components/CalendarSubscriptionLinks.tsx
 var import_react = __toESM(require_react());
@@ -155,4 +159,4 @@ export {
   Events as default,
   meta
 };
-//# sourceMappingURL=/build/routes/events-TY5LTKWJ.js.map
+//# sourceMappingURL=/build/routes/events-EPIRVCLA.js.map
