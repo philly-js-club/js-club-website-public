@@ -774,8 +774,11 @@ function createRouter(init) {
       actionData = null;
     }
     let loaderData = newState.loaderData ? mergeLoaderData(state.loaderData, newState.loaderData, newState.matches || [], newState.errors) : state.loaderData;
-    let blockers = /* @__PURE__ */ new Map();
-    blockerFunctions.clear();
+    let blockers = state.blockers;
+    if (blockers.size > 0) {
+      blockers = new Map(blockers);
+      blockers.forEach((_, k) => blockers.set(k, IDLE_BLOCKER));
+    }
     let preventScrollReset = pendingPreventScrollReset === true || state.navigation.formMethod != null && isMutationMethod(state.navigation.formMethod) && ((_location$state2 = location.state) == null ? void 0 : _location$state2._isRedirect) !== true;
     if (inFlightDataRoutes) {
       dataRoutes = inFlightDataRoutes;
@@ -5741,10 +5744,10 @@ function RemixBrowser(_props) {
         v7_normalizeFormMethod: window.__remixContext.future.v2_normalizeFormMethod
       }
     });
-    let initialUrl = window.__remixContext.url;
-    let hydratedUrl = window.location.pathname + window.location.search;
-    if (initialUrl !== hydratedUrl) {
-      let errorMsg = `Initial URL (${initialUrl}) does not match URL at time of hydration (${hydratedUrl}), reloading page...`;
+    let initialPathname = window.__remixContext.url;
+    let hydratedPathname = window.location.pathname;
+    if (initialPathname !== hydratedPathname) {
+      let errorMsg = `Initial URL (${initialPathname}) does not match URL at time of hydration (${hydratedPathname}), reloading page...`;
       console.error(errorMsg);
       window.location.reload();
     }
@@ -5844,7 +5847,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.7.0
+   * @remix-run/router v1.7.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5856,7 +5859,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.14.0
+   * React Router v6.14.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5868,7 +5871,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.14.0
+   * React Router DOM v6.14.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5880,7 +5883,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5892,7 +5895,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5904,7 +5907,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5916,7 +5919,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5928,7 +5931,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5940,7 +5943,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5952,7 +5955,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/warnings.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5964,7 +5967,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5976,7 +5979,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5988,7 +5991,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -6000,7 +6003,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -6012,7 +6015,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -6024,7 +6027,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -6036,7 +6039,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v1.18.0
+   * @remix-run/react v1.18.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -6046,4 +6049,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-DWHOMYJP.js.map
+//# sourceMappingURL=/build/_shared/chunk-E5GZ2GFW.js.map
