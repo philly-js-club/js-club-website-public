@@ -33,7 +33,7 @@ function CalendarSubscriptionLinks({
 }) {
   const [showMore, setShowMore] = (0, import_react.useState)(false);
   return /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("div", { className: "calendar-subscription", children: [
-    /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("button", { onClick: (e) => console.log(e) || setShowMore((s) => !s), children: "\u{1F4C6} Subscribe with your favorite calendar client" }, void 0, false, {
+    /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("button", { onClick: () => setShowMore((s) => !s), children: "\u{1F4C6} Subscribe with your favorite calendar client" }, void 0, false, {
       fileName: "app/components/CalendarSubscriptionLinks.tsx",
       lineNumber: 14,
       columnNumber: 4
@@ -159,4 +159,4 @@ export {
   Events as default,
   meta
 };
-//# sourceMappingURL=/build/routes/events-YHJ2P5AV.js.map
+//# sourceMappingURL=/build/routes/events-O333VXHV.js.map
