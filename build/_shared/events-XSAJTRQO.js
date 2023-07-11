@@ -3,6 +3,15 @@ import "/build/_shared/chunk-IU43IUTG.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2023-08-10T18:00:00.000-04:00",
+    duration: {
+      hours: 2
+    },
+    link: "https://www.eventbrite.com/e/philadelphia-javascript-club-authenticate-your-nextjs-app-with-auth0-tickets-676231214767",
+    location: "Indy Hall",
+    topics: ["Authenticate Your Next.JS App with Auth0 with Ceora Ford"]
+  },
+  {
     date: "2023-07-13T18:00:00.000-04:00",
     duration: {
       hours: 3
@@ -149,4 +158,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-RIKALE4K.js.map
+//# sourceMappingURL=/build/_shared/events-XSAJTRQO.js.map
