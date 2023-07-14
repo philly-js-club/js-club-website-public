@@ -12,6 +12,15 @@ var events_default = [
     topics: ["Authenticate Your Next.js App with Auth0 with Ceora Ford"]
   },
   {
+    date: "2023-07-28T18:00:00.000-04:00",
+    duration: {
+      hours: 3
+    },
+    link: "https://www.eventbrite.com/e/philly-js-club-hack-night-tickets-675704709977",
+    location: "Iffy Books",
+    topics: ["Hack Night at Iffy Books"]
+  },
+  {
     date: "2023-07-13T18:00:00.000-04:00",
     duration: {
       hours: 3
@@ -158,4 +167,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-DGCFUEMQ.js.map
+//# sourceMappingURL=/build/_shared/events-Y65JRVIH.js.map
