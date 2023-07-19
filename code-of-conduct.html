@@ -15,18 +15,27 @@
       console.error(error);
       sessionStorage.removeItem(STORAGE_KEY);
     }
-  })("positions", null)</script><link rel="modulepreload" href="/build/entry.client-FNWA2TE2.js"/><link rel="modulepreload" href="/build/_shared/chunk-E5GZ2GFW.js"/><link rel="modulepreload" href="/build/_shared/chunk-HYDBX6IC.js"/><link rel="modulepreload" href="/build/_shared/chunk-IU43IUTG.js"/><link rel="modulepreload" href="/build/_shared/chunk-B4YQL3S4.js"/><link rel="modulepreload" href="/build/root-XMZ4LC5N.js"/><link rel="modulepreload" href="/build/_shared/chunk-KD7IWGWX.js"/><link rel="modulepreload" href="/build/_shared/chunk-EJOKRSYP.js"/><link rel="modulepreload" href="/build/routes/code-of-conduct-HA7C2334.js"/><script>window.__remixContext = {"url":"/code-of-conduct","state":{"loaderData":{"root":null,"routes/code-of-conduct":null},"actionData":null,"errors":null},"future":{"v2_dev":false,"unstable_postcss":false,"unstable_tailwind":false,"v2_errorBoundary":true,"v2_headers":false,"v2_meta":true,"v2_normalizeFormMethod":true,"v2_routeConvention":true}};</script><script type="module" async="">import "/build/manifest-655C6085.js";
-import * as route0 from "/build/root-XMZ4LC5N.js";
+  })("positions", null)</script><link rel="modulepreload" href="/build/entry.client-IFWRAWJI.js"/><link rel="modulepreload" href="/build/_shared/chunk-GOUOVFCO.js"/><link rel="modulepreload" href="/build/_shared/chunk-HYDBX6IC.js"/><link rel="modulepreload" href="/build/_shared/chunk-IU43IUTG.js"/><link rel="modulepreload" href="/build/_shared/chunk-B4YQL3S4.js"/><link rel="modulepreload" href="/build/root-KER2API4.js"/><link rel="modulepreload" href="/build/_shared/chunk-KD7IWGWX.js"/><link rel="modulepreload" href="/build/_shared/chunk-EJOKRSYP.js"/><link rel="modulepreload" href="/build/routes/code-of-conduct-HA7C2334.js"/><script>window.__remixContext = {"url":"/code-of-conduct","state":{"loaderData":{"root":null,"routes/code-of-conduct":null},"actionData":null,"errors":null},"future":{"v2_dev":false,"unstable_postcss":false,"unstable_tailwind":false,"v2_errorBoundary":true,"v2_headers":false,"v2_meta":true,"v2_normalizeFormMethod":true,"v2_routeConvention":true}};</script><script type="module" async="">import "/build/manifest-8C05C03F.js";
+import * as route0 from "/build/root-KER2API4.js";
 import * as route1 from "/build/routes/code-of-conduct-HA7C2334.js";
 window.__remixRouteModules = {"root":route0,"routes/code-of-conduct":route1};
 
-import("/build/entry.client-FNWA2TE2.js");</script><script>
+import("/build/entry.client-IFWRAWJI.js");</script><script>
                 function remixLiveReloadConnect(config) {
-                  let protocol = location.protocol === "https:" ? "wss:" : "ws:";
-                  let host = location.hostname;
-                  let port = undefined || (window.__remixContext && window.__remixContext.dev && window.__remixContext.dev.port) || 8002;
-                  let socketPath = protocol + "//" + host + ":" + port + "/socket";
-                  let ws = new WebSocket(socketPath);
+                  let REMIX_DEV_ORIGIN = undefined;
+                  let protocol =
+                    REMIX_DEV_ORIGIN ? new URL(REMIX_DEV_ORIGIN).protocol.replace(/^http/, "ws") :
+                    location.protocol === "https:" ? "wss:" : "ws:"; // remove in v2?
+                  let hostname = location.hostname;
+                  let url = new URL(protocol + "//" + hostname + "/socket");
+
+                  url.port =
+                    undefined ||
+                    REMIX_DEV_ORIGIN ? new URL(REMIX_DEV_ORIGIN).port :
+                    Number(8002) ||
+                    8002;
+
+                  let ws = new WebSocket(url.href);
                   ws.onmessage = async (message) => {
                     let event = JSON.parse(message.data);
                     if (event.type === "LOG") {

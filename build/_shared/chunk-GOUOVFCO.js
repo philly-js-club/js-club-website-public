@@ -1038,6 +1038,7 @@ function createRouter(init) {
     let routesToUse = inFlightDataRoutes || dataRoutes;
     let [matchesToLoad, revalidatingFetchers] = getMatchesToLoad(init.history, state, matches, activeSubmission, location, isRevalidationRequired, cancelledDeferredRoutes, cancelledFetcherLoads, fetchLoadMatches, fetchRedirectIds, routesToUse, basename, pendingActionData, pendingError);
     cancelActiveDeferreds((routeId) => !(matches && matches.some((m) => m.route.id === routeId)) || matchesToLoad && matchesToLoad.some((m) => m.route.id === routeId));
+    pendingNavigationLoadId = ++incrementingLoadId;
     if (matchesToLoad.length === 0 && revalidatingFetchers.length === 0) {
       let updatedFetchers2 = markFetchRedirectsDone();
       completeNavigation(location, _extends({
@@ -1071,7 +1072,6 @@ function createRouter(init) {
         fetchers: new Map(state.fetchers)
       } : {}));
     }
-    pendingNavigationLoadId = ++incrementingLoadId;
     revalidatingFetchers.forEach((rf) => {
       if (fetchControllers.has(rf.key)) {
         abortFetcher(rf.key);
@@ -1100,7 +1100,11 @@ function createRouter(init) {
     revalidatingFetchers.forEach((rf) => fetchControllers.delete(rf.key));
     let redirect3 = findRedirect(results);
     if (redirect3) {
-      await startRedirectNavigation(state, redirect3, {
+      if (redirect3.idx >= matchesToLoad.length) {
+        let fetcherKey = revalidatingFetchers[redirect3.idx - matchesToLoad.length].key;
+        fetchRedirectIds.add(fetcherKey);
+      }
+      await startRedirectNavigation(state, redirect3.result, {
         replace
       });
       return {
@@ -1188,6 +1192,7 @@ function createRouter(init) {
     let abortController = new AbortController();
     let fetchRequest = createClientSideRequest(init.history, path, abortController.signal, submission);
     fetchControllers.set(key, abortController);
+    let originatingLoadId = incrementingLoadId;
     let actionResult = await callLoaderOrAction("action", fetchRequest, match, requestMatches, manifest, mapRouteProperties2, basename);
     if (fetchRequest.signal.aborted) {
       if (fetchControllers.get(key) === abortController) {
@@ -1197,16 +1202,25 @@ function createRouter(init) {
     }
     if (isRedirectResult(actionResult)) {
       fetchControllers.delete(key);
-      fetchRedirectIds.add(key);
-      let loadingFetcher = getLoadingFetcher(submission);
-      state.fetchers.set(key, loadingFetcher);
-      updateState({
-        fetchers: new Map(state.fetchers)
-      });
-      return startRedirectNavigation(state, actionResult, {
-        submission,
-        isFetchActionRedirect: true
-      });
+      if (pendingNavigationLoadId > originatingLoadId) {
+        let doneFetcher = getDoneFetcher(void 0);
+        state.fetchers.set(key, doneFetcher);
+        updateState({
+          fetchers: new Map(state.fetchers)
+        });
+        return;
+      } else {
+        fetchRedirectIds.add(key);
+        let loadingFetcher = getLoadingFetcher(submission);
+        state.fetchers.set(key, loadingFetcher);
+        updateState({
+          fetchers: new Map(state.fetchers)
+        });
+        return startRedirectNavigation(state, actionResult, {
+          submission,
+          isFetchActionRedirect: true
+        });
+      }
     }
     if (isErrorResult(actionResult)) {
       setFetcherError(key, routeId, actionResult.error);
@@ -1276,7 +1290,11 @@ function createRouter(init) {
     revalidatingFetchers.forEach((r) => fetchControllers.delete(r.key));
     let redirect3 = findRedirect(results);
     if (redirect3) {
-      return startRedirectNavigation(state, redirect3);
+      if (redirect3.idx >= matchesToLoad.length) {
+        let fetcherKey = revalidatingFetchers[redirect3.idx - matchesToLoad.length].key;
+        fetchRedirectIds.add(fetcherKey);
+      }
+      return startRedirectNavigation(state, redirect3.result);
     }
     let {
       loaderData,
@@ -1316,6 +1334,7 @@ function createRouter(init) {
     let abortController = new AbortController();
     let fetchRequest = createClientSideRequest(init.history, path, abortController.signal);
     fetchControllers.set(key, abortController);
+    let originatingLoadId = incrementingLoadId;
     let result = await callLoaderOrAction("loader", fetchRequest, match, matches, manifest, mapRouteProperties2, basename);
     if (isDeferredResult(result)) {
       result = await resolveDeferredData(result, fetchRequest.signal, true) || result;
@@ -1327,9 +1346,18 @@ function createRouter(init) {
       return;
     }
     if (isRedirectResult(result)) {
-      fetchRedirectIds.add(key);
-      await startRedirectNavigation(state, result);
-      return;
+      if (pendingNavigationLoadId > originatingLoadId) {
+        let doneFetcher2 = getDoneFetcher(void 0);
+        state.fetchers.set(key, doneFetcher2);
+        updateState({
+          fetchers: new Map(state.fetchers)
+        });
+        return;
+      } else {
+        fetchRedirectIds.add(key);
+        await startRedirectNavigation(state, result);
+        return;
+      }
     }
     if (isErrorResult(result)) {
       let boundaryMatch = findNearestBoundary(state.matches, routeId);
@@ -1849,19 +1877,25 @@ function getMatchesToLoad(history, state, matches, submission, location, isReval
       return;
     }
     let fetcher = state.fetchers.get(key);
-    let isPerformingInitialLoad = fetcher && fetcher.state !== "idle" && fetcher.data === void 0 && // If a fetcher.load redirected then it'll be "loading" without any data
-    // so ensure we're not processing the redirect from this fetcher
-    !fetchRedirectIds.has(key);
     let fetcherMatch = getTargetMatch(fetcherMatches, f.path);
-    let shouldRevalidate = cancelledFetcherLoads.includes(key) || isPerformingInitialLoad || shouldRevalidateLoader(fetcherMatch, _extends({
-      currentUrl,
-      currentParams: state.matches[state.matches.length - 1].params,
-      nextUrl,
-      nextParams: matches[matches.length - 1].params
-    }, submission, {
-      actionResult,
-      defaultShouldRevalidate: isRevalidationRequired
-    }));
+    let shouldRevalidate = false;
+    if (fetchRedirectIds.has(key)) {
+      shouldRevalidate = false;
+    } else if (cancelledFetcherLoads.includes(key)) {
+      shouldRevalidate = true;
+    } else if (fetcher && fetcher.state !== "idle" && fetcher.data === void 0) {
+      shouldRevalidate = isRevalidationRequired;
+    } else {
+      shouldRevalidate = shouldRevalidateLoader(fetcherMatch, _extends({
+        currentUrl,
+        currentParams: state.matches[state.matches.length - 1].params,
+        nextUrl,
+        nextParams: matches[matches.length - 1].params
+      }, submission, {
+        actionResult,
+        defaultShouldRevalidate: isRevalidationRequired
+      }));
+    }
     if (shouldRevalidate) {
       revalidatingFetchers.push({
         key,
@@ -2267,7 +2301,10 @@ function findRedirect(results) {
   for (let i = results.length - 1; i >= 0; i--) {
     let result = results[i];
     if (isRedirectResult(result)) {
-      return result;
+      return {
+        result,
+        idx: i
+      };
     }
   }
 }
@@ -2579,7 +2616,7 @@ var init_router = __esm({
         }
         this.deferredKeys.push(key);
         this.pendingKeysSet.add(key);
-        let promise = Promise.race([value, this.abortPromise]).then((data) => this.onSettle(promise, key, null, data), (error) => this.onSettle(promise, key, error));
+        let promise = Promise.race([value, this.abortPromise]).then((data) => this.onSettle(promise, key, void 0, data), (error) => this.onSettle(promise, key, error));
         promise.catch(() => {
         });
         Object.defineProperty(promise, "_tracked", {
@@ -2599,7 +2636,15 @@ var init_router = __esm({
         if (this.done) {
           this.unlistenAbortSignal();
         }
-        if (error) {
+        if (error === void 0 && data === void 0) {
+          let undefinedError = new Error('Deferred data for key "' + key + '" resolved/rejected with `undefined`, you must resolve/reject with a value or `null`.');
+          Object.defineProperty(promise, "_error", {
+            get: () => undefinedError
+          });
+          this.emit(false, key);
+          return Promise.reject(undefinedError);
+        }
+        if (data === void 0) {
           Object.defineProperty(promise, "_error", {
             get: () => error
           });
@@ -3688,9 +3733,22 @@ function deserializeErrors(errors) {
     if (val && val.__type === "RouteErrorResponse") {
       serialized[key] = new ErrorResponse(val.status, val.statusText, val.data, val.internal === true);
     } else if (val && val.__type === "Error") {
-      let error = new Error(val.message);
-      error.stack = "";
-      serialized[key] = error;
+      if (val.__subType) {
+        let ErrorConstructor = window[val.__subType];
+        if (typeof ErrorConstructor === "function") {
+          try {
+            let error = new ErrorConstructor(val.message);
+            error.stack = "";
+            serialized[key] = error;
+          } catch (e) {
+          }
+        }
+      }
+      if (serialized[key] == null) {
+        let error = new Error(val.message);
+        error.stack = "";
+        serialized[key] = error;
+      }
     } else {
       serialized[key] = val;
     }
@@ -3824,6 +3882,7 @@ function useSubmit() {
       formMethod: options.method || method,
       formEncType: options.encType || encType,
       replace: options.replace,
+      state: options.state,
       fromRouteId: currentRouteId
     });
   }, [router2, basename, currentRouteId]);
@@ -3921,7 +3980,7 @@ function useScrollRestoration(_temp3) {
         return;
       }
       if (location.hash) {
-        let el = document.getElementById(location.hash.slice(1));
+        let el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
         if (el) {
           el.scrollIntoView();
           return;
@@ -3961,7 +4020,7 @@ var init_dist2 = __esm({
     supportedFormEncTypes = /* @__PURE__ */ new Set(["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"]);
     _excluded = ["onClick", "relative", "reloadDocument", "replace", "state", "target", "to", "preventScrollReset"];
     _excluded2 = ["aria-current", "caseSensitive", "className", "end", "style", "to", "children"];
-    _excluded3 = ["reloadDocument", "replace", "method", "action", "onSubmit", "submit", "relative", "preventScrollReset"];
+    _excluded3 = ["reloadDocument", "replace", "state", "method", "action", "onSubmit", "submit", "relative", "preventScrollReset"];
     START_TRANSITION2 = "startTransition";
     startTransitionImpl2 = React2[START_TRANSITION2];
     if (true) {
@@ -4102,6 +4161,7 @@ var init_dist2 = __esm({
       let {
         reloadDocument,
         replace,
+        state,
         method = defaultMethod,
         action,
         onSubmit,
@@ -4123,6 +4183,7 @@ var init_dist2 = __esm({
         submit(submitter || event.currentTarget, {
           method: submitMethod,
           replace,
+          state,
           relative,
           preventScrollReset
         });
@@ -4376,7 +4437,7 @@ async function prefetchStyleLinks(routeModule) {
       });
     }
   }
-  let matchingLinks = styleLinks.filter((link) => !link.media || window.matchMedia(link.media).matches);
+  let matchingLinks = styleLinks.filter((link) => (!link.media || window.matchMedia(link.media).matches) && !document.querySelector(`link[rel="stylesheet"][href="${link.href}"]`));
   await Promise.all(matchingLinks.map(prefetchStyleLink));
 }
 async function prefetchStyleLink(descriptor) {
@@ -5057,7 +5118,8 @@ function Scripts(props) {
   let {
     manifest,
     serverHandoffString,
-    abortDelay
+    abortDelay,
+    serializeError
   } = useRemixContext();
   let {
     router: router2,
@@ -5071,6 +5133,42 @@ function Scripts(props) {
   React3.useEffect(() => {
     isHydrated = true;
   }, []);
+  let serializePreResolvedErrorImp = (key, error) => {
+    let toSerialize;
+    if (serializeError && error instanceof Error) {
+      toSerialize = serializeError(error);
+    } else {
+      toSerialize = error;
+    }
+    return `${JSON.stringify(key)}:__remixContext.p(!1, ${escapeHtml(JSON.stringify(toSerialize))})`;
+  };
+  let serializePreresolvedDataImp = (routeId, key, data) => {
+    let serializedData;
+    try {
+      serializedData = JSON.stringify(data);
+    } catch (error) {
+      return serializePreResolvedErrorImp(key, error);
+    }
+    return `${JSON.stringify(key)}:__remixContext.p(${escapeHtml(serializedData)})`;
+  };
+  let serializeErrorImp = (routeId, key, error) => {
+    let toSerialize;
+    if (serializeError && error instanceof Error) {
+      toSerialize = serializeError(error);
+    } else {
+      toSerialize = error;
+    }
+    return `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(key)}, !1, ${escapeHtml(JSON.stringify(toSerialize))})`;
+  };
+  let serializeDataImp = (routeId, key, data) => {
+    let serializedData;
+    try {
+      serializedData = JSON.stringify(data);
+    } catch (error) {
+      return serializeErrorImp(routeId, key, error);
+    }
+    return `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(key)}, ${escapeHtml(serializedData)})`;
+  };
   let deferredScripts = [];
   let initialScripts = React3.useMemo(() => {
     var _manifest$hmr;
@@ -5085,25 +5183,17 @@ function Scripts(props) {
             deferredData,
             routeId,
             dataKey: key,
-            scriptProps: props
+            scriptProps: props,
+            serializeData: serializeDataImp,
+            serializeError: serializeErrorImp
           }));
           return `${JSON.stringify(key)}:__remixContext.n(${JSON.stringify(routeId)}, ${JSON.stringify(key)})`;
         } else {
           let trackedPromise = deferredData.data[key];
           if (typeof trackedPromise._error !== "undefined") {
-            let toSerialize = true ? {
-              message: trackedPromise._error.message,
-              stack: trackedPromise._error.stack
-            } : {
-              message: "Unexpected Server Error",
-              stack: void 0
-            };
-            return `${JSON.stringify(key)}:__remixContext.p(!1, ${escapeHtml(JSON.stringify(toSerialize))})`;
+            return serializePreResolvedErrorImp(key, trackedPromise._error);
           } else {
-            if (typeof trackedPromise._data === "undefined") {
-              throw new Error(`The deferred data for ${key} was not resolved, did you forget to return data from a deferred promise?`);
-            }
-            return `${JSON.stringify(key)}:__remixContext.p(${escapeHtml(JSON.stringify(trackedPromise._data))})`;
+            return serializePreresolvedDataImp(routeId, key, trackedPromise._data);
           }
         }
       }).join(",\n");
@@ -5129,7 +5219,9 @@ import(${JSON.stringify(manifest.entry.module)});`;
     for (let i = 0; i < __remixContext.a; i++) {
       deferredScripts.push(/* @__PURE__ */ React3.createElement(DeferredHydrationScript, {
         key: i,
-        scriptProps: props
+        scriptProps: props,
+        serializeData: serializeDataImp,
+        serializeError: serializeErrorImp
       }));
     }
   }
@@ -5161,7 +5253,9 @@ function DeferredHydrationScript({
   dataKey,
   deferredData,
   routeId,
-  scriptProps
+  scriptProps,
+  serializeData,
+  serializeError
 }) {
   if (typeof document === "undefined" && deferredData && dataKey && routeId) {
     invariant2(deferredData.pendingKeys.includes(dataKey), `Deferred data for route ${routeId} with key ${dataKey} was not pending but tried to render a script for it.`);
@@ -5184,15 +5278,18 @@ function DeferredHydrationScript({
     errorElement: /* @__PURE__ */ React3.createElement(ErrorDeferredHydrationScript, {
       dataKey,
       routeId,
-      scriptProps
+      scriptProps,
+      serializeError
     }),
-    children: (data) => /* @__PURE__ */ React3.createElement("script", _extends4({}, scriptProps, {
-      async: true,
-      suppressHydrationWarning: true,
-      dangerouslySetInnerHTML: {
-        __html: `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(dataKey)}, ${escapeHtml(JSON.stringify(data))});`
-      }
-    }))
+    children: (data) => {
+      return /* @__PURE__ */ React3.createElement("script", _extends4({}, scriptProps, {
+        async: true,
+        suppressHydrationWarning: true,
+        dangerouslySetInnerHTML: {
+          __html: serializeData(routeId, dataKey, data)
+        }
+      }));
+    }
   }) : /* @__PURE__ */ React3.createElement("script", _extends4({}, scriptProps, {
     async: true,
     suppressHydrationWarning: true,
@@ -5204,20 +5301,14 @@ function DeferredHydrationScript({
 function ErrorDeferredHydrationScript({
   dataKey,
   routeId,
-  scriptProps
+  scriptProps,
+  serializeError
 }) {
   let error = useAsyncError();
-  let toSerialize = true ? {
-    message: error.message,
-    stack: error.stack
-  } : {
-    message: "Unexpected Server Error",
-    stack: void 0
-  };
   return /* @__PURE__ */ React3.createElement("script", _extends4({}, scriptProps, {
     suppressHydrationWarning: true,
     dangerouslySetInnerHTML: {
-      __html: `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(dataKey)}, !1, ${escapeHtml(JSON.stringify(toSerialize))});`
+      __html: serializeError(routeId, dataKey, error)
     }
   }));
 }
@@ -5246,7 +5337,6 @@ function useLoaderData2() {
   return useLoaderData();
 }
 var LiveReload = false ? () => null : function LiveReload2({
-  // TODO: remove REMIX_DEV_SERVER_WS_PORT in v2
   port,
   timeoutMs = 1e3,
   nonce = void 0
@@ -5258,11 +5348,21 @@ var LiveReload = false ? () => null : function LiveReload2({
     dangerouslySetInnerHTML: {
       __html: js`
                 function remixLiveReloadConnect(config) {
-                  let protocol = location.protocol === "https:" ? "wss:" : "ws:";
-                  let host = location.hostname;
-                  let port = ${port} || (window.__remixContext && window.__remixContext.dev && window.__remixContext.dev.port) || ${Number(8002)};
-                  let socketPath = protocol + "//" + host + ":" + port + "/socket";
-                  let ws = new WebSocket(socketPath);
+                  let REMIX_DEV_ORIGIN = ${JSON.stringify("")};
+                  let protocol =
+                    REMIX_DEV_ORIGIN ? new URL(REMIX_DEV_ORIGIN).protocol.replace(/^http/, "ws") :
+                    location.protocol === "https:" ? "wss:" : "ws:"; // remove in v2?
+                  let hostname = location.hostname;
+                  let url = new URL(protocol + "//" + hostname + "/socket");
+
+                  url.port =
+                    ${port} ||
+                    REMIX_DEV_ORIGIN ? new URL(REMIX_DEV_ORIGIN).port :
+                    Number(${// TODO: remove in v2
+      8002}) ||
+                    8002;
+
+                  let ws = new WebSocket(url.href);
                   ws.onmessage = async (message) => {
                     let event = JSON.parse(message.data);
                     if (event.type === "LOG") {
@@ -5363,9 +5463,22 @@ function deserializeErrors2(errors) {
     if (val && val.__type === "RouteErrorResponse") {
       serialized[key] = new ErrorResponse(val.status, val.statusText, val.data, val.internal === true);
     } else if (val && val.__type === "Error") {
-      let error = new Error(val.message);
-      error.stack = val.stack;
-      serialized[key] = error;
+      if (val.__subType) {
+        let ErrorConstructor = window[val.__subType];
+        if (typeof ErrorConstructor === "function") {
+          try {
+            let error = new ErrorConstructor(val.message);
+            error.stack = val.stack;
+            serialized[key] = error;
+          } catch (e) {
+          }
+        }
+      }
+      if (serialized[key] == null) {
+        let error = new Error(val.message);
+        error.stack = val.stack;
+        serialized[key] = error;
+      }
     } else {
       serialized[key] = val;
     }
@@ -5385,12 +5498,18 @@ function isCatchResponse(response) {
 function isErrorResponse(response) {
   return response.headers.get("X-Remix-Error") != null;
 }
+function isNetworkErrorResponse(response) {
+  return isResponse2(response) && response.status >= 400 && response.headers.get("X-Remix-Error") == null && response.headers.get("X-Remix-Catch") == null && response.headers.get("X-Remix-Response") == null;
+}
 function isRedirectResponse(response) {
   return response.headers.get("X-Remix-Redirect") != null;
 }
 function isDeferredResponse(response) {
   var _response$headers$get;
   return !!((_response$headers$get = response.headers.get("Content-Type")) !== null && _response$headers$get !== void 0 && _response$headers$get.match(/text\/remix-deferred/));
+}
+function isResponse2(value) {
+  return value != null && typeof value.status === "number" && typeof value.statusText === "string" && typeof value.headers === "object" && typeof value.body !== "undefined";
 }
 async function fetchData(request, routeId, retry = 0) {
   let url = new URL(request.url);
@@ -5431,6 +5550,12 @@ async function fetchData(request, routeId, retry = 0) {
     let data = await response.json();
     let error = new Error(data.message);
     error.stack = data.stack;
+    return error;
+  }
+  if (isNetworkErrorResponse(response)) {
+    let text = await response.text();
+    let error = new Error(text);
+    error.stack = void 0;
     return error;
   }
   return response;
@@ -5679,12 +5804,23 @@ function getRedirect(response) {
 // node_modules/@remix-run/react/dist/esm/browser.js
 var router;
 var hmrAbortController;
+var hmrRouterReadyResolve;
+var hmrRouterReadyPromise = new Promise((resolve) => {
+  hmrRouterReadyResolve = resolve;
+}).catch(() => {
+  return void 0;
+});
 if (import.meta && import.meta.hot) {
   import.meta.hot.accept("remix:manifest", async ({
     assetsManifest,
     needsRevalidation
   }) => {
-    let routeIds = [...new Set(router.state.matches.map((m) => m.route.id).concat(Object.keys(window.__remixRouteModules)))];
+    let router2 = await hmrRouterReadyPromise;
+    if (!router2) {
+      console.error("Failed to accept HMR update because the router was not ready.");
+      return;
+    }
+    let routeIds = [...new Set(router2.state.matches.map((m) => m.route.id).concat(Object.keys(window.__remixRouteModules)))];
     if (hmrAbortController) {
       hmrAbortController.abort();
     }
@@ -5707,8 +5843,8 @@ if (import.meta && import.meta.hot) {
     }))).filter(Boolean)));
     Object.assign(window.__remixRouteModules, newRouteModules);
     let routes = createClientRoutesWithHMRRevalidationOptOut(needsRevalidation, assetsManifest.routes, window.__remixRouteModules, window.__remixContext.future);
-    router._internalSetRoutes(routes);
-    let unsub = router.subscribe((state) => {
+    router2._internalSetRoutes(routes);
+    let unsub = router2.subscribe((state) => {
       if (state.revalidation === "idle") {
         unsub();
         if (signal.aborted)
@@ -5720,7 +5856,7 @@ if (import.meta && import.meta.hot) {
       }
     });
     window.__remixRevalidation = (window.__remixRevalidation || 0) + 1;
-    router.revalidate();
+    router2.revalidate();
   });
 }
 function RemixBrowser(_props) {
@@ -5750,6 +5886,9 @@ function RemixBrowser(_props) {
       let errorMsg = `Initial URL (${initialPathname}) does not match URL at time of hydration (${hydratedPathname}), reloading page...`;
       console.error(errorMsg);
       window.location.reload();
+    }
+    if (hmrRouterReadyResolve) {
+      hmrRouterReadyResolve(router);
     }
   }
   let [location, setLocation] = React5.useState(router.state.location);
@@ -5847,7 +5986,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.7.1
+   * @remix-run/router v1.7.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5859,7 +5998,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.14.1
+   * React Router v6.14.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5871,7 +6010,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.14.1
+   * React Router DOM v6.14.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5883,7 +6022,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5895,7 +6034,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5907,7 +6046,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5919,7 +6058,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5931,7 +6070,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5943,7 +6082,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5955,7 +6094,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/warnings.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5967,7 +6106,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5979,7 +6118,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -5991,7 +6130,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -6003,7 +6142,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -6015,7 +6154,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -6027,7 +6166,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -6039,7 +6178,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v1.18.1
+   * @remix-run/react v1.19.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -6049,4 +6188,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-E5GZ2GFW.js.map
+//# sourceMappingURL=/build/_shared/chunk-GOUOVFCO.js.map
