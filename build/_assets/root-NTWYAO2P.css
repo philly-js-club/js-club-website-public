@@ -107,6 +107,9 @@
 .page-grid-footer-link {
   padding: 0;
 }
+.page-grid-footer-link.active {
+  text-decoration: underline;
+}
 .page-grid-footer-link:not(:first-of-type, .page-grid-footer-separator + .page-grid-footer-link):before {
   background: var(--color-foreground);
   border-radius: 100%;
