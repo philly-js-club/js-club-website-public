@@ -1,13 +1,10 @@
 import {
   EventDetails,
   require_node
-} from "/build/_shared/chunk-7K52FEZ5.js";
-import {
-  useLoaderData
-} from "/build/_shared/chunk-RZAQGANC.js";
+} from "/build/_shared/chunk-2K2V4NPU.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-KD7IWGWX.js";
+} from "/build/_shared/chunk-BYCBHZSJ.js";
 import {
   constructSiteTitle
 } from "/build/_shared/chunk-EJOKRSYP.js";
@@ -16,8 +13,9 @@ import {
 } from "/build/_shared/chunk-B4YQL3S4.js";
 import {
   require_jsx_dev_runtime,
-  require_react
-} from "/build/_shared/chunk-HYDBX6IC.js";
+  require_react,
+  useLoaderData
+} from "/build/_shared/chunk-J2YLHYFZ.js";
 import {
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
@@ -159,4 +157,4 @@ export {
   Events as default,
   meta
 };
-//# sourceMappingURL=/build/routes/events-VR7SWSYJ.js.map
+//# sourceMappingURL=/build/routes/events-LXPGQLBN.js.map

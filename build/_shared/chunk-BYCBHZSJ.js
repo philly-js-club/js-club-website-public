@@ -2,8 +2,9 @@ import {
   site
 } from "/build/_shared/chunk-B4YQL3S4.js";
 import {
+  NavLink,
   require_jsx_dev_runtime
-} from "/build/_shared/chunk-HYDBX6IC.js";
+} from "/build/_shared/chunk-J2YLHYFZ.js";
 import {
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
@@ -74,10 +75,10 @@ function PageGrid({ left, subtitle, title }) {
     /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("header", { className: "page-grid-header", children: [
       /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("h1", { className: "page-grid-title", children: title }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 15,
+        lineNumber: 17,
         columnNumber: 5
       }, this),
-      subtitle && /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-subtitle", href: "/", children: [
+      subtitle && /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(NavLink, { className: "page-grid-subtitle", reloadDocument: true, to: "/", children: [
         site.title,
         /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(
           Arrow,
@@ -90,70 +91,94 @@ function PageGrid({ left, subtitle, title }) {
           false,
           {
             fileName: "app/components/PageGrid.tsx",
-            lineNumber: 19,
+            lineNumber: 21,
             columnNumber: 7
           },
           this
         )
       ] }, void 0, true, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 17,
+        lineNumber: 19,
         columnNumber: 6
       }, this)
     ] }, void 0, true, {
       fileName: "app/components/PageGrid.tsx",
-      lineNumber: 14,
+      lineNumber: 16,
       columnNumber: 4
     }, this),
     /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("main", { className: "page-grid-left", children: left }, void 0, false, {
       fileName: "app/components/PageGrid.tsx",
-      lineNumber: 27,
+      lineNumber: 29,
       columnNumber: 4
     }, this),
     /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("footer", { className: "page-grid-footer", children: [
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/about", children: "About" }, void 0, false, {
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(NavLink, { className: "page-grid-footer-link", reloadDocument: true, to: "/about", children: "About" }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 29,
+        lineNumber: 31,
         columnNumber: 5
       }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/code-of-conduct", children: "Code of Conduct" }, void 0, false, {
-        fileName: "app/components/PageGrid.tsx",
-        lineNumber: 32,
-        columnNumber: 5
-      }, this),
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(
+        NavLink,
+        {
+          className: "page-grid-footer-link",
+          reloadDocument: true,
+          to: "/code-of-conduct",
+          children: "Code of Conduct"
+        },
+        void 0,
+        false,
+        {
+          fileName: "app/components/PageGrid.tsx",
+          lineNumber: 34,
+          columnNumber: 5
+        },
+        this
+      ),
       /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("span", { className: "page-grid-footer-separator" }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 35,
+        lineNumber: 41,
         columnNumber: 5
       }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/events", children: "Events" }, void 0, false, {
-        fileName: "app/components/PageGrid.tsx",
-        lineNumber: 36,
-        columnNumber: 5
-      }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/sponsors", children: "Sponsors" }, void 0, false, {
-        fileName: "app/components/PageGrid.tsx",
-        lineNumber: 39,
-        columnNumber: 5
-      }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("span", { className: "page-grid-footer-separator" }, void 0, false, {
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(NavLink, { className: "page-grid-footer-link", reloadDocument: true, to: "/events", children: "Events" }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
         lineNumber: 42,
         columnNumber: 5
       }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("a", { className: "page-grid-footer-link", href: "/join-us", children: "Join Us" }, void 0, false, {
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(
+        NavLink,
+        {
+          className: "page-grid-footer-link",
+          reloadDocument: true,
+          to: "/sponsors",
+          children: "Sponsors"
+        },
+        void 0,
+        false,
+        {
+          fileName: "app/components/PageGrid.tsx",
+          lineNumber: 45,
+          columnNumber: 5
+        },
+        this
+      ),
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("span", { className: "page-grid-footer-separator" }, void 0, false, {
         fileName: "app/components/PageGrid.tsx",
-        lineNumber: 43,
+        lineNumber: 52,
+        columnNumber: 5
+      }, this),
+      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(NavLink, { className: "page-grid-footer-link", reloadDocument: true, to: "/join-us", children: "Join Us" }, void 0, false, {
+        fileName: "app/components/PageGrid.tsx",
+        lineNumber: 53,
         columnNumber: 5
       }, this)
     ] }, void 0, true, {
       fileName: "app/components/PageGrid.tsx",
-      lineNumber: 28,
+      lineNumber: 30,
       columnNumber: 4
     }, this)
   ] }, void 0, true, {
     fileName: "app/components/PageGrid.tsx",
-    lineNumber: 13,
+    lineNumber: 15,
     columnNumber: 3
   }, this);
 }
@@ -162,4 +187,4 @@ export {
   Arrow,
   PageGrid
 };
-//# sourceMappingURL=/build/_shared/chunk-KD7IWGWX.js.map
+//# sourceMappingURL=/build/_shared/chunk-BYCBHZSJ.js.map

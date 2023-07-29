@@ -1,19 +1,17 @@
 import {
   Icons
-} from "/build/_shared/chunk-TX7VOWOG.js";
-import {
-  useLoaderData
-} from "/build/_shared/chunk-RZAQGANC.js";
+} from "/build/_shared/chunk-PCBANBPR.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-KD7IWGWX.js";
+} from "/build/_shared/chunk-BYCBHZSJ.js";
 import {
   constructSiteTitle
 } from "/build/_shared/chunk-EJOKRSYP.js";
 import "/build/_shared/chunk-B4YQL3S4.js";
 import {
-  require_jsx_dev_runtime
-} from "/build/_shared/chunk-HYDBX6IC.js";
+  require_jsx_dev_runtime,
+  useLoaderData
+} from "/build/_shared/chunk-J2YLHYFZ.js";
 import {
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
@@ -84,4 +82,4 @@ export {
   Sponsors as default,
   meta
 };
-//# sourceMappingURL=/build/routes/sponsors-TPVEAPSF.js.map
+//# sourceMappingURL=/build/routes/sponsors-V26COVSI.js.map
