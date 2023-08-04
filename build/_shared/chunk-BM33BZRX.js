@@ -8808,7 +8808,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8820,7 +8820,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8832,7 +8832,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8844,7 +8844,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8856,7 +8856,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8868,7 +8868,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8880,7 +8880,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/warnings.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8892,7 +8892,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8904,7 +8904,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8916,7 +8916,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8928,7 +8928,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8940,7 +8940,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8952,7 +8952,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8964,7 +8964,7 @@ react/cjs/react-jsx-dev-runtime.development.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v1.19.1
+   * @remix-run/react v1.19.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8974,4 +8974,4 @@ react/cjs/react-jsx-dev-runtime.development.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-J2YLHYFZ.js.map
+//# sourceMappingURL=/build/_shared/chunk-BM33BZRX.js.map
