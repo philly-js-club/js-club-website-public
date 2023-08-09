@@ -1,6 +1,6 @@
 import {
   PageGrid
-} from "/build/_shared/chunk-K5LDEEVN.js";
+} from "/build/_shared/chunk-ZV3X73AK.js";
 import {
   constructSiteTitle
 } from "/build/_shared/chunk-EJOKRSYP.js";
@@ -8,7 +8,7 @@ import "/build/_shared/chunk-B4YQL3S4.js";
 import {
   require_jsx_dev_runtime,
   useLoaderData
-} from "/build/_shared/chunk-BM33BZRX.js";
+} from "/build/_shared/chunk-4MCM7GX3.js";
 import {
   __toESM
 } from "/build/_shared/chunk-IU43IUTG.js";
@@ -131,4 +131,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/about-VXFLGQXV.js.map
+//# sourceMappingURL=/build/routes/about-IUS4A2GP.js.map
