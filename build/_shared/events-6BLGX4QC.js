@@ -3,6 +3,15 @@ import "/build/_shared/chunk-IU43IUTG.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2023-09-14T18:00:00.000-04:00",
+    duration: {
+      hours: 2
+    },
+    link: "https://www.eventbrite.com/e/philadelphia-javascript-club-debugging-javascript-applications-tickets-695620659117",
+    location: "Indy Hall",
+    topics: ["Debugging JavaScript Applications with Matt Brophy"]
+  },
+  {
     date: "2023-08-10T18:00:00.000-04:00",
     duration: {
       hours: 2
@@ -167,4 +176,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-Y65JRVIH.js.map
+//# sourceMappingURL=/build/_shared/events-6BLGX4QC.js.map
