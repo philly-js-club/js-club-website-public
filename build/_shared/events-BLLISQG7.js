@@ -3,11 +3,11 @@ import "/build/_shared/chunk-IU43IUTG.js";
 // app/data/events.json
 var events_default = [
   {
-    date: "2023-08-25T17:00:00.000-04:00",
+    date: "2023-09-22T17:00:00.000-04:00",
     duration: {
       hours: 3
     },
-    link: "https://www.eventbrite.com/e/philly-js-club-august-hack-night-tickets-699155150877",
+    link: "https://www.eventbrite.com/e/philly-js-club-september-hack-night-tickets-713047844297",
     location: "Iffy Books",
     topics: ["Hack Night at Iffy Books"]
   },
@@ -19,6 +19,15 @@ var events_default = [
     link: "https://www.eventbrite.com/e/philadelphia-javascript-club-debugging-javascript-applications-tickets-695620659117",
     location: "Indy Hall",
     topics: ["Debugging JavaScript Applications with Matt Brophy"]
+  },
+  {
+    date: "2023-08-25T17:00:00.000-04:00",
+    duration: {
+      hours: 3
+    },
+    link: "https://www.eventbrite.com/e/philly-js-club-august-hack-night-tickets-699155150877",
+    location: "Iffy Books",
+    topics: ["Hack Night at Iffy Books"]
   },
   {
     date: "2023-08-10T18:00:00.000-04:00",
@@ -185,4 +194,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-L2OGUXA5.js.map
+//# sourceMappingURL=/build/_shared/events-BLLISQG7.js.map
