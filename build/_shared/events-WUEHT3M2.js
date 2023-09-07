@@ -3,6 +3,15 @@ import "/build/_shared/chunk-IU43IUTG.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2023-10-12T18:00:00.000-04:00",
+    duration: {
+      hours: 2
+    },
+    link: "https://www.eventbrite.com/e/philadelphia-javascript-club-program-the-cloud-in-typescript-tickets-695626937897",
+    location: "Indy Hall",
+    topics: ["Program the Cloud in TypeScript with Josh Kodroff"]
+  },
+  {
     date: "2023-09-22T17:00:00.000-04:00",
     duration: {
       hours: 3
@@ -194,4 +203,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-BLLISQG7.js.map
+//# sourceMappingURL=/build/_shared/events-WUEHT3M2.js.map
