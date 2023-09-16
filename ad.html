@@ -15,25 +15,23 @@
       console.error(error);
       sessionStorage.removeItem(STORAGE_KEY);
     }
-  })("positions", null)</script><link rel="modulepreload" href="/build/entry.client-2OAHE3HG.js"/><link rel="modulepreload" href="/build/_shared/chunk-4MCM7GX3.js"/><link rel="modulepreload" href="/build/_shared/chunk-IU43IUTG.js"/><link rel="modulepreload" href="/build/_shared/chunk-B4YQL3S4.js"/><link rel="modulepreload" href="/build/root-F4CG75RU.js"/><link rel="modulepreload" href="/build/_shared/chunk-EJOKRSYP.js"/><link rel="modulepreload" href="/build/routes/ad-LIUTAG5C.js"/><script>window.__remixContext = {"url":"/ad","state":{"loaderData":{"root":null,"routes/ad":null},"actionData":null,"errors":null},"future":{"v2_dev":false,"unstable_postcss":false,"unstable_tailwind":false,"v2_errorBoundary":true,"v2_headers":false,"v2_meta":true,"v2_normalizeFormMethod":true,"v2_routeConvention":true}};</script><script type="module" async="">import "/build/manifest-AD743894.js";
-import * as route0 from "/build/root-F4CG75RU.js";
-import * as route1 from "/build/routes/ad-LIUTAG5C.js";
+  })("positions", null)</script><link rel="modulepreload" href="/build/entry.client-25E6BP6E.js"/><link rel="modulepreload" href="/build/_shared/chunk-ZWGWGGVF.js"/><link rel="modulepreload" href="/build/_shared/chunk-GIAAE3CH.js"/><link rel="modulepreload" href="/build/_shared/chunk-XU7DNSPJ.js"/><link rel="modulepreload" href="/build/_shared/chunk-3L4T6HEI.js"/><link rel="modulepreload" href="/build/_shared/chunk-4RRP2SUU.js"/><link rel="modulepreload" href="/build/_shared/chunk-UWV35TSL.js"/><link rel="modulepreload" href="/build/_shared/chunk-BOXFZXVX.js"/><link rel="modulepreload" href="/build/_shared/chunk-PNG5AS42.js"/><link rel="modulepreload" href="/build/_shared/chunk-C2OQJCYH.js"/><link rel="modulepreload" href="/build/root-6REL3AW2.js"/><link rel="modulepreload" href="/build/_shared/chunk-GKB6QGIY.js"/><link rel="modulepreload" href="/build/routes/ad-NNCFV7GV.js"/><script>window.__remixContext = {"url":"/ad","state":{"loaderData":{"root":null,"routes/ad":null},"actionData":null,"errors":null},"future":{}};</script><script type="module" async="">import "/build/_shared/chunk-4RRP2SUU.js";import "/build/manifest-9560F766.js";
+import * as route0 from "/build/root-6REL3AW2.js";
+import * as route1 from "/build/routes/ad-NNCFV7GV.js";
 window.__remixRouteModules = {"root":route0,"routes/ad":route1};
 
-import("/build/entry.client-2OAHE3HG.js");</script><script>
+import("/build/entry.client-25E6BP6E.js");</script><script>
                 function remixLiveReloadConnect(config) {
-                  let REMIX_DEV_ORIGIN = undefined;
+                  let REMIX_DEV_ORIGIN = "http://localhost:3001/";
                   let protocol =
                     REMIX_DEV_ORIGIN ? new URL(REMIX_DEV_ORIGIN).protocol.replace(/^http/, "ws") :
                     location.protocol === "https:" ? "wss:" : "ws:"; // remove in v2?
-                  let hostname = location.hostname;
+                  let hostname = REMIX_DEV_ORIGIN ? new URL(REMIX_DEV_ORIGIN).hostname : location.hostname;
                   let url = new URL(protocol + "//" + hostname + "/socket");
 
                   url.port =
                     undefined ||
-                    REMIX_DEV_ORIGIN ? new URL(REMIX_DEV_ORIGIN).port :
-                    Number(8002) ||
-                    8002;
+                    (REMIX_DEV_ORIGIN ? new URL(REMIX_DEV_ORIGIN).port : 8002);
 
                   let ws = new WebSocket(url.href);
                   ws.onmessage = async (message) => {
@@ -66,7 +64,7 @@ import("/build/entry.client-2OAHE3HG.js");</script><script>
                             imported
                           );
                           if (accepted) {
-                            console.log("[HMR] Updated accepted by", update.id);
+                            console.log("[HMR] Update accepted by", update.id);
                             updateAccepted = true;
                           }
                         }
@@ -76,12 +74,12 @@ import("/build/entry.client-2OAHE3HG.js");</script><script>
                           { needsRevalidation, assetsManifest: event.assetsManifest }
                         );
                         if (accepted) {
-                          console.log("[HMR] Updated accepted by", "remix:manifest");
+                          console.log("[HMR] Update accepted by", "remix:manifest");
                           updateAccepted = true;
                         }
                       }
                       if (!updateAccepted) {
-                        console.log("[HMR] Updated rejected, reloading...");
+                        console.log("[HMR] Update rejected, reloading...");
                         window.location.reload();
                       }
                     }
