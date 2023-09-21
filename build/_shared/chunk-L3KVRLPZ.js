@@ -6671,6 +6671,7 @@ function deserializeErrors2(errors) {
 
 // node_modules/@remix-run/react/dist/esm/routes.js
 var React5 = __toESM(require_react());
+init_router();
 init_dist2();
 
 // node_modules/@remix-run/react/dist/esm/data.js
@@ -6933,7 +6934,7 @@ function createClientRoutes(manifest, routeModulesCache, future, parentId = "", 
         if (!route.hasAction) {
           let msg = `Route "${route.id}" does not have an action, but you are trying to submit to it. To fix this, please add an \`action\` function to the route`;
           console.error(msg);
-          return Promise.reject(new Error(msg));
+          return Promise.reject(new ErrorResponseImpl(405, "Method Not Allowed", new Error(msg), true));
         }
         return fetchServerHandler(request, route);
       },
@@ -6979,10 +6980,16 @@ function wrapShouldRevalidateForHdr(routeId, routeShouldRevalidate, needsRevalid
 async function loadRouteModuleWithBlockingLinks(route, routeModules) {
   let routeModule = await loadRouteModule(route, routeModules);
   await prefetchStyleLinks(routeModule);
+  let defaultExportIsEmptyObject = typeof routeModule.default === "object" && Object.keys(routeModule.default || {}).length === 0;
   return {
-    ...routeModule,
-    default: void 0,
-    Component: routeModule.default
+    ...routeModule.default != null && !defaultExportIsEmptyObject ? {
+      Component: routeModule.default
+    } : {},
+    ErrorBoundary: routeModule.ErrorBoundary,
+    handle: routeModule.handle,
+    links: routeModule.links,
+    meta: routeModule.meta,
+    shouldRevalidate: routeModule.shouldRevalidate
   };
 }
 async function fetchServerHandler(request, route) {
@@ -7334,7 +7341,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7346,7 +7353,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7358,7 +7365,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7370,7 +7377,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7382,7 +7389,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7394,7 +7401,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7406,7 +7413,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7418,7 +7425,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7430,7 +7437,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7442,7 +7449,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7454,7 +7461,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7466,7 +7473,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7478,7 +7485,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/server.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7490,7 +7497,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v2.0.0
+   * @remix-run/react v2.0.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7500,4 +7507,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-3L4T6HEI.js.map
+//# sourceMappingURL=/build/_shared/chunk-L3KVRLPZ.js.map
