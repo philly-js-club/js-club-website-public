@@ -1,10 +1,10 @@
 import {
   PageGrid
-} from "/build/_shared/chunk-JEBPIEMQ.js";
+} from "/build/_shared/chunk-U4WUFAC6.js";
 import {
   constructSiteTitle
-} from "/build/_shared/chunk-RGV4MPGX.js";
-import "/build/_shared/chunk-W7BR4TF4.js";
+} from "/build/_shared/chunk-SAMLULLH.js";
+import "/build/_shared/chunk-BGDVMIXZ.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XU7DNSPJ.js";
@@ -37,7 +37,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/routes/code-of-conduct.tsx"
   );
-  import.meta.hot.lastModified = "1695954488819.042";
+  import.meta.hot.lastModified = "1695957727034.6333";
 }
 var meta = () => {
   return [{
@@ -113,4 +113,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/code-of-conduct-T7ZKMR7E.js.map
+//# sourceMappingURL=/build/routes/code-of-conduct-SSGNLAWB.js.map
