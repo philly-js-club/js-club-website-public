@@ -3,6 +3,15 @@ import "/build/_shared/chunk-PNG5AS42.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2023-10-27T17:00:00.000-04:00",
+    duration: {
+      hours: 3
+    },
+    link: "https://www.eventbrite.com/e/philly-js-club-october-hack-night-tickets-729326343727",
+    location: "Iffy Books",
+    topics: ["Hack Night at Iffy Books"]
+  },
+  {
     date: "2023-10-19T18:00:00.000-04:00",
     duration: {
       hours: 2
@@ -203,4 +212,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-2EP2WN5I.js.map
+//# sourceMappingURL=/build/_shared/events-55I5YXGV.js.map
