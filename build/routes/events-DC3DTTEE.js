@@ -1,16 +1,16 @@
 import {
   EventDetails,
   require_node
-} from "/build/_shared/chunk-VRTWXH4B.js";
+} from "/build/_shared/chunk-CYW7BE7D.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-HJ7UVMNH.js";
+} from "/build/_shared/chunk-LK7RL2WA.js";
 import {
   constructSiteTitle
-} from "/build/_shared/chunk-XQ2UR3AG.js";
+} from "/build/_shared/chunk-7HRXTWCF.js";
 import {
   site
-} from "/build/_shared/chunk-7JPA7YYT.js";
+} from "/build/_shared/chunk-KSGO3YIL.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XU7DNSPJ.js";
@@ -52,7 +52,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/CalendarSubscriptionLinks.tsx"
   );
-  import.meta.hot.lastModified = "1697437749461.471";
+  import.meta.hot.lastModified = "1697440860088.0059";
 }
 function CalendarSubscriptionLinks({
   webcalUrl
@@ -128,7 +128,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/routes/events.tsx"
   );
-  import.meta.hot.lastModified = "1697437749461.471";
+  import.meta.hot.lastModified = "1697440860088.0059";
 }
 var meta = () => {
   return [{
@@ -190,4 +190,4 @@ export {
   Events as default,
   meta
 };
-//# sourceMappingURL=/build/routes/events-CCSPD5WS.js.map
+//# sourceMappingURL=/build/routes/events-DC3DTTEE.js.map
