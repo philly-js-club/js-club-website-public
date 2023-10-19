@@ -3,6 +3,17 @@ import "/build/_shared/chunk-PNG5AS42.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2023-11-09T18:00:00.000-04:00",
+    duration: {
+      hours: 2
+    },
+    link: "https://www.eventbrite.com/e/behind-the-code-panel-discussion-on-software-development-careers-tickets-741030440997",
+    location: "Indy Hall",
+    topics: [
+      "Behind the Code: Panel Discussion on Software Development Careers"
+    ]
+  },
+  {
     date: "2023-10-27T17:00:00.000-04:00",
     duration: {
       hours: 3
@@ -212,4 +223,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-55I5YXGV.js.map
+//# sourceMappingURL=/build/_shared/events-7VKRPKVE.js.map
