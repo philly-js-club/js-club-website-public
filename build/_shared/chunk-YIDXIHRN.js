@@ -671,19 +671,28 @@ function matchPath(pattern, pathname) {
       end: true
     };
   }
-  let [matcher, paramNames] = compilePath(pattern.path, pattern.caseSensitive, pattern.end);
+  let [matcher, compiledParams] = compilePath(pattern.path, pattern.caseSensitive, pattern.end);
   let match = pathname.match(matcher);
   if (!match)
     return null;
   let matchedPathname = match[0];
   let pathnameBase = matchedPathname.replace(/(.)\/+$/, "$1");
   let captureGroups = match.slice(1);
-  let params = paramNames.reduce((memo, paramName, index) => {
+  let params = compiledParams.reduce((memo, _ref, index) => {
+    let {
+      paramName,
+      isOptional
+    } = _ref;
     if (paramName === "*") {
       let splatValue = captureGroups[index] || "";
       pathnameBase = matchedPathname.slice(0, matchedPathname.length - splatValue.length).replace(/(.)\/+$/, "$1");
     }
-    memo[paramName] = safelyDecodeURIComponent(captureGroups[index] || "", paramName);
+    const value = captureGroups[index];
+    if (isOptional && !value) {
+      memo[paramName] = void 0;
+    } else {
+      memo[paramName] = safelyDecodeURIComponent(value || "", paramName);
+    }
     return memo;
   }, {});
   return {
@@ -701,13 +710,18 @@ function compilePath(path, caseSensitive, end) {
     end = true;
   }
   warning(path === "*" || !path.endsWith("*") || path.endsWith("/*"), 'Route path "' + path + '" will be treated as if it were ' + ('"' + path.replace(/\*$/, "/*") + '" because the `*` character must ') + "always follow a `/` in the pattern. To get rid of this warning, " + ('please change the route path to "' + path.replace(/\*$/, "/*") + '".'));
-  let paramNames = [];
-  let regexpSource = "^" + path.replace(/\/*\*?$/, "").replace(/^\/*/, "/").replace(/[\\.*+^$?{}|()[\]]/g, "\\$&").replace(/\/:(\w+)/g, (_, paramName) => {
-    paramNames.push(paramName);
-    return "/([^\\/]+)";
+  let params = [];
+  let regexpSource = "^" + path.replace(/\/*\*?$/, "").replace(/^\/*/, "/").replace(/[\\.*+^${}|()[\]]/g, "\\$&").replace(/\/:(\w+)(\?)?/g, (_, paramName, isOptional) => {
+    params.push({
+      paramName,
+      isOptional: isOptional != null
+    });
+    return isOptional ? "/?([^\\/]+)?" : "/([^\\/]+)";
   });
   if (path.endsWith("*")) {
-    paramNames.push("*");
+    params.push({
+      paramName: "*"
+    });
     regexpSource += path === "*" || path === "/*" ? "(.*)$" : "(?:\\/(.+)|\\/*)$";
   } else if (end) {
     regexpSource += "\\/*$";
@@ -716,7 +730,7 @@ function compilePath(path, caseSensitive, end) {
   } else
     ;
   let matcher = new RegExp(regexpSource, caseSensitive ? void 0 : "i");
-  return [matcher, paramNames];
+  return [matcher, params];
 }
 function safelyDecodeURI(value) {
   try {
@@ -859,6 +873,7 @@ function createRouter(init) {
   let inFlightDataRoutes;
   let basename = init.basename || "/";
   let future = _extends({
+    v7_fetcherPersist: false,
     v7_normalizeFormMethod: false,
     v7_prependBasename: false
   }, init.future);
@@ -922,6 +937,8 @@ function createRouter(init) {
   let fetchReloadIds = /* @__PURE__ */ new Map();
   let fetchRedirectIds = /* @__PURE__ */ new Set();
   let fetchLoadMatches = /* @__PURE__ */ new Map();
+  let activeFetchers = /* @__PURE__ */ new Map();
+  let deletedFetchers = /* @__PURE__ */ new Set();
   let activeDeferreds = /* @__PURE__ */ new Map();
   let blockerFunctions = /* @__PURE__ */ new Map();
   let ignoreNextHistoryUpdate = false;
@@ -998,9 +1015,27 @@ function createRouter(init) {
   }
   function updateState(newState, viewTransitionOpts) {
     state = _extends({}, state, newState);
+    let completedFetchers = [];
+    let deletedFetchersKeys = [];
+    if (future.v7_fetcherPersist) {
+      state.fetchers.forEach((fetcher, key) => {
+        if (fetcher.state === "idle") {
+          if (deletedFetchers.has(key)) {
+            deletedFetchersKeys.push(key);
+          } else {
+            completedFetchers.push(key);
+          }
+        }
+      });
+    }
     subscribers.forEach((subscriber) => subscriber(state, {
+      deletedFetchers: deletedFetchersKeys,
       unstable_viewTransitionOpts: viewTransitionOpts
     }));
+    if (future.v7_fetcherPersist) {
+      completedFetchers.forEach((key) => state.fetchers.delete(key));
+      deletedFetchersKeys.forEach((key) => deleteFetcher(key));
+    }
   }
   function completeNavigation(location, newState) {
     var _location$state, _location$state2;
@@ -1407,6 +1442,12 @@ function createRouter(init) {
     } : {});
   }
   function getFetcher(key) {
+    if (future.v7_fetcherPersist) {
+      activeFetchers.set(key, (activeFetchers.get(key) || 0) + 1);
+      if (deletedFetchers.has(key)) {
+        deletedFetchers.delete(key);
+      }
+    }
     return state.fetchers.get(key) || IDLE_FETCHER;
   }
   function fetch2(key, routeId, href, opts) {
@@ -1472,6 +1513,13 @@ function createRouter(init) {
       if (fetchControllers.get(key) === abortController) {
         fetchControllers.delete(key);
       }
+      return;
+    }
+    if (deletedFetchers.has(key)) {
+      state.fetchers.set(key, getDoneFetcher(void 0));
+      updateState({
+        fetchers: new Map(state.fetchers)
+      });
       return;
     }
     if (isRedirectResult(actionResult)) {
@@ -1577,7 +1625,7 @@ function createRouter(init) {
       let doneFetcher = getDoneFetcher(actionResult.data);
       state.fetchers.set(key, doneFetcher);
     }
-    let didAbortFetchLoads = abortStaleFetchLoads(loadId);
+    abortStaleFetchLoads(loadId);
     if (state.navigation.state === "loading" && loadId > pendingNavigationLoadId) {
       invariant(pendingAction, "Expected pending action");
       pendingNavigationController && pendingNavigationController.abort();
@@ -1588,12 +1636,11 @@ function createRouter(init) {
         fetchers: new Map(state.fetchers)
       });
     } else {
-      updateState(_extends({
+      updateState({
         errors,
-        loaderData: mergeLoaderData(state.loaderData, loaderData, matches, errors)
-      }, didAbortFetchLoads || revalidatingFetchers.length > 0 ? {
+        loaderData: mergeLoaderData(state.loaderData, loaderData, matches, errors),
         fetchers: new Map(state.fetchers)
-      } : {}));
+      });
       isRevalidationRequired = false;
     }
   }
@@ -1618,6 +1665,13 @@ function createRouter(init) {
     if (fetchRequest.signal.aborted) {
       return;
     }
+    if (deletedFetchers.has(key)) {
+      state.fetchers.set(key, getDoneFetcher(void 0));
+      updateState({
+        fetchers: new Map(state.fetchers)
+      });
+      return;
+    }
     if (isRedirectResult(result)) {
       if (pendingNavigationLoadId > originatingLoadId) {
         let doneFetcher2 = getDoneFetcher(void 0);
@@ -1633,14 +1687,7 @@ function createRouter(init) {
       }
     }
     if (isErrorResult(result)) {
-      let boundaryMatch = findNearestBoundary(state.matches, routeId);
-      state.fetchers.delete(key);
-      updateState({
-        fetchers: new Map(state.fetchers),
-        errors: {
-          [boundaryMatch.route.id]: result.error
-        }
-      });
+      setFetcherError(key, routeId, result.error);
       return;
     }
     invariant(!isDeferredResult(result), "Unhandled fetcher deferred data");
@@ -1763,7 +1810,24 @@ function createRouter(init) {
     fetchLoadMatches.delete(key);
     fetchReloadIds.delete(key);
     fetchRedirectIds.delete(key);
+    deletedFetchers.delete(key);
     state.fetchers.delete(key);
+  }
+  function deleteFetcherAndUpdateState(key) {
+    if (future.v7_fetcherPersist) {
+      let count = (activeFetchers.get(key) || 0) - 1;
+      if (count <= 0) {
+        activeFetchers.delete(key);
+        deletedFetchers.add(key);
+      } else {
+        activeFetchers.set(key, count);
+      }
+    } else {
+      deleteFetcher(key);
+    }
+    updateState({
+      fetchers: new Map(state.fetchers)
+    });
   }
   function abortFetcher(key) {
     let controller = fetchControllers.get(key);
@@ -1936,7 +2000,7 @@ function createRouter(init) {
     createHref: (to) => init.history.createHref(to),
     encodeLocation: (to) => init.history.encodeLocation(to),
     getFetcher,
-    deleteFetcher,
+    deleteFetcher: deleteFetcherAndUpdateState,
     dispose,
     getBlocker,
     deleteBlocker,
@@ -3236,8 +3300,8 @@ var init_router = __esm({
         let onAbort = () => reject(new AbortedDeferredError("Deferred data aborted"));
         this.unlistenAbortSignal = () => this.controller.signal.removeEventListener("abort", onAbort);
         this.controller.signal.addEventListener("abort", onAbort);
-        this.data = Object.entries(data).reduce((acc, _ref) => {
-          let [key, value] = _ref;
+        this.data = Object.entries(data).reduce((acc, _ref2) => {
+          let [key, value] = _ref2;
           return Object.assign(acc, {
             [key]: this.trackPromise(key, value)
           });
@@ -3327,8 +3391,8 @@ var init_router = __esm({
       }
       get unwrappedData() {
         invariant(this.data !== null && this.done, "Can only unwrap data on initialized and settled deferreds");
-        return Object.entries(this.data).reduce((acc, _ref2) => {
-          let [key, value] = _ref2;
+        return Object.entries(this.data).reduce((acc, _ref3) => {
+          let [key, value] = _ref3;
           return Object.assign(acc, {
             [key]: unwrapTrackedPromise(value)
           });
@@ -4497,6 +4561,7 @@ __export(dist_exports2, {
   ScrollRestoration: () => ScrollRestoration,
   UNSAFE_DataRouterContext: () => DataRouterContext,
   UNSAFE_DataRouterStateContext: () => DataRouterStateContext,
+  UNSAFE_FetchersContext: () => FetchersContext,
   UNSAFE_LocationContext: () => LocationContext,
   UNSAFE_NavigationContext: () => NavigationContext,
   UNSAFE_RouteContext: () => RouteContext,
@@ -4793,6 +4858,7 @@ function RouterProvider2(_ref) {
   let [renderDfd, setRenderDfd] = React2.useState();
   let [transition, setTransition] = React2.useState();
   let [interruption, setInterruption] = React2.useState();
+  let fetcherData = React2.useRef(/* @__PURE__ */ new Map());
   let {
     v7_startTransition
   } = future || {};
@@ -4805,8 +4871,15 @@ function RouterProvider2(_ref) {
   }, [v7_startTransition]);
   let setState = React2.useCallback((newState, _ref2) => {
     let {
+      deletedFetchers,
       unstable_viewTransitionOpts: viewTransitionOpts
     } = _ref2;
+    deletedFetchers.forEach((key) => fetcherData.current.delete(key));
+    newState.fetchers.forEach((fetcher, key) => {
+      if (fetcher.data !== void 0) {
+        fetcherData.current.set(key, fetcher.data);
+      }
+    });
     if (!viewTransitionOpts || router2.window == null || typeof router2.window.document.startViewTransition !== "function") {
       optInStartTransition(() => setStateImpl(newState));
     } else if (transition && renderDfd) {
@@ -4825,7 +4898,7 @@ function RouterProvider2(_ref) {
         nextLocation: viewTransitionOpts.nextLocation
       });
     }
-  }, [optInStartTransition, transition, renderDfd, router2.window]);
+  }, [router2.window, transition, renderDfd, fetcherData, optInStartTransition]);
   React2.useLayoutEffect(() => router2.subscribe(setState), [router2, setState]);
   React2.useEffect(() => {
     if (vtContext.isTransitioning) {
@@ -4894,6 +4967,8 @@ function RouterProvider2(_ref) {
     value: dataRouterContext
   }, /* @__PURE__ */ React2.createElement(DataRouterStateContext.Provider, {
     value: state
+  }, /* @__PURE__ */ React2.createElement(FetchersContext.Provider, {
+    value: fetcherData.current
   }, /* @__PURE__ */ React2.createElement(ViewTransitionContext.Provider, {
     value: vtContext
   }, /* @__PURE__ */ React2.createElement(Router, {
@@ -4904,7 +4979,7 @@ function RouterProvider2(_ref) {
   }, state.initialized ? /* @__PURE__ */ React2.createElement(DataRoutes2, {
     routes: router2.routes,
     state
-  }) : fallbackElement)))), null);
+  }) : fallbackElement))))), null);
 }
 function DataRoutes2(_ref3) {
   let {
@@ -5103,47 +5178,29 @@ function useSubmit() {
       formData,
       body
     } = getFormSubmissionInfo(target, basename);
-    router2.navigate(options.action || action, {
-      preventScrollReset: options.preventScrollReset,
-      formData,
-      body,
-      formMethod: options.method || method,
-      formEncType: options.encType || encType,
-      replace: options.replace,
-      state: options.state,
-      fromRouteId: currentRouteId,
-      unstable_viewTransition: options.unstable_viewTransition
-    });
-  }, [router2, basename, currentRouteId]);
-}
-function useSubmitFetcher(fetcherKey, fetcherRouteId) {
-  let {
-    router: router2
-  } = useDataRouterContext2(DataRouterHook2.UseSubmitFetcher);
-  let {
-    basename
-  } = React2.useContext(NavigationContext);
-  return React2.useCallback(function(target, options) {
-    if (options === void 0) {
-      options = {};
+    if (options.navigate === false) {
+      let key = options.fetcherKey || getUniqueFetcherId();
+      router2.fetch(key, currentRouteId, options.action || action, {
+        preventScrollReset: options.preventScrollReset,
+        formData,
+        body,
+        formMethod: options.method || method,
+        formEncType: options.encType || encType
+      });
+    } else {
+      router2.navigate(options.action || action, {
+        preventScrollReset: options.preventScrollReset,
+        formData,
+        body,
+        formMethod: options.method || method,
+        formEncType: options.encType || encType,
+        replace: options.replace,
+        state: options.state,
+        fromRouteId: currentRouteId,
+        unstable_viewTransition: options.unstable_viewTransition
+      });
     }
-    validateClientSideSubmission();
-    let {
-      action,
-      method,
-      encType,
-      formData,
-      body
-    } = getFormSubmissionInfo(target, basename);
-    !(fetcherRouteId != null) ? true ? invariant(false, "No routeId available for useFetcher()") : invariant(false) : void 0;
-    router2.fetch(fetcherKey, fetcherRouteId, options.action || action, {
-      preventScrollReset: options.preventScrollReset,
-      formData,
-      body,
-      formMethod: options.method || method,
-      formEncType: options.encType || encType
-    });
-  }, [router2, basename, fetcherKey, fetcherRouteId]);
+  }, [router2, basename, currentRouteId]);
 }
 function useFormAction(action, _temp2) {
   let {
@@ -5175,65 +5232,80 @@ function useFormAction(action, _temp2) {
   }
   return createPath(path);
 }
-function createFetcherForm(fetcherKey, routeId) {
-  let FetcherForm = /* @__PURE__ */ React2.forwardRef((props, ref) => {
-    let submit = useSubmitFetcher(fetcherKey, routeId);
-    return /* @__PURE__ */ React2.createElement(FormImpl, _extends3({}, props, {
-      ref,
-      submit
-    }));
-  });
-  if (true) {
-    FetcherForm.displayName = "fetcher.Form";
-  }
-  return FetcherForm;
-}
-function useFetcher() {
+function useFetcher(_temp3) {
   var _route$matches;
+  let {
+    key
+  } = _temp3 === void 0 ? {} : _temp3;
   let {
     router: router2
   } = useDataRouterContext2(DataRouterHook2.UseFetcher);
+  let state = useDataRouterState2(DataRouterStateHook2.UseFetcher);
+  let fetcherData = React2.useContext(FetchersContext);
   let route = React2.useContext(RouteContext);
-  !route ? true ? invariant(false, "useFetcher must be used inside a RouteContext") : invariant(false) : void 0;
   let routeId = (_route$matches = route.matches[route.matches.length - 1]) == null ? void 0 : _route$matches.route.id;
+  !fetcherData ? true ? invariant(false, "useFetcher must be used inside a FetchersContext") : invariant(false) : void 0;
+  !route ? true ? invariant(false, "useFetcher must be used inside a RouteContext") : invariant(false) : void 0;
   !(routeId != null) ? true ? invariant(false, 'useFetcher can only be used on routes that contain a unique "id"') : invariant(false) : void 0;
-  let [fetcherKey] = React2.useState(() => String(++fetcherId));
-  let [Form2] = React2.useState(() => {
-    !routeId ? true ? invariant(false, "No routeId available for fetcher.Form()") : invariant(false) : void 0;
-    return createFetcherForm(fetcherKey, routeId);
-  });
-  let [load] = React2.useState(() => (href) => {
-    !router2 ? true ? invariant(false, "No router available for fetcher.load()") : invariant(false) : void 0;
-    !routeId ? true ? invariant(false, "No routeId available for fetcher.load()") : invariant(false) : void 0;
-    router2.fetch(fetcherKey, routeId, href);
-  });
-  let submit = useSubmitFetcher(fetcherKey, routeId);
-  let fetcher = router2.getFetcher(fetcherKey);
-  let fetcherWithComponents = React2.useMemo(() => _extends3({
-    Form: Form2,
-    submit,
-    load
-  }, fetcher), [fetcher, Form2, submit, load]);
+  let [fetcherKey, setFetcherKey] = React2.useState(key || "");
+  if (!fetcherKey) {
+    setFetcherKey(getUniqueFetcherId());
+  }
   React2.useEffect(() => {
+    router2.getFetcher(fetcherKey);
     return () => {
-      if (!router2) {
-        console.warn("No router available to clean up from useFetcher()");
-        return;
-      }
       router2.deleteFetcher(fetcherKey);
     };
   }, [router2, fetcherKey]);
+  let load = React2.useCallback((href) => {
+    !routeId ? true ? invariant(false, "No routeId available for fetcher.load()") : invariant(false) : void 0;
+    router2.fetch(fetcherKey, routeId, href);
+  }, [fetcherKey, routeId, router2]);
+  let submitImpl = useSubmit();
+  let submit = React2.useCallback((target, opts) => {
+    submitImpl(target, _extends3({}, opts, {
+      navigate: false,
+      fetcherKey
+    }));
+  }, [fetcherKey, submitImpl]);
+  let FetcherForm = React2.useMemo(() => {
+    let FetcherForm2 = /* @__PURE__ */ React2.forwardRef((props, ref) => {
+      return /* @__PURE__ */ React2.createElement(Form, _extends3({}, props, {
+        navigate: false,
+        fetcherKey,
+        ref
+      }));
+    });
+    if (true) {
+      FetcherForm2.displayName = "fetcher.Form";
+    }
+    return FetcherForm2;
+  }, [fetcherKey]);
+  let fetcher = state.fetchers.get(fetcherKey) || IDLE_FETCHER;
+  let data = fetcherData.get(fetcherKey);
+  let fetcherWithComponents = React2.useMemo(() => _extends3({
+    Form: FetcherForm,
+    submit,
+    load
+  }, fetcher, {
+    data
+  }), [FetcherForm, submit, load, fetcher, data]);
   return fetcherWithComponents;
 }
 function useFetchers() {
   let state = useDataRouterState2(DataRouterStateHook2.UseFetchers);
-  return [...state.fetchers.values()];
+  return Array.from(state.fetchers.entries()).map((_ref11) => {
+    let [key, fetcher] = _ref11;
+    return _extends3({}, fetcher, {
+      key
+    });
+  });
 }
-function useScrollRestoration(_temp3) {
+function useScrollRestoration(_temp4) {
   let {
     getKey,
     storageKey
-  } = _temp3 === void 0 ? {} : _temp3;
+  } = _temp4 === void 0 ? {} : _temp4;
   let {
     router: router2
   } = useDataRouterContext2(DataRouterHook2.UseScrollRestoration);
@@ -5336,11 +5408,11 @@ function usePageHide(callback, options) {
     };
   }, [callback, capture]);
 }
-function usePrompt(_ref11) {
+function usePrompt(_ref12) {
   let {
     when,
     message
-  } = _ref11;
+  } = _ref12;
   let blocker = useBlocker(when);
   React2.useEffect(() => {
     if (blocker.state === "blocked") {
@@ -5377,7 +5449,7 @@ function useViewTransitionState(to, opts) {
   let nextPath = stripBasename(vtContext.nextLocation.pathname, basename) || vtContext.nextLocation.pathname;
   return matchPath(path.pathname, nextPath) != null || matchPath(path.pathname, currentPath) != null;
 }
-var React2, defaultMethod, defaultEncType, _formDataSupportsSubmitter, supportedFormEncTypes, _excluded, _excluded2, _excluded3, ViewTransitionContext, START_TRANSITION2, startTransitionImpl2, Deferred, isBrowser, ABSOLUTE_URL_REGEX2, Link, NavLink, Form, FormImpl, DataRouterHook2, DataRouterStateHook2, fetcherId, SCROLL_RESTORATION_STORAGE_KEY, savedScrollPositions;
+var React2, defaultMethod, defaultEncType, _formDataSupportsSubmitter, supportedFormEncTypes, _excluded, _excluded2, _excluded3, ViewTransitionContext, FetchersContext, START_TRANSITION2, startTransitionImpl2, Deferred, isBrowser, ABSOLUTE_URL_REGEX2, Link, NavLink, Form, DataRouterHook2, DataRouterStateHook2, fetcherId, getUniqueFetcherId, SCROLL_RESTORATION_STORAGE_KEY, savedScrollPositions;
 var init_dist2 = __esm({
   "node_modules/react-router-dom/dist/index.js"() {
     React2 = __toESM(require_react());
@@ -5390,12 +5462,16 @@ var init_dist2 = __esm({
     supportedFormEncTypes = /* @__PURE__ */ new Set(["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"]);
     _excluded = ["onClick", "relative", "reloadDocument", "replace", "state", "target", "to", "preventScrollReset", "unstable_viewTransition"];
     _excluded2 = ["aria-current", "caseSensitive", "className", "end", "style", "to", "unstable_viewTransition", "children"];
-    _excluded3 = ["reloadDocument", "replace", "state", "method", "action", "onSubmit", "submit", "relative", "preventScrollReset", "unstable_viewTransition"];
+    _excluded3 = ["fetcherKey", "navigate", "reloadDocument", "replace", "state", "method", "action", "onSubmit", "relative", "preventScrollReset", "unstable_viewTransition"];
     ViewTransitionContext = /* @__PURE__ */ React2.createContext({
       isTransitioning: false
     });
     if (true) {
       ViewTransitionContext.displayName = "ViewTransition";
+    }
+    FetchersContext = /* @__PURE__ */ React2.createContext(/* @__PURE__ */ new Map());
+    if (true) {
+      FetchersContext.displayName = "Fetchers";
     }
     START_TRANSITION2 = "startTransition";
     startTransitionImpl2 = React2[START_TRANSITION2];
@@ -5545,33 +5621,25 @@ var init_dist2 = __esm({
     if (true) {
       NavLink.displayName = "NavLink";
     }
-    Form = /* @__PURE__ */ React2.forwardRef((props, ref) => {
-      let submit = useSubmit();
-      return /* @__PURE__ */ React2.createElement(FormImpl, _extends3({}, props, {
-        submit,
-        ref
-      }));
-    });
-    if (true) {
-      Form.displayName = "Form";
-    }
-    FormImpl = /* @__PURE__ */ React2.forwardRef((_ref9, forwardedRef) => {
+    Form = /* @__PURE__ */ React2.forwardRef((_ref9, forwardedRef) => {
       let {
+        fetcherKey,
+        navigate,
         reloadDocument,
         replace,
         state,
         method = defaultMethod,
         action,
         onSubmit,
-        submit,
         relative,
         preventScrollReset,
         unstable_viewTransition
       } = _ref9, props = _objectWithoutPropertiesLoose(_ref9, _excluded3);
-      let formMethod = method.toLowerCase() === "get" ? "get" : "post";
+      let submit = useSubmit();
       let formAction = useFormAction(action, {
         relative
       });
+      let formMethod = method.toLowerCase() === "get" ? "get" : "post";
       let submitHandler = (event) => {
         onSubmit && onSubmit(event);
         if (event.defaultPrevented)
@@ -5580,7 +5648,9 @@ var init_dist2 = __esm({
         let submitter = event.nativeEvent.submitter;
         let submitMethod = (submitter == null ? void 0 : submitter.getAttribute("formmethod")) || method;
         submit(submitter || event.currentTarget, {
+          fetcherKey,
           method: submitMethod,
+          navigate,
           replace,
           state,
           relative,
@@ -5596,7 +5666,7 @@ var init_dist2 = __esm({
       }, props));
     });
     if (true) {
-      FormImpl.displayName = "FormImpl";
+      Form.displayName = "Form";
     }
     if (true) {
       ScrollRestoration.displayName = "ScrollRestoration";
@@ -5609,10 +5679,12 @@ var init_dist2 = __esm({
       DataRouterHook3["useViewTransitionState"] = "useViewTransitionState";
     })(DataRouterHook2 || (DataRouterHook2 = {}));
     (function(DataRouterStateHook3) {
+      DataRouterStateHook3["UseFetcher"] = "useFetcher";
       DataRouterStateHook3["UseFetchers"] = "useFetchers";
       DataRouterStateHook3["UseScrollRestoration"] = "useScrollRestoration";
     })(DataRouterStateHook2 || (DataRouterStateHook2 = {}));
     fetcherId = 0;
+    getUniqueFetcherId = () => "__" + String(++fetcherId) + "__";
     SCROLL_RESTORATION_STORAGE_KEY = "react-router-scroll-positions";
     savedScrollPositions = {};
   }
@@ -5688,6 +5760,7 @@ var require_server = __commonJS({
         staticContext: context,
         basename: context.basename || "/"
       };
+      let fetchersContext = /* @__PURE__ */ new Map();
       let hydrateScript = "";
       if (hydrate !== false) {
         let data = {
@@ -5705,6 +5778,8 @@ var require_server = __commonJS({
         value: dataRouterContext
       }, /* @__PURE__ */ React__namespace.createElement(reactRouterDom.UNSAFE_DataRouterStateContext.Provider, {
         value: state
+      }, /* @__PURE__ */ React__namespace.createElement(reactRouterDom.UNSAFE_FetchersContext.Provider, {
+        value: fetchersContext
       }, /* @__PURE__ */ React__namespace.createElement(reactRouterDom.UNSAFE_ViewTransitionContext.Provider, {
         value: {
           isTransitioning: false
@@ -5718,7 +5793,7 @@ var require_server = __commonJS({
       }, /* @__PURE__ */ React__namespace.createElement(DataRoutes3, {
         routes: router$1.routes,
         state
-      }))))), hydrateScript ? /* @__PURE__ */ React__namespace.createElement("script", {
+      })))))), hydrateScript ? /* @__PURE__ */ React__namespace.createElement("script", {
         suppressHydrationWarning: true,
         nonce,
         dangerouslySetInnerHTML: {
@@ -5955,16 +6030,24 @@ function getKeyedLinksForMatches(matches, routeModules, manifest) {
   let descriptors = matches.map((match) => {
     var _module$links;
     let module = routeModules[match.route.id];
-    return ((_module$links = module.links) === null || _module$links === void 0 ? void 0 : _module$links.call(module)) || [];
-  }).flat(1);
+    let route = manifest.routes[match.route.id];
+    return [route.css ? route.css.map((href) => ({
+      rel: "stylesheet",
+      href
+    })) : [], ((_module$links = module.links) === null || _module$links === void 0 ? void 0 : _module$links.call(module)) || []];
+  }).flat(2);
   let preloads = getCurrentPageModulePreloadHrefs(matches, manifest);
   return dedupeLinkDescriptors(descriptors, preloads);
 }
-async function prefetchStyleLinks(routeModule) {
-  if (!routeModule.links || !isPreloadSupported())
+async function prefetchStyleLinks(route, routeModule) {
+  var _route$css, _routeModule$links;
+  if (!route.css && !routeModule.links || !isPreloadSupported())
     return;
-  let descriptors = routeModule.links();
-  if (!descriptors)
+  let descriptors = [((_route$css = route.css) === null || _route$css === void 0 ? void 0 : _route$css.map((href) => ({
+    rel: "stylesheet",
+    href
+  }))) ?? [], ((_routeModule$links = routeModule.links) === null || _routeModule$links === void 0 ? void 0 : _routeModule$links.call(routeModule)) ?? []].flat(1);
+  if (descriptors.length === 0)
     return;
   let styleLinks = [];
   for (let descriptor of descriptors) {
@@ -6292,7 +6375,8 @@ function composeEventHandlers(theirHandler, ourHandler) {
 function Links() {
   let {
     manifest,
-    routeModules
+    routeModules,
+    criticalCss
   } = useRemixContext();
   let {
     errors,
@@ -6300,7 +6384,11 @@ function Links() {
   } = useDataRouterStateContext();
   let matches = errors ? routerMatches.slice(0, routerMatches.findIndex((m) => errors[m.route.id]) + 1) : routerMatches;
   let keyedLinks = React3.useMemo(() => getKeyedLinksForMatches(matches, routeModules, manifest), [matches, routeModules, manifest]);
-  return /* @__PURE__ */ React3.createElement(React3.Fragment, null, keyedLinks.map(({
+  return /* @__PURE__ */ React3.createElement(React3.Fragment, null, criticalCss ? /* @__PURE__ */ React3.createElement("style", {
+    dangerouslySetInnerHTML: {
+      __html: criticalCss
+    }
+  }) : null, keyedLinks.map(({
     key,
     link
   }) => isPageLinkDescriptor(link) ? /* @__PURE__ */ React3.createElement(PrefetchPageLinks, _extends4({
@@ -6711,8 +6799,8 @@ function useRouteLoaderData2(routeId) {
 function useActionData2() {
   return useActionData();
 }
-function useFetcher2() {
-  return useFetcher();
+function useFetcher2(opts = {}) {
+  return useFetcher(opts);
 }
 var LiveReload = false ? () => null : function LiveReload2({
   port,
@@ -7187,7 +7275,7 @@ function createServerRoutes(manifest, routeModules, future, parentId = "", route
     let routeModule = routeModules[route.id];
     let dataRoute = {
       caseSensitive: route.caseSensitive,
-      Component: routeModule.default,
+      Component: getRouteModuleComponent(routeModule),
       ErrorBoundary: routeModule.ErrorBoundary ? routeModule.ErrorBoundary : route.id === "root" ? () => /* @__PURE__ */ React5.createElement(RemixRootDefaultErrorBoundary, {
         error: useRouteError()
       }) : void 0,
@@ -7217,7 +7305,7 @@ function createClientRoutes(manifest, routeModulesCache, future, parentId = "", 
       async loader({
         request
       }) {
-        let routeModulePromise = routeModulesCache[route.id] ? prefetchStyleLinks(routeModulesCache[route.id]) : Promise.resolve();
+        let routeModulePromise = routeModulesCache[route.id] ? prefetchStyleLinks(route, routeModulesCache[route.id]) : Promise.resolve();
         try {
           if (!route.hasLoader)
             return null;
@@ -7229,7 +7317,7 @@ function createClientRoutes(manifest, routeModulesCache, future, parentId = "", 
       async action({
         request
       }) {
-        let routeModulePromise = routeModulesCache[route.id] ? prefetchStyleLinks(routeModulesCache[route.id]) : Promise.resolve();
+        let routeModulePromise = routeModulesCache[route.id] ? prefetchStyleLinks(route, routeModulesCache[route.id]) : Promise.resolve();
         try {
           if (!route.hasAction) {
             let msg = `Route "${route.id}" does not have an action, but you are trying to submit to it. To fix this, please add an \`action\` function to the route`;
@@ -7244,7 +7332,7 @@ function createClientRoutes(manifest, routeModulesCache, future, parentId = "", 
       ...routeModule ? (
         // Use critical path modules directly
         {
-          Component: routeModule.default,
+          Component: getRouteModuleComponent(routeModule),
           ErrorBoundary: routeModule.ErrorBoundary ? routeModule.ErrorBoundary : route.id === "root" ? () => /* @__PURE__ */ React5.createElement(RemixRootDefaultErrorBoundary, {
             error: useRouteError()
           }) : void 0,
@@ -7282,12 +7370,9 @@ function wrapShouldRevalidateForHdr(routeId, routeShouldRevalidate, needsRevalid
 }
 async function loadRouteModuleWithBlockingLinks(route, routeModules) {
   let routeModule = await loadRouteModule(route, routeModules);
-  await prefetchStyleLinks(routeModule);
-  let defaultExportIsEmptyObject = typeof routeModule.default === "object" && Object.keys(routeModule.default || {}).length === 0;
+  await prefetchStyleLinks(route, routeModule);
   return {
-    ...routeModule.default != null && !defaultExportIsEmptyObject ? {
-      Component: routeModule.default
-    } : {},
+    Component: getRouteModuleComponent(routeModule),
     ErrorBoundary: routeModule.ErrorBoundary,
     handle: routeModule.handle,
     links: routeModule.links,
@@ -7328,6 +7413,14 @@ function getRedirect(response) {
     headers
   });
 }
+function getRouteModuleComponent(routeModule) {
+  if (routeModule.default == null)
+    return void 0;
+  let isEmptyObject = typeof routeModule.default === "object" && Object.keys(routeModule.default).length === 0;
+  if (!isEmptyObject) {
+    return routeModule.default;
+  }
+}
 
 // node_modules/@remix-run/react/dist/esm/browser.js
 if (!window.$RefreshReg$ || !window.$RefreshSig$ || !window.$RefreshRuntime$) {
@@ -7357,6 +7450,7 @@ var hmrRouterReadyPromise = new Promise((resolve) => {
 }).catch(() => {
   return void 0;
 });
+var criticalCssReducer = () => void 0;
 if (import.meta && import.meta.hot) {
   import.meta.hot.accept("remix:manifest", async ({
     assetsManifest,
@@ -7427,13 +7521,18 @@ function RemixBrowser(_props) {
     router = createBrowserRouter(routes, {
       hydrationData,
       future: {
-        v7_normalizeFormMethod: true
+        v7_normalizeFormMethod: true,
+        v7_fetcherPersist: window.__remixContext.future.v3_fetcherPersist
       }
     });
+    router.createRoutesForHMR = createClientRoutesWithHMRRevalidationOptOut;
+    window.__remixRouter = router;
     if (hmrRouterReadyResolve) {
       hmrRouterReadyResolve(router);
     }
   }
+  let [criticalCss, clearCriticalCss] = React6.useReducer(criticalCssReducer, window.__remixContext.criticalCss);
+  window.__remixClearCriticalCss = clearCriticalCss;
   let [location, setLocation] = React6.useState(router.state.location);
   React6.useLayoutEffect(() => {
     return router.subscribe((newState) => {
@@ -7446,7 +7545,8 @@ function RemixBrowser(_props) {
     value: {
       manifest: window.__remixManifest,
       routeModules: window.__remixRouteModules,
-      future: window.__remixContext.future
+      future: window.__remixContext.future,
+      criticalCss
     }
   }, /* @__PURE__ */ React6.createElement(RemixErrorBoundary, {
     location
@@ -7458,7 +7558,7 @@ function RemixBrowser(_props) {
     }
   })));
 }
-_s(RemixBrowser, "taJF+79EHXKxvL1HcvPBWGOEM+Y=");
+_s(RemixBrowser, "+1zyA0PP+F+nxZzIyETXGpmVhBM=");
 _c = RemixBrowser;
 var _c;
 $RefreshReg$(_c, "RemixBrowser");
@@ -7533,6 +7633,7 @@ function RemixServer({
   let {
     manifest,
     routeModules,
+    criticalCss,
     serverHandoffString
   } = context;
   let routes = createServerRoutes(manifest.routes, routeModules, context.future);
@@ -7541,6 +7642,7 @@ function RemixServer({
     value: {
       manifest,
       routeModules,
+      criticalCss,
       serverHandoffString,
       future: context.future,
       serializeError: context.serializeError,
@@ -7609,7 +7711,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.10.0
+   * @remix-run/router v1.11.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7621,7 +7723,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.17.0
+   * React Router v6.18.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7633,7 +7735,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.17.0
+   * React Router DOM v6.18.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7645,7 +7747,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7657,7 +7759,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7669,7 +7771,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7681,7 +7783,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7693,7 +7795,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7705,7 +7807,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7717,7 +7819,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7729,7 +7831,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7741,7 +7843,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7753,7 +7855,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7765,7 +7867,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7777,7 +7879,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7789,7 +7891,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/server.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7801,7 +7903,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v2.1.0
+   * @remix-run/react v2.2.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -7811,4 +7913,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-EDOEWFKW.js.map
+//# sourceMappingURL=/build/_shared/chunk-YIDXIHRN.js.map
