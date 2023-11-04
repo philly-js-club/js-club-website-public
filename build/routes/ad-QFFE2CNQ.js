@@ -1,10 +1,10 @@
 import {
   constructSiteTitle,
   upperFirst
-} from "/build/_shared/chunk-FC5CH6CE.js";
+} from "/build/_shared/chunk-5RMODYAT.js";
 import {
   site
-} from "/build/_shared/chunk-E52ZKLG2.js";
+} from "/build/_shared/chunk-WAJKOTJU.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XU7DNSPJ.js";
@@ -39,7 +39,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/AdLogo.tsx"
   );
-  import.meta.hot.lastModified = "1699075463066.024";
+  import.meta.hot.lastModified = "1699079160058.0486";
 }
 function AdLogo({
   className
@@ -101,7 +101,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/routes/ad.tsx"
   );
-  import.meta.hot.lastModified = "1699075463066.024";
+  import.meta.hot.lastModified = "1699079160058.0486";
 }
 var meta = ({
   location
@@ -198,4 +198,4 @@ export {
   Ad as default,
   meta
 };
-//# sourceMappingURL=/build/routes/ad-6VYNCHOF.js.map
+//# sourceMappingURL=/build/routes/ad-QFFE2CNQ.js.map
