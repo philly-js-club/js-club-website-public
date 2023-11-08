@@ -3,7 +3,7 @@ import "/build/_shared/chunk-PNG5AS42.js";
 // app/data/events.json
 var events_default = [
   {
-    date: "2023-11-09T18:00:00.000-04:00",
+    date: "2023-11-09T19:00:00.000-04:00",
     duration: {
       hours: 2
     },
@@ -223,4 +223,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-7VKRPKVE.js.map
+//# sourceMappingURL=/build/_shared/events-R3SZJXPV.js.map
