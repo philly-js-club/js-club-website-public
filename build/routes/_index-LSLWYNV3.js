@@ -1,14 +1,14 @@
 import {
   EventDetails,
   require_node
-} from "/build/_shared/chunk-CJB3OZJZ.js";
+} from "/build/_shared/chunk-F3O37PO2.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-DZ3ZFWA6.js";
+} from "/build/_shared/chunk-HY2CPZUY.js";
 import {
   constructSiteTitle
-} from "/build/_shared/chunk-KH4RLSZA.js";
-import "/build/_shared/chunk-76VMR5AW.js";
+} from "/build/_shared/chunk-LC3NWXYE.js";
+import "/build/_shared/chunk-PKABXKQP.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XU7DNSPJ.js";
@@ -45,7 +45,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/routes/_index.tsx"
   );
-  import.meta.hot.lastModified = "1699579717931.8242";
+  import.meta.hot.lastModified = "1699583301195.5916";
 }
 var meta = () => {
   return [{
@@ -55,36 +55,40 @@ var meta = () => {
 function Index() {
   _s();
   const events = useLoaderData();
-  return /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(PageGrid, { left: /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(import_jsx_dev_runtime.Fragment, { children: [
+  return /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(PageGrid, { left: events.length ? /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(import_jsx_dev_runtime.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("h2", { className: "larger", children: [
       "Next Jawn",
       events.length === 1 ? "" : "s"
     ] }, void 0, true, {
       fileName: "app/routes/_index.tsx",
       lineNumber: 55,
-      columnNumber: 6
+      columnNumber: 7
     }, this),
     events.map((event, index) => /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(EventDetails, { date: new Date(event.date), link: event.link, linkText: "Register Now", location: event.location, topics: event.topics, weight: "medium" }, index, false, {
       fileName: "app/routes/_index.tsx",
-      lineNumber: 56,
-      columnNumber: 36
+      lineNumber: 58,
+      columnNumber: 37
     }, this))
   ] }, void 0, true, {
     fileName: "app/routes/_index.tsx",
     lineNumber: 54,
-    columnNumber: 26
+    columnNumber: 42
+  }, this) : /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(import_jsx_dev_runtime.Fragment, {}, void 0, false, {
+    fileName: "app/routes/_index.tsx",
+    lineNumber: 59,
+    columnNumber: 12
   }, this), title: /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(import_jsx_dev_runtime.Fragment, { children: [
     "PHILLY",
     /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("br", {}, void 0, false, {
       fileName: "app/routes/_index.tsx",
-      lineNumber: 59,
+      lineNumber: 61,
       columnNumber: 6
     }, this),
     "JS CLUB"
   ] }, void 0, true, {
     fileName: "app/routes/_index.tsx",
-    lineNumber: 57,
-    columnNumber: 17
+    lineNumber: 59,
+    columnNumber: 26
   }, this) }, void 0, false, {
     fileName: "app/routes/_index.tsx",
     lineNumber: 54,
@@ -103,4 +107,4 @@ export {
   Index as default,
   meta
 };
-//# sourceMappingURL=/build/routes/_index-QYBZRG5X.js.map
+//# sourceMappingURL=/build/routes/_index-LSLWYNV3.js.map
