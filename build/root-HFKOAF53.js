@@ -1,6 +1,6 @@
 import {
   site
-} from "/build/_shared/chunk-VTGCXNTE.js";
+} from "/build/_shared/chunk-U7N67QQX.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XU7DNSPJ.js";
@@ -157,4 +157,4 @@ window.$RefreshSig$ = prevRefreshSig;
 export {
   App as default
 };
-//# sourceMappingURL=/build/root-SSVPQGSR.js.map
+//# sourceMappingURL=/build/root-HFKOAF53.js.map
