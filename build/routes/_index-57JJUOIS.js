@@ -1,14 +1,14 @@
 import {
   EventDetails,
   require_node
-} from "/build/_shared/chunk-JYQ4BYVK.js";
+} from "/build/_shared/chunk-6WN33K6F.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-EPNTXKRT.js";
+} from "/build/_shared/chunk-GAHN3LWL.js";
 import {
   constructSiteTitle
-} from "/build/_shared/chunk-2Y525K4K.js";
-import "/build/_shared/chunk-AQO5QSYA.js";
+} from "/build/_shared/chunk-YIBQKLTI.js";
+import "/build/_shared/chunk-YJSE67ZI.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XU7DNSPJ.js";
@@ -46,7 +46,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/routes/_index.tsx"
   );
-  import.meta.hot.lastModified = "1700966004096.997";
+  import.meta.hot.lastModified = "1700968959934.8708";
 }
 var meta = () => {
   return [{
@@ -108,4 +108,4 @@ export {
   Index as default,
   meta
 };
-//# sourceMappingURL=/build/routes/_index-FTTFO2UP.js.map
+//# sourceMappingURL=/build/routes/_index-57JJUOIS.js.map
