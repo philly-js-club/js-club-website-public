@@ -14,11 +14,15 @@ import {
   Scripts,
   ScrollRestoration,
   createPath,
+  defer,
   generatePath,
   isRouteErrorResponse,
+  json,
   matchPath,
   matchRoutes,
   parsePath,
+  redirect,
+  redirectDocument,
   resolvePath,
   useActionData,
   useAsyncError,
@@ -47,11 +51,11 @@ import {
   useSearchParams,
   useSubmit,
   useViewTransitionState
-} from "/build/_shared/chunk-754OPPQK.js";
-import "/build/_shared/chunk-4RRP2SUU.js";
-import "/build/_shared/chunk-UWV35TSL.js";
+} from "/build/_shared/chunk-ICUEQOG4.js";
 import "/build/_shared/chunk-GIAAE3CH.js";
 import "/build/_shared/chunk-BOXFZXVX.js";
+import "/build/_shared/chunk-4RRP2SUU.js";
+import "/build/_shared/chunk-UWV35TSL.js";
 import "/build/_shared/chunk-PNG5AS42.js";
 export {
   Await,
@@ -69,11 +73,15 @@ export {
   ScrollRestoration,
   RemixContext as UNSAFE_RemixContext,
   createPath,
+  defer,
   generatePath,
   isRouteErrorResponse,
+  json,
   matchPath,
   matchRoutes,
   parsePath,
+  redirect,
+  redirectDocument,
   resolvePath,
   usePrompt as unstable_usePrompt,
   useViewTransitionState as unstable_useViewTransitionState,
@@ -103,4 +111,4 @@ export {
   useSearchParams,
   useSubmit
 };
-//# sourceMappingURL=/build/_shared/esm-DSJWW7K7.js.map
+//# sourceMappingURL=/build/_shared/esm-G7K4PU3K.js.map

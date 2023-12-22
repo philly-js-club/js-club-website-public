@@ -15,23 +15,23 @@
       console.error(error);
       sessionStorage.removeItem(STORAGE_KEY);
     }
-  })("positions", null)</script><link rel="modulepreload" href="/build/manifest-AF856CAC.js"/><link rel="modulepreload" href="/build/entry.client-T6CK3ZM3.js"/><link rel="modulepreload" href="/build/_shared/chunk-ZWGWGGVF.js"/><link rel="modulepreload" href="/build/_shared/chunk-XU7DNSPJ.js"/><link rel="modulepreload" href="/build/_shared/chunk-754OPPQK.js"/><link rel="modulepreload" href="/build/_shared/chunk-4RRP2SUU.js"/><link rel="modulepreload" href="/build/_shared/chunk-UWV35TSL.js"/><link rel="modulepreload" href="/build/_shared/chunk-GIAAE3CH.js"/><link rel="modulepreload" href="/build/_shared/chunk-BOXFZXVX.js"/><link rel="modulepreload" href="/build/_shared/chunk-PNG5AS42.js"/><link rel="modulepreload" href="/build/_shared/chunk-MJFADNBT.js"/><link rel="modulepreload" href="/build/root-FKYVZER6.js"/><link rel="modulepreload" href="/build/_shared/chunk-IEH4PU3P.js"/><link rel="modulepreload" href="/build/_shared/chunk-HTQAJS72.js"/><link rel="modulepreload" href="/build/routes/code-of-conduct-6JXND6Y7.js"/><script>window.__remixContext = {"url":"/code-of-conduct","state":{"loaderData":{"root":null,"routes/code-of-conduct":null},"actionData":null,"errors":null},"future":{"v3_fetcherPersist":false,"v3_relativeSplatPath":false}};</script><script type="module" async="">import "/build/_shared/chunk-4RRP2SUU.js";import "/build/manifest-AF856CAC.js";
-import * as route0 from "/build/root-FKYVZER6.js";
-import * as route1 from "/build/routes/code-of-conduct-6JXND6Y7.js";
+  })("positions", null)</script><link rel="modulepreload" href="/build/manifest-9742FECF.js"/><link rel="modulepreload" href="/build/entry.client-QJTFLNNA.js"/><link rel="modulepreload" href="/build/_shared/chunk-ZWGWGGVF.js"/><link rel="modulepreload" href="/build/_shared/chunk-XU7DNSPJ.js"/><link rel="modulepreload" href="/build/_shared/chunk-ICUEQOG4.js"/><link rel="modulepreload" href="/build/_shared/chunk-GIAAE3CH.js"/><link rel="modulepreload" href="/build/_shared/chunk-BOXFZXVX.js"/><link rel="modulepreload" href="/build/_shared/chunk-4RRP2SUU.js"/><link rel="modulepreload" href="/build/_shared/chunk-UWV35TSL.js"/><link rel="modulepreload" href="/build/_shared/chunk-PNG5AS42.js"/><link rel="modulepreload" href="/build/_shared/chunk-VFPSS6WF.js"/><link rel="modulepreload" href="/build/root-J4ZDOAAS.js"/><link rel="modulepreload" href="/build/_shared/chunk-7H5DEQMJ.js"/><link rel="modulepreload" href="/build/_shared/chunk-OBOGBM4S.js"/><link rel="modulepreload" href="/build/routes/code-of-conduct-CV6IOBZN.js"/><script>window.__remixContext = {"url":"/code-of-conduct","state":{"loaderData":{"root":null,"routes/code-of-conduct":null},"actionData":null,"errors":null},"future":{"v3_fetcherPersist":false,"v3_relativeSplatPath":false}};</script><script type="module" async="">import "/build/_shared/chunk-4RRP2SUU.js";import "/build/manifest-9742FECF.js";
+import * as route0 from "/build/root-J4ZDOAAS.js";
+import * as route1 from "/build/routes/code-of-conduct-CV6IOBZN.js";
 window.__remixRouteModules = {"root":route0,"routes/code-of-conduct":route1};
 
-import("/build/entry.client-T6CK3ZM3.js");</script><script>
+import("/build/entry.client-QJTFLNNA.js");</script><script>
                 function remixLiveReloadConnect(config) {
-                  let REMIX_DEV_ORIGIN = "http://localhost:3001/";
+                  let LIVE_RELOAD_ORIGIN = "http://localhost:3001/";
                   let protocol =
-                    REMIX_DEV_ORIGIN ? new URL(REMIX_DEV_ORIGIN).protocol.replace(/^http/, "ws") :
+                    LIVE_RELOAD_ORIGIN ? new URL(LIVE_RELOAD_ORIGIN).protocol.replace(/^http/, "ws") :
                     location.protocol === "https:" ? "wss:" : "ws:"; // remove in v2?
-                  let hostname = REMIX_DEV_ORIGIN ? new URL(REMIX_DEV_ORIGIN).hostname : location.hostname;
+                  let hostname = LIVE_RELOAD_ORIGIN ? new URL(LIVE_RELOAD_ORIGIN).hostname : location.hostname;
                   let url = new URL(protocol + "//" + hostname + "/socket");
 
                   url.port =
                     undefined ||
-                    (REMIX_DEV_ORIGIN ? new URL(REMIX_DEV_ORIGIN).port : 8002);
+                    (LIVE_RELOAD_ORIGIN ? new URL(LIVE_RELOAD_ORIGIN).port : 8002);
 
                   let ws = new WebSocket(url.href);
                   ws.onmessage = async (message) => {
