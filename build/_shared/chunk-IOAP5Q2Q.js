@@ -8,7 +8,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/config.ts"
   );
-  import.meta.hot.lastModified = "1703344884891.9768";
+  import.meta.hot.lastModified = "1703348894302.4226";
 }
 var site = {
   title: "Philly JS Club",
@@ -26,4 +26,4 @@ export {
   site,
   region
 };
-//# sourceMappingURL=/build/_shared/chunk-PLQIHLUS.js.map
+//# sourceMappingURL=/build/_shared/chunk-IOAP5Q2Q.js.map
