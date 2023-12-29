@@ -1,10 +1,10 @@
 import {
   constructSiteTitle,
   upperFirst
-} from "/build/_shared/chunk-LRIFSIG3.js";
+} from "/build/_shared/chunk-M7ZZWUWX.js";
 import {
   site
-} from "/build/_shared/chunk-SXFEXBJV.js";
+} from "/build/_shared/chunk-ZG6UGVYA.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XU7DNSPJ.js";
@@ -40,7 +40,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/AdLogo.tsx"
   );
-  import.meta.hot.lastModified = "1703870799490.2974";
+  import.meta.hot.lastModified = "1703872975898.5737";
 }
 function AdLogo({
   className
@@ -82,8 +82,107 @@ $RefreshReg$(_c, "AdLogo");
 window.$RefreshReg$ = prevRefreshReg;
 window.$RefreshSig$ = prevRefreshSig;
 
-// app/routes/ad.tsx
+// app/utils/dates.ts
+if (import.meta) {
+  import.meta.hot = createHotContext(
+    //@ts-expect-error
+    "app/utils/dates.ts"
+  );
+  import.meta.hot.lastModified = "1703872975898.5737";
+}
+function getMonthAndYear(params) {
+  const month = params.get("month")?.toLowerCase();
+  const year = params.get("year")?.toLowerCase();
+  return {
+    month: isValidMonth(month) ? month : "(invalid month)",
+    year: isValidYear(year) ? year : "(invalid year)"
+  };
+}
+function useMonthAndYear() {
+  const [params] = useSearchParams();
+  return getMonthAndYear(params);
+}
+var monthNames = /* @__PURE__ */ new Set([
+  "january",
+  "february",
+  "march",
+  "april",
+  "may",
+  "june",
+  "july",
+  "august",
+  "september",
+  "october",
+  "november",
+  "december"
+]);
+function isValidMonth(month) {
+  return monthNames.has(month);
+}
+function isValidYear(year) {
+  return !!(year && /\d{4}/.test(year));
+}
+
+// app/components/AdText.tsx
 var import_jsx_dev_runtime2 = __toESM(require_jsx_dev_runtime());
+if (!window.$RefreshReg$ || !window.$RefreshSig$ || !window.$RefreshRuntime$) {
+  console.warn("remix:hmr: React Fast Refresh only works when the Remix compiler is running in development mode.");
+} else {
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = (type, id) => {
+    window.$RefreshRuntime$.register(type, '"app/components/AdText.tsx"' + id);
+  };
+  window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
+}
+var prevRefreshReg;
+var prevRefreshSig;
+var _s = $RefreshSig$();
+if (import.meta) {
+  import.meta.hot = createHotContext(
+    //@ts-expect-error
+    "app/components/AdText.tsx"
+  );
+  import.meta.hot.lastModified = "1703872975898.5737";
+}
+function AdText() {
+  _s();
+  const {
+    month,
+    year
+  } = useMonthAndYear();
+  return /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("div", { className: "ad-text", children: [
+    /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("h1", { children: site.title }, void 0, false, {
+      fileName: "app/components/AdText.tsx",
+      lineNumber: 35,
+      columnNumber: 4
+    }, this),
+    /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("p", { children: [
+      upperFirst(month),
+      " ",
+      year
+    ] }, void 0, true, {
+      fileName: "app/components/AdText.tsx",
+      lineNumber: 36,
+      columnNumber: 4
+    }, this)
+  ] }, void 0, true, {
+    fileName: "app/components/AdText.tsx",
+    lineNumber: 34,
+    columnNumber: 10
+  }, this);
+}
+_s(AdText, "BJZFHF3DJ0WFiQsZsaeaiYs9Yhc=", false, function() {
+  return [useMonthAndYear];
+});
+_c2 = AdText;
+var _c2;
+$RefreshReg$(_c2, "AdText");
+window.$RefreshReg$ = prevRefreshReg;
+window.$RefreshSig$ = prevRefreshSig;
+
+// app/routes/ad.tsx
+var import_jsx_dev_runtime3 = __toESM(require_jsx_dev_runtime());
 if (!window.$RefreshReg$ || !window.$RefreshSig$ || !window.$RefreshRuntime$) {
   console.warn("remix:hmr: React Fast Refresh only works when the Remix compiler is running in development mode.");
 } else {
@@ -96,107 +195,53 @@ if (!window.$RefreshReg$ || !window.$RefreshSig$ || !window.$RefreshRuntime$) {
 }
 var prevRefreshReg;
 var prevRefreshSig;
-var _s = $RefreshSig$();
 if (import.meta) {
   import.meta.hot = createHotContext(
     //@ts-expect-error
     "app/routes/ad.tsx"
   );
-  import.meta.hot.lastModified = "1703870799490.2974";
+  import.meta.hot.lastModified = "1703872975898.5737";
 }
 var meta = ({
   location
 }) => {
-  const params = new URLSearchParams(location.search);
   const {
     month,
     year
-  } = getMonthAndYear(params);
-  let pageTitle = "Ad";
-  if (!isValidMonth(month) || !isValidYear(year)) {
-    return [{
-      title: constructSiteTitle(pageTitle)
-    }];
-  }
-  pageTitle = `Ad (${upperFirst(month)} ${year})`;
+  } = getMonthAndYear(new URLSearchParams(location.search));
   return [{
-    title: constructSiteTitle(pageTitle)
+    title: constructSiteTitle(`Ad (${upperFirst(month)} ${year})`)
   }];
 };
 function Ad() {
-  _s();
-  const [params] = useSearchParams();
-  const {
-    month,
-    year
-  } = getMonthAndYear(params);
-  if (!isValidMonth(month)) {
-    return "nope (month)";
-  }
-  if (!isValidYear(year)) {
-    return "nope (year)";
-  }
-  return /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("main", { className: "ad-main", children: [
-    /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("div", { className: "ad-img-area", children: /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)(AdLogo, { className: "ad-img" }, void 0, false, {
+  return /* @__PURE__ */ (0, import_jsx_dev_runtime3.jsxDEV)("main", { className: "ad-main", children: [
+    /* @__PURE__ */ (0, import_jsx_dev_runtime3.jsxDEV)("div", { className: "ad-img-area", children: /* @__PURE__ */ (0, import_jsx_dev_runtime3.jsxDEV)(AdLogo, { className: "ad-img" }, void 0, false, {
       fileName: "app/routes/ad.tsx",
-      lineNumber: 60,
+      lineNumber: 39,
       columnNumber: 5
     }, this) }, void 0, false, {
       fileName: "app/routes/ad.tsx",
-      lineNumber: 59,
+      lineNumber: 38,
       columnNumber: 4
     }, this),
-    /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("div", { className: "ad-text", children: [
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("h1", { children: site.title }, void 0, false, {
-        fileName: "app/routes/ad.tsx",
-        lineNumber: 63,
-        columnNumber: 5
-      }, this),
-      /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("p", { children: [
-        upperFirst(month),
-        " ",
-        year
-      ] }, void 0, true, {
-        fileName: "app/routes/ad.tsx",
-        lineNumber: 64,
-        columnNumber: 5
-      }, this)
-    ] }, void 0, true, {
+    /* @__PURE__ */ (0, import_jsx_dev_runtime3.jsxDEV)(AdText, {}, void 0, false, {
       fileName: "app/routes/ad.tsx",
-      lineNumber: 62,
+      lineNumber: 41,
       columnNumber: 4
     }, this)
   ] }, void 0, true, {
     fileName: "app/routes/ad.tsx",
-    lineNumber: 58,
+    lineNumber: 37,
     columnNumber: 10
   }, this);
 }
-_s(Ad, "KB+Sx1GyQK5Z7eQYQPoF2V7J20Y=", false, function() {
-  return [useSearchParams];
-});
-_c2 = Ad;
-function getMonthAndYear(params) {
-  const month = params.get("month")?.toLowerCase() ?? "idk";
-  const year = params.get("year")?.toLowerCase() ?? "when";
-  return {
-    month,
-    year
-  };
-}
-function isValidMonth(month) {
-  const monthNames = /* @__PURE__ */ new Set(["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]);
-  return monthNames.has(month);
-}
-function isValidYear(year) {
-  return /\d{4}/.test(year);
-}
-var _c2;
-$RefreshReg$(_c2, "Ad");
+_c3 = Ad;
+var _c3;
+$RefreshReg$(_c3, "Ad");
 window.$RefreshReg$ = prevRefreshReg;
 window.$RefreshSig$ = prevRefreshSig;
 export {
   Ad as default,
   meta
 };
-//# sourceMappingURL=/build/routes/ad-IXQETRD4.js.map
+//# sourceMappingURL=/build/routes/ad-KY5KCCSP.js.map
