@@ -1,9 +1,9 @@
 import {
   Arrow
-} from "/build/_shared/chunk-VGJLIXXJ.js";
+} from "/build/_shared/chunk-4ICE2IRR.js";
 import {
   region
-} from "/build/_shared/chunk-RK5OLHCM.js";
+} from "/build/_shared/chunk-MNZ3HHLM.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XU7DNSPJ.js";
@@ -41,7 +41,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/EventDetails.tsx"
   );
-  import.meta.hot.lastModified = "1703906566042.4856";
+  import.meta.hot.lastModified = "1703910431247.0518";
 }
 function EventDetails({
   date,
@@ -104,4 +104,4 @@ export {
   require_node,
   EventDetails
 };
-//# sourceMappingURL=/build/_shared/chunk-2IO3WY3G.js.map
+//# sourceMappingURL=/build/_shared/chunk-YWV7Q6GD.js.map
