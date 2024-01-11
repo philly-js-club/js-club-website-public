@@ -655,7 +655,7 @@ function generatePath(originalPath, params) {
       const star = "*";
       return stringify(params[star]);
     }
-    const keyMatch = segment.match(/^:(\w+)(\??)$/);
+    const keyMatch = segment.match(/^:([\w-]+)(\??)$/);
     if (keyMatch) {
       const [, key, optional] = keyMatch;
       let param = params[key];
@@ -714,7 +714,7 @@ function compilePath(path, caseSensitive, end) {
   }
   warning(path === "*" || !path.endsWith("*") || path.endsWith("/*"), 'Route path "' + path + '" will be treated as if it were ' + ('"' + path.replace(/\*$/, "/*") + '" because the `*` character must ') + "always follow a `/` in the pattern. To get rid of this warning, " + ('please change the route path to "' + path.replace(/\*$/, "/*") + '".'));
   let params = [];
-  let regexpSource = "^" + path.replace(/\/*\*?$/, "").replace(/^\/*/, "/").replace(/[\\.*+^${}|()[\]]/g, "\\$&").replace(/\/:(\w+)(\?)?/g, (_, paramName, isOptional) => {
+  let regexpSource = "^" + path.replace(/\/*\*?$/, "").replace(/^\/*/, "/").replace(/[\\.*+^${}|()[\]]/g, "\\$&").replace(/\/:([\w-]+)(\?)?/g, (_, paramName, isOptional) => {
     params.push({
       paramName,
       isOptional: isOptional != null
@@ -2791,7 +2791,11 @@ async function callLoaderOrAction(type, request, match, matches, manifest, mapRo
     try {
       let contentType = result.headers.get("Content-Type");
       if (contentType && /\bapplication\/json\b/.test(contentType)) {
-        data = await result.json();
+        if (result.body == null) {
+          data = null;
+        } else {
+          data = await result.json();
+        }
       } else {
         data = await result.text();
       }
@@ -3332,7 +3336,7 @@ var init_router = __esm({
       ResultType2["error"] = "error";
     })(ResultType || (ResultType = {}));
     immutableRouteKeys = /* @__PURE__ */ new Set(["lazy", "caseSensitive", "path", "id", "index", "children"]);
-    paramRe = /^:\w+$/;
+    paramRe = /^:[\w-]+$/;
     dynamicSegmentValue = 3;
     indexRouteValue = 2;
     emptySegmentValue = 1;
@@ -5453,7 +5457,8 @@ function useFetcher(_temp3) {
   !fetcherData ? true ? invariant(false, "useFetcher must be used inside a FetchersContext") : invariant(false) : void 0;
   !route ? true ? invariant(false, "useFetcher must be used inside a RouteContext") : invariant(false) : void 0;
   !(routeId != null) ? true ? invariant(false, 'useFetcher can only be used on routes that contain a unique "id"') : invariant(false) : void 0;
-  let [fetcherKey, setFetcherKey] = React2.useState(key || "");
+  let defaultKey = useIdImpl ? useIdImpl() : "";
+  let [fetcherKey, setFetcherKey] = React2.useState(key || defaultKey);
   if (key && key !== fetcherKey) {
     setFetcherKey(key);
   } else if (!fetcherKey) {
@@ -5657,7 +5662,7 @@ function useViewTransitionState(to, opts) {
   let nextPath = stripBasename(vtContext.nextLocation.pathname, basename) || vtContext.nextLocation.pathname;
   return matchPath(path.pathname, nextPath) != null || matchPath(path.pathname, currentPath) != null;
 }
-var React2, ReactDOM, defaultMethod, defaultEncType, _formDataSupportsSubmitter, supportedFormEncTypes, _excluded, _excluded2, _excluded3, ViewTransitionContext, FetchersContext, START_TRANSITION2, startTransitionImpl2, FLUSH_SYNC, flushSyncImpl, Deferred, isBrowser, ABSOLUTE_URL_REGEX2, Link, NavLink, Form, DataRouterHook2, DataRouterStateHook2, fetcherId, getUniqueFetcherId, SCROLL_RESTORATION_STORAGE_KEY, savedScrollPositions;
+var React2, ReactDOM, defaultMethod, defaultEncType, _formDataSupportsSubmitter, supportedFormEncTypes, _excluded, _excluded2, _excluded3, ViewTransitionContext, FetchersContext, START_TRANSITION2, startTransitionImpl2, FLUSH_SYNC, flushSyncImpl, USE_ID, useIdImpl, Deferred, isBrowser, ABSOLUTE_URL_REGEX2, Link, NavLink, Form, DataRouterHook2, DataRouterStateHook2, fetcherId, getUniqueFetcherId, SCROLL_RESTORATION_STORAGE_KEY, savedScrollPositions;
 var init_dist2 = __esm({
   "node_modules/react-router-dom/dist/index.js"() {
     React2 = __toESM(require_react());
@@ -5686,6 +5691,8 @@ var init_dist2 = __esm({
     startTransitionImpl2 = React2[START_TRANSITION2];
     FLUSH_SYNC = "flushSync";
     flushSyncImpl = ReactDOM[FLUSH_SYNC];
+    USE_ID = "useId";
+    useIdImpl = React2[USE_ID];
     Deferred = class {
       constructor() {
         this.status = "pending";
@@ -6267,6 +6274,11 @@ async function loadRouteModule(route, routeModulesCache) {
     routeModulesCache[route.id] = routeModule;
     return routeModule;
   } catch (error) {
+    if (window.__remixContext.isSpaMode && // @ts-expect-error
+    typeof import.meta.hot !== "undefined") {
+      console.error(`Error loading route module \`${route.module}\`:`, error);
+      throw error;
+    }
     window.location.reload();
     return new Promise(() => {
     });
@@ -6282,7 +6294,7 @@ function getKeyedLinksForMatches(matches, routeModules, manifest) {
     return [route.css ? route.css.map((href) => ({
       rel: "stylesheet",
       href
-    })) : [], ((_module$links = module.links) === null || _module$links === void 0 ? void 0 : _module$links.call(module)) || []];
+    })) : [], (module === null || module === void 0 ? void 0 : (_module$links = module.links) === null || _module$links === void 0 ? void 0 : _module$links.call(module)) || []];
   }).flat(2);
   let preloads = getCurrentPageModulePreloadHrefs(matches, manifest);
   return dedupeLinkDescriptors(descriptors, preloads);
@@ -6839,7 +6851,8 @@ function Scripts(props) {
     manifest,
     serverHandoffString,
     abortDelay,
-    serializeError
+    serializeError,
+    isSpaMode
   } = useRemixContext();
   let {
     router: router2,
@@ -6847,9 +6860,10 @@ function Scripts(props) {
     staticContext
   } = useDataRouterContext3();
   let {
-    matches
+    matches: dontUseTheseMatches
   } = useDataRouterStateContext();
   let navigation = useNavigation();
+  let matches = isSpaMode ? [dontUseTheseMatches[0]] : dontUseTheseMatches;
   React3.useEffect(() => {
     isHydrated = true;
   }, []);
@@ -7554,20 +7568,28 @@ function groupRoutesByParentId(manifest) {
   });
   return routes;
 }
-function createServerRoutes(manifest, routeModules, future, parentId = "", routesByParentId = groupRoutesByParentId(manifest)) {
+function createServerRoutes(manifest, routeModules, future, isSpaMode, parentId = "", routesByParentId = groupRoutesByParentId(manifest), spaModeLazyPromise = Promise.resolve({
+  Component: () => null
+})) {
   return (routesByParentId[parentId] || []).map((route) => {
     let routeModule = routeModules[route.id];
+    invariant2(routeModule, "No `routeModule` available to create server routes");
     let dataRoute = {
       caseSensitive: route.caseSensitive,
       Component: getRouteModuleComponent(routeModule),
-      HydrateFallback: routeModule.HydrateFallback ? routeModule.HydrateFallback : route.id === "root" ? RemixRootDefaultHydrateFallback : void 0,
+      // HydrateFallback can only exist on the root route in SPA Mode
+      HydrateFallback: routeModule.HydrateFallback && (!isSpaMode || route.id === "root") ? routeModule.HydrateFallback : route.id === "root" ? RemixRootDefaultHydrateFallback : void 0,
       ErrorBoundary: routeModule.ErrorBoundary ? routeModule.ErrorBoundary : route.id === "root" ? () => /* @__PURE__ */ React6.createElement(RemixRootDefaultErrorBoundary, {
         error: useRouteError()
       }) : void 0,
       id: route.id,
       index: route.index,
       path: route.path,
-      handle: routeModules[route.id].handle,
+      handle: routeModule.handle,
+      // For SPA Mode, all routes are lazy except root.  We don't need a full
+      // implementation here though - just need a `lazy` prop to tell the RR
+      // rendering where to stop
+      lazy: isSpaMode && route.id !== "root" ? () => spaModeLazyPromise : void 0,
       // For partial hydration rendering, we need to indicate when the route
       // has a loader/clientLoader, but it won't ever be called during the static
       // render, so just give it a no-op function so we can render down to the
@@ -7576,22 +7598,36 @@ function createServerRoutes(manifest, routeModules, future, parentId = "", route
       // We don't need action/shouldRevalidate on these routes since they're
       // for a static render
     };
-    let children = createServerRoutes(manifest, routeModules, future, route.id, routesByParentId);
+    let children = createServerRoutes(manifest, routeModules, future, isSpaMode, route.id, routesByParentId, spaModeLazyPromise);
     if (children.length > 0)
       dataRoute.children = children;
     return dataRoute;
   });
 }
-function createClientRoutesWithHMRRevalidationOptOut(needsRevalidation, manifest, routeModulesCache, initialState, future) {
-  return createClientRoutes(manifest, routeModulesCache, initialState, future, "", groupRoutesByParentId(manifest), needsRevalidation);
+function createClientRoutesWithHMRRevalidationOptOut(needsRevalidation, manifest, routeModulesCache, initialState, future, isSpaMode) {
+  return createClientRoutes(manifest, routeModulesCache, initialState, future, isSpaMode, "", groupRoutesByParentId(manifest), needsRevalidation);
 }
-function getNoServerHandlerError(type, routeId) {
+function preventInvalidServerHandlerCall(type, route, isSpaMode) {
+  if (isSpaMode) {
+    let fn2 = type === "action" ? "serverAction()" : "serverLoader()";
+    let msg2 = `You cannot call ${fn2} in SPA Mode (routeId: "${route.id}")`;
+    console.error(msg2);
+    throw new ErrorResponseImpl(400, "Bad Request", new Error(msg2), true);
+  }
   let fn = type === "action" ? "serverAction()" : "serverLoader()";
-  let msg = `You are trying to call ${fn} on a route that does not have a server ${type} (routeId: "${routeId}")`;
-  console.error(msg);
-  throw new ErrorResponseImpl(400, "Bad Request", new Error(msg), true);
+  let msg = `You are trying to call ${fn} on a route that does not have a server ${type} (routeId: "${route.id}")`;
+  if (type === "loader" && !route.hasLoader || type === "action" && !route.hasAction) {
+    console.error(msg);
+    throw new ErrorResponseImpl(400, "Bad Request", new Error(msg), true);
+  }
 }
-function createClientRoutes(manifest, routeModulesCache, initialState, future, parentId = "", routesByParentId = groupRoutesByParentId(manifest), needsRevalidation) {
+function noActionDefinedError(type, routeId) {
+  let article = type === "clientAction" ? "a" : "an";
+  let msg = `Route "${routeId}" does not have ${article} ${type}, but you are trying to submit to it. To fix this, please add ${article} \`${type}\` function to the route`;
+  console.error(msg);
+  throw new ErrorResponseImpl(405, "Method Not Allowed", new Error(msg), true);
+}
+function createClientRoutes(manifest, routeModulesCache, initialState, future, isSpaMode, parentId = "", routesByParentId = groupRoutesByParentId(manifest), needsRevalidation) {
   return (routesByParentId[parentId] || []).map((route) => {
     let routeModule = routeModulesCache[route.id];
     async function fetchServerLoader(request) {
@@ -7601,14 +7637,13 @@ function createClientRoutes(manifest, routeModulesCache, initialState, future, p
     }
     async function fetchServerAction(request) {
       if (!route.hasAction) {
-        let msg = `Route "${route.id}" does not have an action, but you are trying to submit to it. To fix this, please add an \`action\` function to the route`;
-        console.error(msg);
-        throw new ErrorResponseImpl(405, "Method Not Allowed", new Error(msg), true);
+        throw noActionDefinedError("action", route.id);
       }
       return fetchServerHandler(request, route);
     }
     async function prefetchStylesAndCallHandler(handler) {
-      let linkPrefetchPromise = routeModulesCache[route.id] ? prefetchStyleLinks(route, routeModulesCache[route.id]) : Promise.resolve();
+      let cachedModule = routeModulesCache[route.id];
+      let linkPrefetchPromise = cachedModule ? prefetchStyleLinks(route, cachedModule) : Promise.resolve();
       try {
         return handler();
       } finally {
@@ -7625,7 +7660,8 @@ function createClientRoutes(manifest, routeModulesCache, initialState, future, p
       Object.assign(dataRoute, {
         ...dataRoute,
         Component: getRouteModuleComponent(routeModule),
-        HydrateFallback: routeModule.HydrateFallback ? routeModule.HydrateFallback : route.id === "root" ? RemixRootDefaultHydrateFallback : void 0,
+        // HydrateFallback can only exist on the root route in SPA Mode
+        HydrateFallback: routeModule.HydrateFallback && (!isSpaMode || route.id === "root") ? routeModule.HydrateFallback : route.id === "root" ? RemixRootDefaultHydrateFallback : void 0,
         ErrorBoundary: routeModule.ErrorBoundary ? routeModule.ErrorBoundary : route.id === "root" ? () => /* @__PURE__ */ React6.createElement(RemixRootDefaultErrorBoundary, {
           error: useRouteError()
         }) : void 0,
@@ -7641,16 +7677,17 @@ function createClientRoutes(manifest, routeModulesCache, initialState, future, p
       }) => {
         try {
           let result = await prefetchStylesAndCallHandler(async () => {
+            invariant2(routeModule, "No `routeModule` available for critical-route loader");
             if (!routeModule.clientLoader) {
+              if (isSpaMode)
+                return null;
               return fetchServerLoader(request);
             }
             return routeModule.clientLoader({
               request,
               params,
               async serverLoader() {
-                if (!route.hasLoader) {
-                  throw getNoServerHandlerError("loader", route.id);
-                }
+                preventInvalidServerHandlerCall("loader", route, isSpaMode);
                 if (isHydrationRequest) {
                   if (initialError !== void 0) {
                     throw initialError;
@@ -7668,22 +7705,24 @@ function createClientRoutes(manifest, routeModulesCache, initialState, future, p
           isHydrationRequest = false;
         }
       };
-      dataRoute.loader.hydrate = shouldHydrateRouteLoader(route, routeModule);
+      dataRoute.loader.hydrate = shouldHydrateRouteLoader(route, routeModule, isSpaMode);
       dataRoute.action = ({
         request,
         params
       }) => {
         return prefetchStylesAndCallHandler(async () => {
+          invariant2(routeModule, "No `routeModule` available for critical-route action");
           if (!routeModule.clientAction) {
+            if (isSpaMode) {
+              throw noActionDefinedError("clientAction", route.id);
+            }
             return fetchServerAction(request);
           }
           return routeModule.clientAction({
             request,
             params,
             async serverAction() {
-              if (!route.hasAction) {
-                throw getNoServerHandlerError("action", route.id);
-              }
+              preventInvalidServerHandlerCall("action", route, isSpaMode);
               let result = await fetchServerAction(request);
               let unwrapped = await unwrapServerResponse(result);
               return unwrapped;
@@ -7695,12 +7734,21 @@ function createClientRoutes(manifest, routeModulesCache, initialState, future, p
       if (!route.hasClientLoader) {
         dataRoute.loader = ({
           request
-        }) => prefetchStylesAndCallHandler(() => fetchServerLoader(request));
+        }) => prefetchStylesAndCallHandler(() => {
+          if (isSpaMode)
+            return Promise.resolve(null);
+          return fetchServerLoader(request);
+        });
       }
       if (!route.hasClientAction) {
         dataRoute.action = ({
           request
-        }) => prefetchStylesAndCallHandler(() => fetchServerAction(request));
+        }) => prefetchStylesAndCallHandler(() => {
+          if (isSpaMode) {
+            throw noActionDefinedError("clientAction", route.id);
+          }
+          return fetchServerAction(request);
+        });
       }
       dataRoute.lazy = async () => {
         let mod = await loadRouteModuleWithBlockingLinks(route, routeModulesCache);
@@ -7712,9 +7760,7 @@ function createClientRoutes(manifest, routeModulesCache, initialState, future, p
           lazyRoute.loader = (args) => clientLoader({
             ...args,
             async serverLoader() {
-              if (!route.hasLoader) {
-                throw getNoServerHandlerError("loader", route.id);
-              }
+              preventInvalidServerHandlerCall("loader", route, isSpaMode);
               let response = await fetchServerLoader(args.request);
               let result = await unwrapServerResponse(response);
               return result;
@@ -7726,9 +7772,7 @@ function createClientRoutes(manifest, routeModulesCache, initialState, future, p
           lazyRoute.action = (args) => clientAction({
             ...args,
             async serverAction() {
-              if (!route.hasAction) {
-                throw getNoServerHandlerError("action", route.id);
-              }
+              preventInvalidServerHandlerCall("action", route, isSpaMode);
               let response = await fetchServerAction(args.request);
               let result = await unwrapServerResponse(response);
               return result;
@@ -7753,7 +7797,7 @@ function createClientRoutes(manifest, routeModulesCache, initialState, future, p
         };
       };
     }
-    let children = createClientRoutes(manifest, routeModulesCache, initialState, future, route.id, routesByParentId, needsRevalidation);
+    let children = createClientRoutes(manifest, routeModulesCache, initialState, future, isSpaMode, route.id, routesByParentId, needsRevalidation);
     if (children.length > 0)
       dataRoute.children = children;
     return dataRoute;
@@ -7838,8 +7882,8 @@ function getRouteModuleComponent(routeModule) {
     return routeModule.default;
   }
 }
-function shouldHydrateRouteLoader(route, routeModule) {
-  return routeModule.clientLoader != null && (routeModule.clientLoader.hydrate === true || route.hasLoader !== true);
+function shouldHydrateRouteLoader(route, routeModule, isSpaMode) {
+  return isSpaMode && route.id !== "root" || routeModule.clientLoader != null && (routeModule.clientLoader.hydrate === true || route.hasLoader !== true);
 }
 
 // node_modules/@remix-run/react/dist/esm/browser.js
@@ -7904,7 +7948,7 @@ if (import.meta && import.meta.hot) {
       }];
     }))).filter(Boolean)));
     Object.assign(window.__remixRouteModules, newRouteModules);
-    let routes = createClientRoutesWithHMRRevalidationOptOut(needsRevalidation, assetsManifest.routes, window.__remixRouteModules, window.__remixContext.state, window.__remixContext.future);
+    let routes = createClientRoutesWithHMRRevalidationOptOut(needsRevalidation, assetsManifest.routes, window.__remixRouteModules, window.__remixContext.state, window.__remixContext.future, window.__remixContext.isSpaMode);
     router2._internalSetRoutes(routes);
     let unsub = router2.subscribe((state) => {
       if (state.revalidation === "idle") {
@@ -7926,34 +7970,37 @@ function RemixBrowser(_props) {
   if (!router) {
     let initialPathname = window.__remixContext.url;
     let hydratedPathname = window.location.pathname;
-    if (initialPathname !== hydratedPathname) {
+    if (initialPathname !== hydratedPathname && !window.__remixContext.isSpaMode) {
       let errorMsg = `Initial URL (${initialPathname}) does not match URL at time of hydration (${hydratedPathname}), reloading page...`;
       console.error(errorMsg);
       window.location.reload();
       return /* @__PURE__ */ React7.createElement(React7.Fragment, null);
     }
-    let routes = createClientRoutes(window.__remixManifest.routes, window.__remixRouteModules, window.__remixContext.state, window.__remixContext.future);
-    let hydrationData = {
-      ...window.__remixContext.state,
-      loaderData: {
-        ...window.__remixContext.state.loaderData
-      }
-    };
-    let initialMatches = matchRoutes(routes, window.location);
-    if (initialMatches) {
-      for (let match of initialMatches) {
-        let routeId = match.route.id;
-        let route = window.__remixRouteModules[routeId];
-        let manifestRoute = window.__remixManifest.routes[routeId];
-        if (route && shouldHydrateRouteLoader(manifestRoute, route) && (route.HydrateFallback || !manifestRoute.hasLoader)) {
-          hydrationData.loaderData[routeId] = void 0;
-        } else if (manifestRoute && !manifestRoute.hasLoader) {
-          hydrationData.loaderData[routeId] = null;
+    let routes = createClientRoutes(window.__remixManifest.routes, window.__remixRouteModules, window.__remixContext.state, window.__remixContext.future, window.__remixContext.isSpaMode);
+    let hydrationData = void 0;
+    if (!window.__remixContext.isSpaMode) {
+      hydrationData = {
+        ...window.__remixContext.state,
+        loaderData: {
+          ...window.__remixContext.state.loaderData
+        }
+      };
+      let initialMatches = matchRoutes(routes, window.location);
+      if (initialMatches) {
+        for (let match of initialMatches) {
+          let routeId = match.route.id;
+          let route = window.__remixRouteModules[routeId];
+          let manifestRoute = window.__remixManifest.routes[routeId];
+          if (route && shouldHydrateRouteLoader(manifestRoute, route, window.__remixContext.isSpaMode) && (route.HydrateFallback || !manifestRoute.hasLoader)) {
+            hydrationData.loaderData[routeId] = void 0;
+          } else if (manifestRoute && !manifestRoute.hasLoader) {
+            hydrationData.loaderData[routeId] = null;
+          }
         }
       }
-    }
-    if (hydrationData && hydrationData.errors) {
-      hydrationData.errors = deserializeErrors2(hydrationData.errors);
+      if (hydrationData && hydrationData.errors) {
+        hydrationData.errors = deserializeErrors2(hydrationData.errors);
+      }
     }
     router = createRouter({
       routes,
@@ -7999,7 +8046,8 @@ function RemixBrowser(_props) {
       manifest: window.__remixManifest,
       routeModules: window.__remixRouteModules,
       future: window.__remixContext.future,
-      criticalCss
+      criticalCss,
+      isSpaMode: window.__remixContext.isSpaMode
     }
   }, /* @__PURE__ */ React7.createElement(RemixErrorBoundary, {
     location
@@ -8026,6 +8074,9 @@ function ScrollRestoration2({
   getKey,
   ...props
 }) {
+  let {
+    isSpaMode
+  } = useRemixContext();
   let location = useLocation();
   let matches = useMatches();
   useScrollRestoration({
@@ -8043,6 +8094,9 @@ function ScrollRestoration2({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
+  if (isSpaMode) {
+    return null;
+  }
   let restoreScroll = ((STORAGE_KEY2, restoreKey) => {
     if (!window.history.state || !window.history.state.key) {
       let key2 = Math.random().toString(32).slice(2);
@@ -8086,7 +8140,7 @@ function RemixServer({
     criticalCss,
     serverHandoffString
   } = context;
-  let routes = createServerRoutes(manifest.routes, routeModules, context.future);
+  let routes = createServerRoutes(manifest.routes, routeModules, context.future, context.isSpaMode);
   context.staticHandlerContext.loaderData = {
     ...context.staticHandlerContext.loaderData
   };
@@ -8094,7 +8148,7 @@ function RemixServer({
     let routeId = match.route.id;
     let route = routeModules[routeId];
     let manifestRoute = context.manifest.routes[routeId];
-    if (route && shouldHydrateRouteLoader(manifestRoute, route) && (route.HydrateFallback || !manifestRoute.hasLoader)) {
+    if (route && shouldHydrateRouteLoader(manifestRoute, route, context.isSpaMode) && (route.HydrateFallback || !manifestRoute.hasLoader)) {
       context.staticHandlerContext.loaderData[routeId] = void 0;
     }
   }
@@ -8111,6 +8165,7 @@ function RemixServer({
       criticalCss,
       serverHandoffString,
       future: context.future,
+      isSpaMode: context.isSpaMode,
       serializeError: context.serializeError,
       abortDelay
     }
@@ -8181,7 +8236,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.14.1
+   * @remix-run/router v1.14.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8193,7 +8248,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.21.1
+   * React Router v6.21.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8205,7 +8260,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.21.1
+   * React Router DOM v6.21.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8217,7 +8272,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/responses.js:
   (**
-   * @remix-run/server-runtime v2.4.1
+   * @remix-run/server-runtime v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8229,7 +8284,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/index.js:
   (**
-   * @remix-run/server-runtime v2.4.1
+   * @remix-run/server-runtime v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8241,7 +8296,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8253,7 +8308,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8265,7 +8320,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8277,7 +8332,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8289,7 +8344,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8301,7 +8356,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8313,7 +8368,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8325,7 +8380,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8337,7 +8392,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8349,7 +8404,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fallback.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8361,7 +8416,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8373,7 +8428,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8385,7 +8440,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8397,7 +8452,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/server.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8409,7 +8464,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v2.4.1
+   * @remix-run/react v2.5.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8419,4 +8474,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-ICUEQOG4.js.map
+//# sourceMappingURL=/build/_shared/chunk-76CB3VRH.js.map
