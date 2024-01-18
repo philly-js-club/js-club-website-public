@@ -5799,7 +5799,8 @@ var init_dist2 = __esm({
       let location = useLocation();
       let routerState = React2.useContext(DataRouterStateContext);
       let {
-        navigator
+        navigator,
+        basename
       } = React2.useContext(NavigationContext);
       let isTransitioning = routerState != null && // Conditional usage is OK here because the usage of a data router is static
       // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -5811,6 +5812,9 @@ var init_dist2 = __esm({
         locationPathname = locationPathname.toLowerCase();
         nextLocationPathname = nextLocationPathname ? nextLocationPathname.toLowerCase() : null;
         toPathname = toPathname.toLowerCase();
+      }
+      if (nextLocationPathname && basename) {
+        nextLocationPathname = stripBasename(nextLocationPathname, basename) || nextLocationPathname;
       }
       const endSlashPosition = toPathname !== "/" && toPathname.endsWith("/") ? toPathname.length - 1 : toPathname.length;
       let isActive = locationPathname === toPathname || !end && locationPathname.startsWith(toPathname) && locationPathname.charAt(endSlashPosition) === "/";
@@ -6632,8 +6636,19 @@ function composeEventHandlers(theirHandler, ourHandler) {
     }
   };
 }
+function getActiveMatches(matches, errors, isSpaMode) {
+  if (isSpaMode && !isHydrated) {
+    return [matches[0]];
+  }
+  if (errors) {
+    let errorIdx = matches.findIndex((m) => errors[m.route.id]);
+    return matches.slice(0, errorIdx + 1);
+  }
+  return matches;
+}
 function Links() {
   let {
+    isSpaMode,
     manifest,
     routeModules,
     criticalCss
@@ -6642,7 +6657,7 @@ function Links() {
     errors,
     matches: routerMatches
   } = useDataRouterStateContext();
-  let matches = errors ? routerMatches.slice(0, routerMatches.findIndex((m) => errors[m.route.id]) + 1) : routerMatches;
+  let matches = getActiveMatches(routerMatches, errors, isSpaMode);
   let keyedLinks = React3.useMemo(() => getKeyedLinksForMatches(matches, routeModules, manifest), [matches, routeModules, manifest]);
   return /* @__PURE__ */ React3.createElement(React3.Fragment, null, criticalCss ? /* @__PURE__ */ React3.createElement("style", {
     dangerouslySetInnerHTML: {
@@ -6732,6 +6747,7 @@ function PrefetchPageLinksImpl({
 }
 function Meta() {
   let {
+    isSpaMode,
     routeModules
   } = useRemixContext();
   let {
@@ -6740,12 +6756,10 @@ function Meta() {
     loaderData
   } = useDataRouterStateContext();
   let location = useLocation();
-  let _matches = routerMatches;
+  let _matches = getActiveMatches(routerMatches, errors, isSpaMode);
   let error = null;
   if (errors) {
-    let errorIdx = routerMatches.findIndex((m) => errors[m.route.id]);
-    _matches = routerMatches.slice(0, errorIdx + 1);
-    error = errors[routerMatches[errorIdx].route.id];
+    error = errors[_matches[_matches.length - 1].route.id];
   }
   let meta = [];
   let leafMeta = null;
@@ -6860,10 +6874,10 @@ function Scripts(props) {
     staticContext
   } = useDataRouterContext3();
   let {
-    matches: dontUseTheseMatches
+    matches: routerMatches
   } = useDataRouterStateContext();
   let navigation = useNavigation();
-  let matches = isSpaMode ? [dontUseTheseMatches[0]] : dontUseTheseMatches;
+  let matches = getActiveMatches(routerMatches, null, isSpaMode);
   React3.useEffect(() => {
     isHydrated = true;
   }, []);
@@ -8248,7 +8262,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.21.2
+   * React Router v6.21.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8260,7 +8274,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.21.2
+   * React Router DOM v6.21.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8272,7 +8286,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/responses.js:
   (**
-   * @remix-run/server-runtime v2.5.0
+   * @remix-run/server-runtime v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8284,7 +8298,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/index.js:
   (**
-   * @remix-run/server-runtime v2.5.0
+   * @remix-run/server-runtime v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8296,7 +8310,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8308,7 +8322,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8320,7 +8334,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8332,7 +8346,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8344,7 +8358,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8356,7 +8370,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8368,7 +8382,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8380,7 +8394,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8392,7 +8406,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8404,7 +8418,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fallback.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8416,7 +8430,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8428,7 +8442,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8440,7 +8454,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8452,7 +8466,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/server.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8464,7 +8478,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v2.5.0
+   * @remix-run/react v2.5.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8474,4 +8488,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-76CB3VRH.js.map
+//# sourceMappingURL=/build/_shared/chunk-NAI7BWZT.js.map
