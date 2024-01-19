@@ -3,6 +3,17 @@ import "/build/_shared/chunk-PNG5AS42.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2024-02-08T19:00:00.000-04:00",
+    duration: {
+      hours: 2
+    },
+    link: "https://www.eventbrite.com/e/philadelphia-javascript-club-better-javascript-code-for-free-w-eslint-tickets-803507501567",
+    location: "Indy Hall",
+    topics: [
+      'Better JavaScript Code for "Free" with ESLint! with Cody Lewis'
+    ]
+  },
+  {
     date: "2024-01-11T19:00:00.000-04:00",
     duration: {
       hours: 2
@@ -232,4 +243,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-NWSM7P44.js.map
+//# sourceMappingURL=/build/_shared/events-PN75OHKA.js.map
