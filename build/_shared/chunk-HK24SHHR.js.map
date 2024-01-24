@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../app/utils/common.ts"],
-  "sourcesContent": ["// REMIX HMR BEGIN\nimport * as __hmr__ from \"remix:hmr\";\nif (import.meta) {\nimport.meta.hot = __hmr__.createHotContext(\n//@ts-expect-error\n\"app/utils/common.ts\"\n);\nimport.meta.hot.lastModified = \"1706084886524.552\";\n}\n// REMIX HMR END\n\nimport { site } from \"~/config\";\n\n/**\n * Constructs the site title convention out of the current page title:\n *\n * ```ts\n * constructSiteTitle(\"About\") // \"About | Philly JS Club\"\n * ```\n * @param pageTitle - The current page title\n * @returns The page title including the site title\n */\nexport function constructSiteTitle(pageTitle?: string): string {\n\tif (!pageTitle) return site.title;\n\treturn `${pageTitle} | ${site.title}`;\n}\n\nexport function groupBy<T, K extends number | string>(\n\titems: T[],\n\tgetKey: (item: T) => K\n) {\n\tconst grouped = {} as Record<K, T[] | undefined>;\n\n\tfor (const item of items) {\n\t\t(grouped[getKey(item)] ??= []).push(item);\n\t}\n\n\treturn grouped as Record<K, T[]>;\n}\n\n/**\n * Capitalizes the first letter in a string\n */\nexport function upperFirst(text: string): string {\n\treturn text[0].toUpperCase() + text.slice(1);\n}\n"],
-  "mappings": ";;;;;;;;AAEA,IAAI,aAAa;AACjB,cAAY,MAAc;AAAA;AAAA,IAE1B;AAAA,EACA;AACA,cAAY,IAAI,eAAe;AAC/B;AAcO,SAAS,mBAAmB,WAA4B;AAC9D,MAAI,CAAC;AAAW,WAAO,KAAK;AAC5B,SAAO,GAAG,eAAe,KAAK;AAC/B;AAkBO,SAAS,WAAW,MAAsB;AAChD,SAAO,KAAK,CAAC,EAAE,YAAY,IAAI,KAAK,MAAM,CAAC;AAC5C;",
-  "names": []
-}
