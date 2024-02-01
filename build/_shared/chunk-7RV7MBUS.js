@@ -2080,7 +2080,8 @@ function createStaticHandler(routes, opts) {
     mapRouteProperties2 = defaultMapRouteProperties;
   }
   let future = _extends({
-    v7_relativeSplatPath: false
+    v7_relativeSplatPath: false,
+    v7_throwAbortReason: false
   }, opts ? opts.future : null);
   let dataRoutes = convertRoutesToDataRoutes(routes, mapRouteProperties2, void 0, manifest);
   async function query(request, _temp3) {
@@ -2242,8 +2243,7 @@ function createStaticHandler(routes, opts) {
         requestContext
       });
       if (request.signal.aborted) {
-        let method = isRouteRequest ? "queryRoute" : "query";
-        throw new Error(method + "() call aborted: " + request.method + " " + request.url);
+        throwStaticHandlerAbortedError(request, isRouteRequest, future);
       }
     }
     if (isRedirectResult(result)) {
@@ -2345,8 +2345,7 @@ function createStaticHandler(routes, opts) {
       requestContext
     }))]);
     if (request.signal.aborted) {
-      let method = isRouteRequest ? "queryRoute" : "query";
-      throw new Error(method + "() call aborted: " + request.method + " " + request.url);
+      throwStaticHandlerAbortedError(request, isRouteRequest, future);
     }
     let activeDeferreds = /* @__PURE__ */ new Map();
     let context = processRouteLoaderData(matches, matchesToLoad, results, pendingActionError, activeDeferreds);
@@ -2369,12 +2368,19 @@ function createStaticHandler(routes, opts) {
 }
 function getStaticContextFromError(routes, context, error) {
   let newContext = _extends({}, context, {
-    statusCode: 500,
+    statusCode: isRouteErrorResponse(error) ? error.status : 500,
     errors: {
       [context._deepestRenderedBoundaryId || routes[0].id]: error
     }
   });
   return newContext;
+}
+function throwStaticHandlerAbortedError(request, isRouteRequest, future) {
+  if (future.v7_throwAbortReason && request.signal.reason !== void 0) {
+    throw request.signal.reason;
+  }
+  let method = isRouteRequest ? "queryRoute" : "query";
+  throw new Error(method + "() call aborted: " + request.method + " " + request.url);
 }
 function isSubmissionNavigation(opts) {
   return opts != null && ("formData" in opts && opts.formData != null || "body" in opts && opts.body !== void 0);
@@ -5662,7 +5668,7 @@ function useViewTransitionState(to, opts) {
   let nextPath = stripBasename(vtContext.nextLocation.pathname, basename) || vtContext.nextLocation.pathname;
   return matchPath(path.pathname, nextPath) != null || matchPath(path.pathname, currentPath) != null;
 }
-var React2, ReactDOM, defaultMethod, defaultEncType, _formDataSupportsSubmitter, supportedFormEncTypes, _excluded, _excluded2, _excluded3, ViewTransitionContext, FetchersContext, START_TRANSITION2, startTransitionImpl2, FLUSH_SYNC, flushSyncImpl, USE_ID, useIdImpl, Deferred, isBrowser, ABSOLUTE_URL_REGEX2, Link, NavLink, Form, DataRouterHook2, DataRouterStateHook2, fetcherId, getUniqueFetcherId, SCROLL_RESTORATION_STORAGE_KEY, savedScrollPositions;
+var React2, ReactDOM, defaultMethod, defaultEncType, _formDataSupportsSubmitter, supportedFormEncTypes, _excluded, _excluded2, _excluded3, REACT_ROUTER_VERSION, ViewTransitionContext, FetchersContext, START_TRANSITION2, startTransitionImpl2, FLUSH_SYNC, flushSyncImpl, USE_ID, useIdImpl, Deferred, isBrowser, ABSOLUTE_URL_REGEX2, Link, NavLink, Form, DataRouterHook2, DataRouterStateHook2, fetcherId, getUniqueFetcherId, SCROLL_RESTORATION_STORAGE_KEY, savedScrollPositions;
 var init_dist2 = __esm({
   "node_modules/react-router-dom/dist/index.js"() {
     React2 = __toESM(require_react());
@@ -5677,6 +5683,11 @@ var init_dist2 = __esm({
     _excluded = ["onClick", "relative", "reloadDocument", "replace", "state", "target", "to", "preventScrollReset", "unstable_viewTransition"];
     _excluded2 = ["aria-current", "caseSensitive", "className", "end", "style", "to", "unstable_viewTransition", "children"];
     _excluded3 = ["fetcherKey", "navigate", "reloadDocument", "replace", "state", "method", "action", "onSubmit", "relative", "preventScrollReset", "unstable_viewTransition"];
+    REACT_ROUTER_VERSION = "6";
+    try {
+      window.__reactRouterVersion = REACT_ROUTER_VERSION;
+    } catch (e) {
+    }
     ViewTransitionContext = /* @__PURE__ */ React2.createContext({
       isTransitioning: false
     });
@@ -7086,11 +7097,17 @@ var LiveReload = (
   // Dead Code Elimination magic for production builds.
   // This way devs don't have to worry about doing the NODE_ENV check themselves.
   false ? () => null : function LiveReload2({
-    origin = "http://localhost:3001/",
+    origin,
     port,
     timeoutMs = 1e3,
     nonce = void 0
   }) {
+    let isViteClient = import.meta && import.meta.env !== void 0;
+    if (isViteClient) {
+      console.warn(["`<LiveReload />` is obsolete when using Vite and can conflict with Vite's built-in HMR runtime.", "", "Remove `<LiveReload />` from your code and instead only use `<Scripts />`.", "Then refresh the page to remove lingering scripts from `<LiveReload />`."].join("\n"));
+      return null;
+    }
+    origin ??= "http://localhost:3001/";
     let js = String.raw;
     return /* @__PURE__ */ React3.createElement("script", {
       nonce,
@@ -8250,7 +8267,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.14.2
+   * @remix-run/router v1.15.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8262,7 +8279,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.21.3
+   * React Router v6.22.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8274,7 +8291,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.21.3
+   * React Router DOM v6.22.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8286,7 +8303,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/responses.js:
   (**
-   * @remix-run/server-runtime v2.5.1
+   * @remix-run/server-runtime v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8298,7 +8315,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/index.js:
   (**
-   * @remix-run/server-runtime v2.5.1
+   * @remix-run/server-runtime v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8310,7 +8327,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8322,7 +8339,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8334,7 +8351,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8346,7 +8363,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8358,7 +8375,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8370,7 +8387,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8382,7 +8399,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8394,7 +8411,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8406,7 +8423,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8418,7 +8435,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fallback.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8430,7 +8447,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8442,7 +8459,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8454,7 +8471,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8466,7 +8483,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/server.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8478,7 +8495,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v2.5.1
+   * @remix-run/react v2.6.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8488,4 +8505,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-NAI7BWZT.js.map
+//# sourceMappingURL=/build/_shared/chunk-7RV7MBUS.js.map
