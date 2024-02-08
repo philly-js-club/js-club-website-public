@@ -3,6 +3,17 @@ import "/build/_shared/chunk-PNG5AS42.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2024-03-14T18:00:00.000-04:00",
+    duration: {
+      hours: 2
+    },
+    link: "https://www.eventbrite.com/e/philadelphia-js-club-style-authenticate-your-nextjs-app-w-josh-joe-tickets-828968245337",
+    location: "Indy Hall",
+    topics: [
+      "Style and Authenticate Your Next.js App with Josh Goldberg & Joe Woods"
+    ]
+  },
+  {
     date: "2024-02-08T19:00:00.000-04:00",
     duration: {
       hours: 2
@@ -243,4 +254,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-PN75OHKA.js.map
+//# sourceMappingURL=/build/_shared/events-QSUQHDN7.js.map
