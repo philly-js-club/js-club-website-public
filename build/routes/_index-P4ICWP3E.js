@@ -1,14 +1,14 @@
 import {
   EventDetails,
   require_node
-} from "/build/_shared/chunk-F46BJLUT.js";
+} from "/build/_shared/chunk-YIYAGE7C.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-MEC5WBDJ.js";
+} from "/build/_shared/chunk-FQ4NN33D.js";
 import {
   constructSiteTitle
-} from "/build/_shared/chunk-FE2XYSTL.js";
-import "/build/_shared/chunk-SB5IOWO7.js";
+} from "/build/_shared/chunk-R7MQLQ44.js";
+import "/build/_shared/chunk-KI2CEWQZ.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XU7DNSPJ.js";
@@ -46,7 +46,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/routes/_index.tsx"
   );
-  import.meta.hot.lastModified = "1707492106430.8984";
+  import.meta.hot.lastModified = "1707495362421.4768";
 }
 var meta = () => {
   return [{
@@ -62,37 +62,37 @@ function Index() {
       events.length === 1 ? "" : "s"
     ] }, void 0, true, {
       fileName: "app/routes/_index.tsx",
-      lineNumber: 55,
+      lineNumber: 54,
       columnNumber: 7
     }, this),
     events.map((event, index) => /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(EventDetails, { date: new Date(event.date), link: event.link, linkText: "Register Now", location: event.location, topics: event.topics, weight: "medium" }, index, false, {
       fileName: "app/routes/_index.tsx",
-      lineNumber: 58,
+      lineNumber: 57,
       columnNumber: 37
     }, this))
   ] }, void 0, true, {
     fileName: "app/routes/_index.tsx",
-    lineNumber: 54,
+    lineNumber: 53,
     columnNumber: 42
   }, this) : /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(import_jsx_dev_runtime.Fragment, {}, void 0, false, {
     fileName: "app/routes/_index.tsx",
-    lineNumber: 59,
+    lineNumber: 58,
     columnNumber: 12
   }, this), title: /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(import_jsx_dev_runtime.Fragment, { children: [
     "PHILLY",
     /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("br", {}, void 0, false, {
       fileName: "app/routes/_index.tsx",
-      lineNumber: 61,
+      lineNumber: 60,
       columnNumber: 6
     }, this),
     "JS CLUB"
   ] }, void 0, true, {
     fileName: "app/routes/_index.tsx",
-    lineNumber: 59,
+    lineNumber: 58,
     columnNumber: 26
   }, this) }, void 0, false, {
     fileName: "app/routes/_index.tsx",
-    lineNumber: 54,
+    lineNumber: 53,
     columnNumber: 10
   }, this);
 }
@@ -108,4 +108,4 @@ export {
   Index as default,
   meta
 };
-//# sourceMappingURL=/build/routes/_index-6XHXOA2E.js.map
+//# sourceMappingURL=/build/routes/_index-P4ICWP3E.js.map
