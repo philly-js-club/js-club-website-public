@@ -11,6 +11,8 @@ import {
   RemixBrowser,
   RemixContext,
   RemixServer,
+  Route,
+  Routes,
   Scripts,
   ScrollRestoration,
   createPath,
@@ -51,7 +53,7 @@ import {
   useSearchParams,
   useSubmit,
   useViewTransitionState
-} from "/build/_shared/chunk-7RV7MBUS.js";
+} from "/build/_shared/chunk-BDE7US36.js";
 import "/build/_shared/chunk-GIAAE3CH.js";
 import "/build/_shared/chunk-BOXFZXVX.js";
 import "/build/_shared/chunk-4RRP2SUU.js";
@@ -69,6 +71,8 @@ export {
   PrefetchPageLinks,
   RemixBrowser,
   RemixServer,
+  Route,
+  Routes,
   Scripts,
   ScrollRestoration,
   RemixContext as UNSAFE_RemixContext,
@@ -111,4 +115,4 @@ export {
   useSearchParams,
   useSubmit
 };
-//# sourceMappingURL=/build/_shared/esm-KXNIQG4W.js.map
+//# sourceMappingURL=/build/_shared/esm-VBEBIXMT.js.map

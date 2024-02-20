@@ -391,6 +391,7 @@ function getUrlBasedHistory(getLocation, createHref, validateLocation, options) 
   function createURL(to) {
     let base = window2.location.origin !== "null" ? window2.location.origin : window2.location.href;
     let href = typeof to === "string" ? to : createPath(to);
+    href = href.replace(/ $/, "%20");
     invariant(base, "No window.location.(origin|href) available to create URL for href: " + href);
     return new URL(href, base);
   }
@@ -479,16 +480,8 @@ function matchRoutes(routes, locationArg, basename) {
   rankRouteBranches(branches);
   let matches = null;
   for (let i = 0; matches == null && i < branches.length; ++i) {
-    matches = matchRouteBranch(
-      branches[i],
-      // Incoming pathnames are generally encoded from either window.location
-      // or from router.navigate, but we want to match against the unencoded
-      // paths in the route definitions.  Memory router locations won't be
-      // encoded here but there also shouldn't be anything to decode so this
-      // should be a safe operation.  This avoids needing matchRoutes to be
-      // history-aware.
-      safelyDecodeURI(pathname)
-    );
+    let decoded = decodePath(pathname);
+    matches = matchRouteBranch(branches[i], decoded);
   }
   return matches;
 }
@@ -694,7 +687,7 @@ function matchPath(pattern, pathname) {
     if (isOptional && !value) {
       memo[paramName] = void 0;
     } else {
-      memo[paramName] = safelyDecodeURIComponent(value || "", paramName);
+      memo[paramName] = (value || "").replace(/%2F/g, "/");
     }
     return memo;
   }, {});
@@ -735,19 +728,11 @@ function compilePath(path, caseSensitive, end) {
   let matcher = new RegExp(regexpSource, caseSensitive ? void 0 : "i");
   return [matcher, params];
 }
-function safelyDecodeURI(value) {
+function decodePath(value) {
   try {
-    return decodeURI(value);
+    return value.split("/").map((v) => decodeURIComponent(v).replace(/\//g, "%2F")).join("/");
   } catch (error) {
     warning(false, 'The URL path "' + value + '" could not be decoded because it is is a malformed URL segment. This is probably due to a bad percent ' + ("encoding (" + error + ")."));
-    return value;
-  }
-}
-function safelyDecodeURIComponent(value, paramName) {
-  try {
-    return decodeURIComponent(value);
-  } catch (error) {
-    warning(false, 'The value for the URL param "' + paramName + '" will not be decoded because' + (' the string "' + value + '" is a malformed URL segment. This is probably') + (" due to a bad percent encoding (" + error + ")."));
     return value;
   }
 }
@@ -3831,7 +3816,12 @@ function useRoutesImpl(routes, locationArg, dataRouterState, future) {
     location = locationFromContext;
   }
   let pathname = location.pathname || "/";
-  let remainingPathname = parentPathnameBase === "/" ? pathname : pathname.slice(parentPathnameBase.length) || "/";
+  let remainingPathname = pathname;
+  if (parentPathnameBase !== "/") {
+    let parentSegments = parentPathnameBase.replace(/^\//, "").split("/");
+    let segments = pathname.replace(/^\//, "").split("/");
+    remainingPathname = "/" + segments.slice(parentSegments.length).join("/");
+  }
   let matches = matchRoutes(routes, {
     pathname: remainingPathname
   });
@@ -6196,6 +6186,7 @@ var require_server = __commonJS({
     }
     function encodeLocation(to) {
       let href = typeof to === "string" ? to : reactRouterDom.createPath(to);
+      href = href.replace(/ $/, "%20");
       let encoded = ABSOLUTE_URL_REGEX4.test(href) ? new URL(href) : new URL(href, "http://localhost");
       return {
         pathname: encoded.pathname,
@@ -6690,7 +6681,7 @@ function PrefetchPageLinks({
   let {
     router: router2
   } = useDataRouterContext3();
-  let matches = React3.useMemo(() => matchRoutes(router2.routes, page), [router2.routes, page]);
+  let matches = React3.useMemo(() => matchRoutes(router2.routes, page, router2.basename), [router2.routes, page, router2.basename]);
   if (!matches) {
     console.warn(`Tried to prefetch ${page} but no routes matched.`);
     return null;
@@ -6986,12 +6977,12 @@ import(${JSON.stringify(manifest.entry.module)});`;
   }
   let nextMatches = React3.useMemo(() => {
     if (navigation.location) {
-      let matches2 = matchRoutes(router2.routes, navigation.location);
+      let matches2 = matchRoutes(router2.routes, navigation.location, router2.basename);
       invariant2(matches2, `No routes match path "${navigation.location.pathname}"`);
       return matches2;
     }
     return [];
-  }, [navigation.location, router2.routes]);
+  }, [navigation.location, router2.routes, router2.basename]);
   let routePreloads = matches.concat(nextMatches).map((match) => {
     let route = manifest.routes[match.route.id];
     return (route.imports || []).concat([route.module]);
@@ -7599,6 +7590,37 @@ function groupRoutesByParentId(manifest) {
   });
   return routes;
 }
+function getRouteComponents(route, routeModule, isSpaMode) {
+  let Component3 = getRouteModuleComponent(routeModule);
+  let HydrateFallback = routeModule.HydrateFallback && (!isSpaMode || route.id === "root") ? routeModule.HydrateFallback : route.id === "root" ? RemixRootDefaultHydrateFallback : void 0;
+  let ErrorBoundary = routeModule.ErrorBoundary ? routeModule.ErrorBoundary : route.id === "root" ? () => /* @__PURE__ */ React6.createElement(RemixRootDefaultErrorBoundary, {
+    error: useRouteError()
+  }) : void 0;
+  if (route.id === "root" && routeModule.Layout) {
+    return {
+      ...Component3 ? {
+        element: /* @__PURE__ */ React6.createElement(routeModule.Layout, null, /* @__PURE__ */ React6.createElement(Component3))
+      } : {
+        Component: Component3
+      },
+      ...ErrorBoundary ? {
+        errorElement: /* @__PURE__ */ React6.createElement(routeModule.Layout, null, /* @__PURE__ */ React6.createElement(ErrorBoundary))
+      } : {
+        ErrorBoundary
+      },
+      ...HydrateFallback ? {
+        hydrateFallbackElement: /* @__PURE__ */ React6.createElement(routeModule.Layout, null, /* @__PURE__ */ React6.createElement(HydrateFallback))
+      } : {
+        HydrateFallback
+      }
+    };
+  }
+  return {
+    Component: Component3,
+    ErrorBoundary,
+    HydrateFallback
+  };
+}
 function createServerRoutes(manifest, routeModules, future, isSpaMode, parentId = "", routesByParentId = groupRoutesByParentId(manifest), spaModeLazyPromise = Promise.resolve({
   Component: () => null
 })) {
@@ -7606,21 +7628,17 @@ function createServerRoutes(manifest, routeModules, future, isSpaMode, parentId 
     let routeModule = routeModules[route.id];
     invariant2(routeModule, "No `routeModule` available to create server routes");
     let dataRoute = {
+      ...getRouteComponents(route, routeModule, isSpaMode),
       caseSensitive: route.caseSensitive,
-      Component: getRouteModuleComponent(routeModule),
-      // HydrateFallback can only exist on the root route in SPA Mode
-      HydrateFallback: routeModule.HydrateFallback && (!isSpaMode || route.id === "root") ? routeModule.HydrateFallback : route.id === "root" ? RemixRootDefaultHydrateFallback : void 0,
-      ErrorBoundary: routeModule.ErrorBoundary ? routeModule.ErrorBoundary : route.id === "root" ? () => /* @__PURE__ */ React6.createElement(RemixRootDefaultErrorBoundary, {
-        error: useRouteError()
-      }) : void 0,
       id: route.id,
       index: route.index,
       path: route.path,
       handle: routeModule.handle,
-      // For SPA Mode, all routes are lazy except root.  We don't need a full
-      // implementation here though - just need a `lazy` prop to tell the RR
-      // rendering where to stop
-      lazy: isSpaMode && route.id !== "root" ? () => spaModeLazyPromise : void 0,
+      // For SPA Mode, all routes are lazy except root.  However we tell the
+      // router root is also lazy here too since we don't need a full
+      // implementation - we just need a `lazy` prop to tell the RR rendering
+      // where to stop which is always at the root route in SPA mode
+      lazy: isSpaMode ? () => spaModeLazyPromise : void 0,
       // For partial hydration rendering, we need to indicate when the route
       // has a loader/clientLoader, but it won't ever be called during the static
       // render, so just give it a no-op function so we can render down to the
@@ -7690,12 +7708,7 @@ function createClientRoutes(manifest, routeModulesCache, initialState, future, i
       var _initialState$loaderD, _initialState$errors, _routeModule$clientLo;
       Object.assign(dataRoute, {
         ...dataRoute,
-        Component: getRouteModuleComponent(routeModule),
-        // HydrateFallback can only exist on the root route in SPA Mode
-        HydrateFallback: routeModule.HydrateFallback && (!isSpaMode || route.id === "root") ? routeModule.HydrateFallback : route.id === "root" ? RemixRootDefaultHydrateFallback : void 0,
-        ErrorBoundary: routeModule.ErrorBoundary ? routeModule.ErrorBoundary : route.id === "root" ? () => /* @__PURE__ */ React6.createElement(RemixRootDefaultErrorBoundary, {
-          error: useRouteError()
-        }) : void 0,
+        ...getRouteComponents(route, routeModule, isSpaMode),
         handle: routeModule.handle,
         shouldRevalidate: needsRevalidation ? wrapShouldRevalidateForHdr(route.id, routeModule.shouldRevalidate, needsRevalidation) : routeModule.shouldRevalidate
       });
@@ -7823,6 +7836,8 @@ function createClientRoutes(manifest, routeModulesCache, initialState, future, i
           hasErrorBoundary: lazyRoute.hasErrorBoundary,
           shouldRevalidate: lazyRoute.shouldRevalidate,
           handle: lazyRoute.handle,
+          // No need to wrap these in layout since the root route is never
+          // loaded via route.lazy()
           Component: lazyRoute.Component,
           ErrorBoundary: lazyRoute.ErrorBoundary
         };
@@ -7946,7 +7961,6 @@ var hmrRouterReadyPromise = new Promise((resolve) => {
 }).catch(() => {
   return void 0;
 });
-var criticalCssReducer = () => void 0;
 if (import.meta && import.meta.hot) {
   import.meta.hot.accept("remix:manifest", async ({
     assetsManifest,
@@ -8036,6 +8050,7 @@ function RemixBrowser(_props) {
     router = createRouter({
       routes,
       history: createBrowserHistory(),
+      basename: window.__remixContext.basename,
       future: {
         v7_normalizeFormMethod: true,
         v7_fetcherPersist: window.__remixContext.future.v3_fetcherPersist,
@@ -8056,8 +8071,10 @@ function RemixBrowser(_props) {
       hmrRouterReadyResolve(router);
     }
   }
-  let [criticalCss, clearCriticalCss] = React7.useReducer(criticalCssReducer, window.__remixContext.criticalCss);
-  window.__remixClearCriticalCss = clearCriticalCss;
+  let [criticalCss, setCriticalCss] = React7.useState(true ? window.__remixContext.criticalCss : void 0);
+  if (true) {
+    window.__remixClearCriticalCss = () => setCriticalCss(void 0);
+  }
   let [location, setLocation] = React7.useState(router.state.location);
   React7.useLayoutEffect(() => {
     if (!routerInitialized) {
@@ -8090,7 +8107,7 @@ function RemixBrowser(_props) {
     }
   })));
 }
-_s(RemixBrowser, "dNY/ZcXj2W8K0mGOaHLSDzAVXYE=");
+_s(RemixBrowser, "2Jc0pK5iA8IBztJHvZ5F40Owts4=");
 _c = RemixBrowser;
 var _c;
 $RefreshReg$(_c, "RemixBrowser");
@@ -8233,6 +8250,8 @@ export {
   useAsyncError,
   useBlocker,
   Outlet,
+  Route,
+  Routes,
   Form,
   useSearchParams,
   useSubmit,
@@ -8267,7 +8286,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.15.0
+   * @remix-run/router v1.15.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8279,7 +8298,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.22.0
+   * React Router v6.22.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8291,7 +8310,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.22.0
+   * React Router DOM v6.22.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8303,7 +8322,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/responses.js:
   (**
-   * @remix-run/server-runtime v2.6.0
+   * @remix-run/server-runtime v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8315,7 +8334,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/index.js:
   (**
-   * @remix-run/server-runtime v2.6.0
+   * @remix-run/server-runtime v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8327,7 +8346,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8339,7 +8358,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8351,7 +8370,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8363,7 +8382,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8375,7 +8394,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8387,7 +8406,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8399,7 +8418,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8411,7 +8430,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8423,7 +8442,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8435,7 +8454,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fallback.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8447,7 +8466,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8459,7 +8478,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8471,7 +8490,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8483,7 +8502,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/server.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8495,7 +8514,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v2.6.0
+   * @remix-run/react v2.7.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8505,4 +8524,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-7RV7MBUS.js.map
+//# sourceMappingURL=/build/_shared/chunk-BDE7US36.js.map
