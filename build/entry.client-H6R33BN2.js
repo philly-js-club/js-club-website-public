@@ -6,7 +6,7 @@ import {
 } from "/build/_shared/chunk-XU7DNSPJ.js";
 import {
   RemixBrowser
-} from "/build/_shared/chunk-BDE7US36.js";
+} from "/build/_shared/chunk-5WYCXEJ3.js";
 import "/build/_shared/chunk-GIAAE3CH.js";
 import {
   require_react
@@ -35,4 +35,4 @@ var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
     }, this)
   );
 });
-//# sourceMappingURL=/build/entry.client-Z7RT6UWL.js.map
+//# sourceMappingURL=/build/entry.client-H6R33BN2.js.map
