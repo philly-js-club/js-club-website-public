@@ -1463,6 +1463,17 @@ function createRouter(init) {
         }
       });
     });
+    if (future.v7_partialHydration && initialHydration && state.errors) {
+      Object.entries(state.errors).filter((_ref2) => {
+        let [id] = _ref2;
+        return !matchesToLoad.some((m) => m.route.id === id);
+      }).forEach((_ref3) => {
+        let [routeId, error] = _ref3;
+        errors = Object.assign(errors || {}, {
+          [routeId]: error
+        });
+      });
+    }
     let updatedFetchers = markFetchRedirectsDone();
     let didAbortFetchLoads = abortStaleFetchLoads(pendingNavigationLoadId);
     let shouldUpdateFetchers = updatedFetchers || didAbortFetchLoads || revalidatingFetchers.length > 0;
@@ -1927,12 +1938,12 @@ function createRouter(init) {
       blockers
     });
   }
-  function shouldBlockNavigation(_ref2) {
+  function shouldBlockNavigation(_ref4) {
     let {
       currentLocation,
       nextLocation,
       historyAction
-    } = _ref2;
+    } = _ref4;
     if (blockerFunctions.size === 0) {
       return;
     }
@@ -2429,8 +2440,8 @@ function normalizeNavigateOptions(normalizeFormMethod, isFetcher, path, opts) {
       }
       let text = typeof opts.body === "string" ? opts.body : opts.body instanceof FormData || opts.body instanceof URLSearchParams ? (
         // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#plain-text-form-data
-        Array.from(opts.body.entries()).reduce((acc, _ref3) => {
-          let [name, value] = _ref3;
+        Array.from(opts.body.entries()).reduce((acc, _ref5) => {
+          let [name, value] = _ref5;
           return "" + acc + name + "=" + value + "\n";
         }, "")
       ) : String(opts.body);
@@ -7250,15 +7261,23 @@ function RemixRootDefaultErrorBoundary({
   error
 }) {
   console.error(error);
+  let heyDeveloper = /* @__PURE__ */ React4.createElement("script", {
+    dangerouslySetInnerHTML: {
+      __html: `
+        console.log(
+          "\u{1F4BF} Hey developer \u{1F44B}. You can provide a way better UX than this when your app throws errors. Check out https://remix.run/guides/errors for more information."
+        );
+      `
+    }
+  });
   if (isRouteErrorResponse(error)) {
     return /* @__PURE__ */ React4.createElement(BoundaryShell, {
       title: "Unhandled Thrown Response!"
     }, /* @__PURE__ */ React4.createElement("h1", {
       style: {
-        fontFamily: "system-ui, sans-serif",
-        padding: "2rem"
+        fontSize: "24px"
       }
-    }, error.status, " ", error.statusText));
+    }, error.status, " ", error.statusText), heyDeveloper);
   }
   let errorInstance;
   if (error instanceof Error) {
@@ -7269,11 +7288,6 @@ function RemixRootDefaultErrorBoundary({
   }
   return /* @__PURE__ */ React4.createElement(BoundaryShell, {
     title: "Application Error!"
-  }, /* @__PURE__ */ React4.createElement("main", {
-    style: {
-      fontFamily: "system-ui, sans-serif",
-      padding: "2rem"
-    }
   }, /* @__PURE__ */ React4.createElement("h1", {
     style: {
       fontSize: "24px"
@@ -7285,12 +7299,20 @@ function RemixRootDefaultErrorBoundary({
       color: "red",
       overflow: "auto"
     }
-  }, errorInstance.stack)));
+  }, errorInstance.stack), heyDeveloper);
 }
 function BoundaryShell({
   title,
+  renderScripts,
   children
 }) {
+  var _routeModules$root;
+  let {
+    routeModules
+  } = useRemixContext();
+  if ((_routeModules$root = routeModules.root) !== null && _routeModules$root !== void 0 && _routeModules$root.Layout) {
+    return children;
+  }
   return /* @__PURE__ */ React4.createElement("html", {
     lang: "en"
   }, /* @__PURE__ */ React4.createElement("head", null, /* @__PURE__ */ React4.createElement("meta", {
@@ -7298,15 +7320,12 @@ function BoundaryShell({
   }), /* @__PURE__ */ React4.createElement("meta", {
     name: "viewport",
     content: "width=device-width,initial-scale=1,viewport-fit=cover"
-  }), /* @__PURE__ */ React4.createElement("title", null, title)), /* @__PURE__ */ React4.createElement("body", null, children, /* @__PURE__ */ React4.createElement("script", {
-    dangerouslySetInnerHTML: {
-      __html: `
-              console.log(
-                "\u{1F4BF} Hey developer \u{1F44B}. You can provide a way better UX than this when your app throws errors. Check out https://remix.run/guides/errors for more information."
-              );
-            `
+  }), /* @__PURE__ */ React4.createElement("title", null, title)), /* @__PURE__ */ React4.createElement("body", null, /* @__PURE__ */ React4.createElement("main", {
+    style: {
+      fontFamily: "system-ui, sans-serif",
+      padding: "2rem"
     }
-  })));
+  }, children, renderScripts ? /* @__PURE__ */ React4.createElement(Scripts, null) : null)));
 }
 
 // node_modules/@remix-run/react/dist/esm/errors.js
@@ -7558,14 +7577,10 @@ function mergeArrays(...arrays) {
 // node_modules/@remix-run/react/dist/esm/fallback.js
 var React5 = __toESM(require_react());
 function RemixRootDefaultHydrateFallback() {
-  return /* @__PURE__ */ React5.createElement("html", {
-    lang: "en"
-  }, /* @__PURE__ */ React5.createElement("head", null, /* @__PURE__ */ React5.createElement("meta", {
-    charSet: "utf-8"
-  }), /* @__PURE__ */ React5.createElement("meta", {
-    name: "viewport",
-    content: "width=device-width,initial-scale=1,viewport-fit=cover"
-  })), /* @__PURE__ */ React5.createElement("body", null, /* @__PURE__ */ React5.createElement(Scripts, null), /* @__PURE__ */ React5.createElement("script", {
+  return /* @__PURE__ */ React5.createElement(BoundaryShell, {
+    title: "Loading...",
+    renderScripts: true
+  }, /* @__PURE__ */ React5.createElement("script", {
     dangerouslySetInnerHTML: {
       __html: `
               console.log(
@@ -7575,7 +7590,7 @@ function RemixRootDefaultHydrateFallback() {
               );
             `
     }
-  }), " "));
+  }));
 }
 
 // node_modules/@remix-run/react/dist/esm/routes.js
@@ -8227,6 +8242,7 @@ function RemixServer({
 }
 
 export {
+  Action,
   createPath,
   parsePath,
   matchRoutes,
@@ -8235,6 +8251,7 @@ export {
   resolvePath,
   isRouteErrorResponse,
   useHref,
+  useInRouterContext,
   useLocation,
   useNavigationType,
   useMatch,
@@ -8243,16 +8260,22 @@ export {
   useOutlet,
   useParams,
   useResolvedPath,
+  useRoutes,
   useNavigation,
   useRevalidator,
   useRouteError,
   useAsyncValue,
   useAsyncError,
   useBlocker,
+  Navigate,
   Outlet,
   Route,
   Routes,
+  createRoutesFromChildren,
+  renderMatches,
+  createSearchParams,
   Form,
+  useLinkClickHandler,
   useSearchParams,
   useSubmit,
   useFormAction,
@@ -8286,7 +8309,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.15.1
+   * @remix-run/router v1.15.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8298,7 +8321,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.22.1
+   * React Router v6.22.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8310,7 +8333,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.22.1
+   * React Router DOM v6.22.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8322,7 +8345,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/responses.js:
   (**
-   * @remix-run/server-runtime v2.7.2
+   * @remix-run/server-runtime v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8334,7 +8357,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/index.js:
   (**
-   * @remix-run/server-runtime v2.7.2
+   * @remix-run/server-runtime v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8346,7 +8369,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8358,7 +8381,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8370,7 +8393,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8382,7 +8405,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8394,7 +8417,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8406,7 +8429,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8418,7 +8441,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8430,7 +8453,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8442,7 +8465,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8454,7 +8477,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fallback.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8466,7 +8489,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8478,7 +8501,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8490,7 +8513,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8502,7 +8525,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/server.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8514,7 +8537,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v2.7.2
+   * @remix-run/react v2.8.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -8524,4 +8547,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-2XFBS6PN.js.map
+//# sourceMappingURL=/build/_shared/chunk-AAI3QV4X.js.map
