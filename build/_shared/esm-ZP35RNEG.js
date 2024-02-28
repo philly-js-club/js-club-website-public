@@ -1,4 +1,5 @@
 import {
+  Action,
   Await,
   Form,
   Link,
@@ -6,6 +7,7 @@ import {
   LiveReload,
   Meta,
   NavLink,
+  Navigate,
   Outlet,
   PrefetchPageLinks,
   RemixBrowser,
@@ -16,6 +18,8 @@ import {
   Scripts,
   ScrollRestoration,
   createPath,
+  createRoutesFromChildren,
+  createSearchParams,
   defer,
   generatePath,
   isRouteErrorResponse,
@@ -25,6 +29,7 @@ import {
   parsePath,
   redirect,
   redirectDocument,
+  renderMatches,
   resolvePath,
   useActionData,
   useAsyncError,
@@ -35,6 +40,8 @@ import {
   useFetchers,
   useFormAction,
   useHref,
+  useInRouterContext,
+  useLinkClickHandler,
   useLoaderData,
   useLocation,
   useMatch,
@@ -50,10 +57,11 @@ import {
   useRevalidator,
   useRouteError,
   useRouteLoaderData,
+  useRoutes,
   useSearchParams,
   useSubmit,
   useViewTransitionState
-} from "/build/_shared/chunk-2XFBS6PN.js";
+} from "/build/_shared/chunk-AAI3QV4X.js";
 import "/build/_shared/chunk-GIAAE3CH.js";
 import "/build/_shared/chunk-BOXFZXVX.js";
 import "/build/_shared/chunk-4RRP2SUU.js";
@@ -67,6 +75,8 @@ export {
   LiveReload,
   Meta,
   NavLink,
+  Navigate,
+  Action as NavigationType,
   Outlet,
   PrefetchPageLinks,
   RemixBrowser,
@@ -77,6 +87,9 @@ export {
   ScrollRestoration,
   RemixContext as UNSAFE_RemixContext,
   createPath,
+  createRoutesFromChildren,
+  createRoutesFromChildren as createRoutesFromElements,
+  createSearchParams,
   defer,
   generatePath,
   isRouteErrorResponse,
@@ -86,6 +99,7 @@ export {
   parsePath,
   redirect,
   redirectDocument,
+  renderMatches,
   resolvePath,
   usePrompt as unstable_usePrompt,
   useViewTransitionState as unstable_useViewTransitionState,
@@ -98,6 +112,8 @@ export {
   useFetchers,
   useFormAction,
   useHref,
+  useInRouterContext,
+  useLinkClickHandler,
   useLoaderData,
   useLocation,
   useMatch,
@@ -112,7 +128,8 @@ export {
   useRevalidator,
   useRouteError,
   useRouteLoaderData,
+  useRoutes,
   useSearchParams,
   useSubmit
 };
-//# sourceMappingURL=/build/_shared/esm-APOVNHYG.js.map
+//# sourceMappingURL=/build/_shared/esm-ZP35RNEG.js.map
