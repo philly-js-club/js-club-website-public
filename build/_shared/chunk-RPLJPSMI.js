@@ -1,6 +1,6 @@
 import {
   Arrow
-} from "/build/_shared/chunk-4M2P4SZY.js";
+} from "/build/_shared/chunk-Z3GSFWOW.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XU7DNSPJ.js";
@@ -30,7 +30,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/Icons.tsx"
   );
-  import.meta.hot.lastModified = "1710383191231.968";
+  import.meta.hot.lastModified = "1710386524358.567";
 }
 function Icons({
   icons,
@@ -98,4 +98,4 @@ window.$RefreshSig$ = prevRefreshSig;
 export {
   Icons
 };
-//# sourceMappingURL=/build/_shared/chunk-S4R4YNDI.js.map
+//# sourceMappingURL=/build/_shared/chunk-RPLJPSMI.js.map
