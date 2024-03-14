@@ -3,6 +3,15 @@ import "/build/_shared/chunk-PNG5AS42.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2024-04-11T18:00:00.000-04:00",
+    duration: {
+      hours: 2
+    },
+    link: "https://www.eventbrite.com/e/philadelphia-js-club-hot-module-replacement-with-chasen-stark-tickets-863156082077",
+    location: "Indy Hall",
+    topics: ["Hot Module Replacement with Chasen Stark"]
+  },
+  {
     date: "2024-03-14T18:00:00.000-04:00",
     duration: {
       hours: 2
@@ -254,4 +263,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-QSUQHDN7.js.map
+//# sourceMappingURL=/build/_shared/events-2YZ4YY4Y.js.map
