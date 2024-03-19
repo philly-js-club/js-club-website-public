@@ -1,6 +1,6 @@
 import {
   site
-} from "/build/_shared/chunk-SL4BAPHI.js";
+} from "/build/_shared/chunk-NDROQMYV.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XU7DNSPJ.js";
@@ -53,7 +53,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/Arrow.tsx"
   );
-  import.meta.hot.lastModified = "1710818516420.5796";
+  import.meta.hot.lastModified = "1710822314646.0596";
 }
 function Arrow({
   className,
@@ -97,7 +97,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/PageGrid.tsx"
   );
-  import.meta.hot.lastModified = "1710818516420.5796";
+  import.meta.hot.lastModified = "1710822314646.0596";
 }
 function PageGrid({
   left,
@@ -190,4 +190,4 @@ export {
   Arrow,
   PageGrid
 };
-//# sourceMappingURL=/build/_shared/chunk-TUK7I4OV.js.map
+//# sourceMappingURL=/build/_shared/chunk-VENVMLBX.js.map
