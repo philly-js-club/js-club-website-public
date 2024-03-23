@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../app/config.ts"],
+  "sourcesContent": ["// REMIX HMR BEGIN\nimport * as __hmr__ from \"remix:hmr\";\nif (import.meta) {\nimport.meta.hot = __hmr__.createHotContext(\n//@ts-expect-error\n\"app/config.ts\"\n);\nimport.meta.hot.lastModified = \"1711164173243.0847\";\n}\n// REMIX HMR END\n\nexport const site = {\n\ttitle: \"Philly JS Club\",\n\tlongTitle: \"Philadelphia JavaScript Club\",\n\tdescription:\n\t\t\"A local community for talking about the things that excite us about Javascript development and the web.\",\n\tbaseURL: \"https://phillyjs.com\",\n\tdomain: \"phillyjs.com\",\n} as const;\n\nexport const region = {\n\tlocale: \"en-US\",\n\ttimeZone: \"UTC\",\n} as const;\n"],
+  "mappings": ";;;;;AAEA,IAAI,aAAa;AACjB,cAAY,MAAc;AAAA;AAAA,IAE1B;AAAA,EACA;AACA,cAAY,IAAI,eAAe;AAC/B;AAGO,IAAM,OAAO;AAAA,EACnB,OAAO;AAAA,EACP,WAAW;AAAA,EACX,aACC;AAAA,EACD,SAAS;AAAA,EACT,QAAQ;AACT;AAEO,IAAM,SAAS;AAAA,EACrB,QAAQ;AAAA,EACR,UAAU;AACX;",
+  "names": []
+}
