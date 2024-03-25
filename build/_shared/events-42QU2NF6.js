@@ -3,6 +3,18 @@ import "/build/_shared/chunk-PNG5AS42.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2024-05-10T17:30:00.000-04:00",
+    duration: {
+      hours: 1.5
+    },
+    link: "https://www.eventbrite.com/e/technically-developers-conference-tickets-825942023827",
+    location: "Pizzeria Salvy",
+    topics: [
+      "Technical.ly Super Meetup during Philly Tech Week",
+      'Join JS Club at the annual Super Meetup \u2014 use code "SUPERMEETUP" at the link for a free ticket!'
+    ]
+  },
+  {
     date: "2024-04-11T18:00:00.000-04:00",
     duration: {
       hours: 2
@@ -263,4 +275,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-2YZ4YY4Y.js.map
+//# sourceMappingURL=/build/_shared/events-42QU2NF6.js.map
