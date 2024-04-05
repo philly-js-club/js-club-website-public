@@ -1,10 +1,10 @@
 import {
   PageGrid
-} from "/build/_shared/chunk-KTGTKAXS.js";
+} from "/build/_shared/chunk-ETEYTS6O.js";
 import {
   constructSiteTitle
-} from "/build/_shared/chunk-H2YO2OSR.js";
-import "/build/_shared/chunk-XXKFHXUF.js";
+} from "/build/_shared/chunk-KHB23L6S.js";
+import "/build/_shared/chunk-RCILW33A.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XU7DNSPJ.js";
@@ -41,7 +41,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/routes/about.tsx"
   );
-  import.meta.hot.lastModified = "1712287454907.6367";
+  import.meta.hot.lastModified = "1712291301891.293";
 }
 var meta = () => {
   return [{
@@ -162,4 +162,4 @@ export {
   About as default,
   meta
 };
-//# sourceMappingURL=/build/routes/about-DDQXT6V4.js.map
+//# sourceMappingURL=/build/routes/about-ITVULKBZ.js.map
