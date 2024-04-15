@@ -3,6 +3,15 @@ import "/build/_shared/chunk-PNG5AS42.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2024-05-16T18:00:00.000-04:00",
+    duration: {
+      hours: 2
+    },
+    link: "https://www.eventbrite.com/e/philadelphia-js-club-rooftop-social-hour-tickets-883420192577",
+    location: "Indy Hall",
+    topics: ["Rooftop Social Hour"]
+  },
+  {
     date: "2024-05-10T17:30:00.000-04:00",
     duration: {
       hours: 1.5
@@ -275,4 +284,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-42QU2NF6.js.map
+//# sourceMappingURL=/build/_shared/events-XP4GFD42.js.map
