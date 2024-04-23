@@ -1,6 +1,6 @@
 import {
   site
-} from "/build/_shared/chunk-VIDVVDVC.js";
+} from "/build/_shared/chunk-2NLRSSBW.js";
 import {
   createHotContext
 } from "/build/_shared/chunk-4RRP2SUU.js";
@@ -11,7 +11,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/utils/common.ts"
   );
-  import.meta.hot.lastModified = "1713835764203.0425";
+  import.meta.hot.lastModified = "1713839467474.9033";
 }
 function constructSiteTitle(pageTitle) {
   if (!pageTitle)
@@ -26,4 +26,4 @@ export {
   constructSiteTitle,
   upperFirst
 };
-//# sourceMappingURL=/build/_shared/chunk-7COZB2FH.js.map
+//# sourceMappingURL=/build/_shared/chunk-6IIXTRUQ.js.map
