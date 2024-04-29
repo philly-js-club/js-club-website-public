@@ -6588,10 +6588,11 @@ var redirectDocument2 = (url, init = 302) => {
 // node_modules/turbo-stream/dist/turbo-stream.mjs
 var HOLE = -1;
 var NAN = -2;
-var NEGATIVE_INFINITY = -4;
-var NEGATIVE_ZERO = -5;
-var POSITIVE_INFINITY = -3;
-var UNDEFINED = -1;
+var NEGATIVE_INFINITY = -3;
+var NEGATIVE_ZERO = -4;
+var NULL = -5;
+var POSITIVE_INFINITY = -6;
+var UNDEFINED = -7;
 var TYPE_BIGINT = "B";
 var TYPE_DATE = "D";
 var TYPE_ERROR = "E";
@@ -6614,12 +6615,12 @@ var Deferred2 = class {
   }
 };
 function createLineSplittingTransform() {
-  let decoder = new TextDecoder();
+  const decoder = new TextDecoder();
   let leftover = "";
   return new TransformStream({
     transform(chunk, controller) {
-      let str = decoder.decode(chunk, { stream: true });
-      let parts = (leftover + str).split("\n");
+      const str = decoder.decode(chunk, { stream: true });
+      const parts = (leftover + str).split("\n");
       leftover = parts.pop() || "";
       for (const part of parts) {
         controller.enqueue(part);
@@ -6650,6 +6651,8 @@ function hydrate(index) {
   switch (index) {
     case UNDEFINED:
       return;
+    case NULL:
+      return null;
     case NAN:
       return NaN;
     case POSITIVE_INFINITY:
@@ -9466,4 +9469,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-A75INCFF.js.map
+//# sourceMappingURL=/build/_shared/chunk-CE6MK3QB.js.map
