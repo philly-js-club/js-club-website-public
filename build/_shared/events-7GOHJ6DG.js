@@ -3,6 +3,15 @@ import "/build/_shared/chunk-PNG5AS42.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2024-06-13T18:00:00.000-04:00",
+    duration: {
+      hours: 2
+    },
+    link: "https://www.eventbrite.com/e/philadelphia-js-club-debug-like-a-scientist-with-jason-voccia-tickets-899252126317",
+    location: "Indy Hall",
+    topics: ["Debug like a Scientist with Jason Voccia"]
+  },
+  {
     date: "2024-05-16T18:00:00.000-04:00",
     duration: {
       hours: 2
@@ -284,4 +293,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-XP4GFD42.js.map
+//# sourceMappingURL=/build/_shared/events-7GOHJ6DG.js.map
