@@ -21,9 +21,9 @@ var events_default = [
     topics: ["Rooftop Social Hour"]
   },
   {
-    date: "2024-05-10T17:30:00.000-04:00",
+    date: "2024-05-08T17:00:00.000-04:00",
     duration: {
-      hours: 1.5
+      hours: 2
     },
     link: "https://www.eventbrite.com/e/technically-developers-conference-tickets-825942023827",
     location: "Pizzeria Salvy",
@@ -293,4 +293,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-7GOHJ6DG.js.map
+//# sourceMappingURL=/build/_shared/events-6LFVDVSF.js.map
