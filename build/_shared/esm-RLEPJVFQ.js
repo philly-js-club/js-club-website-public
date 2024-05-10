@@ -21,6 +21,8 @@ import {
   createRoutesFromChildren,
   createSearchParams,
   defer,
+  defineClientAction,
+  defineClientLoader,
   generatePath,
   isRouteErrorResponse,
   json,
@@ -61,7 +63,7 @@ import {
   useSearchParams,
   useSubmit,
   useViewTransitionState
-} from "/build/_shared/chunk-CE6MK3QB.js";
+} from "/build/_shared/chunk-LLWUPXF3.js";
 import "/build/_shared/chunk-U4FRFQSK.js";
 import "/build/_shared/chunk-7M6SC7J5.js";
 import "/build/_shared/chunk-4RRP2SUU.js";
@@ -101,6 +103,8 @@ export {
   redirectDocument,
   renderMatches,
   resolvePath,
+  defineClientAction as unstable_defineClientAction,
+  defineClientLoader as unstable_defineClientLoader,
   usePrompt as unstable_usePrompt,
   useViewTransitionState as unstable_useViewTransitionState,
   useActionData,
@@ -132,4 +136,4 @@ export {
   useSearchParams,
   useSubmit
 };
-//# sourceMappingURL=/build/_shared/esm-N76V6OMK.js.map
+//# sourceMappingURL=/build/_shared/esm-RLEPJVFQ.js.map
