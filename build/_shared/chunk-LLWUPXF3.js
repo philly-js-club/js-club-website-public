@@ -2162,7 +2162,8 @@ function createStaticHandler(routes, opts) {
   async function queryRoute(request, _temp4) {
     let {
       routeId,
-      requestContext
+      requestContext,
+      unstable_dataStrategy
     } = _temp4 === void 0 ? {} : _temp4;
     let url = new URL(request.url);
     let method = request.method;
@@ -2188,7 +2189,7 @@ function createStaticHandler(routes, opts) {
         pathname: location.pathname
       });
     }
-    let result = await queryImpl(request, location, matches, requestContext, null, false, match);
+    let result = await queryImpl(request, location, matches, requestContext, unstable_dataStrategy || null, false, match);
     if (isResponse(result)) {
       return result;
     }
@@ -4777,7 +4778,7 @@ var init_dist = __esm({
           });
         } else if (resolve._tracked) {
           promise = resolve;
-          status = promise._error !== void 0 ? AwaitRenderStatus.error : promise._data !== void 0 ? AwaitRenderStatus.success : AwaitRenderStatus.pending;
+          status = "_error" in promise ? AwaitRenderStatus.error : "_data" in promise ? AwaitRenderStatus.success : AwaitRenderStatus.pending;
         } else {
           status = AwaitRenderStatus.pending;
           Object.defineProperty(resolve, "_tracked", {
@@ -4813,6 +4814,1237 @@ var init_dist = __esm({
   }
 });
 
+// node_modules/react-router-dom/dist/index.js
+var dist_exports2 = {};
+__export(dist_exports2, {
+  AbortedDeferredError: () => AbortedDeferredError,
+  Await: () => Await,
+  BrowserRouter: () => BrowserRouter,
+  Form: () => Form,
+  HashRouter: () => HashRouter,
+  Link: () => Link,
+  MemoryRouter: () => MemoryRouter,
+  NavLink: () => NavLink,
+  Navigate: () => Navigate,
+  NavigationType: () => Action,
+  Outlet: () => Outlet,
+  Route: () => Route,
+  Router: () => Router,
+  RouterProvider: () => RouterProvider2,
+  Routes: () => Routes,
+  ScrollRestoration: () => ScrollRestoration,
+  UNSAFE_DataRouterContext: () => DataRouterContext,
+  UNSAFE_DataRouterStateContext: () => DataRouterStateContext,
+  UNSAFE_ErrorResponseImpl: () => ErrorResponseImpl,
+  UNSAFE_FetchersContext: () => FetchersContext,
+  UNSAFE_LocationContext: () => LocationContext,
+  UNSAFE_NavigationContext: () => NavigationContext,
+  UNSAFE_RouteContext: () => RouteContext,
+  UNSAFE_ViewTransitionContext: () => ViewTransitionContext,
+  UNSAFE_useRouteId: () => useRouteId,
+  UNSAFE_useScrollRestoration: () => useScrollRestoration,
+  createBrowserRouter: () => createBrowserRouter,
+  createHashRouter: () => createHashRouter,
+  createMemoryRouter: () => createMemoryRouter,
+  createPath: () => createPath,
+  createRoutesFromChildren: () => createRoutesFromChildren,
+  createRoutesFromElements: () => createRoutesFromChildren,
+  createSearchParams: () => createSearchParams,
+  defer: () => defer,
+  generatePath: () => generatePath,
+  isRouteErrorResponse: () => isRouteErrorResponse,
+  json: () => json,
+  matchPath: () => matchPath,
+  matchRoutes: () => matchRoutes,
+  parsePath: () => parsePath,
+  redirect: () => redirect,
+  redirectDocument: () => redirectDocument,
+  renderMatches: () => renderMatches,
+  resolvePath: () => resolvePath,
+  unstable_HistoryRouter: () => HistoryRouter,
+  unstable_usePrompt: () => usePrompt,
+  unstable_useViewTransitionState: () => useViewTransitionState,
+  useActionData: () => useActionData,
+  useAsyncError: () => useAsyncError,
+  useAsyncValue: () => useAsyncValue,
+  useBeforeUnload: () => useBeforeUnload,
+  useBlocker: () => useBlocker,
+  useFetcher: () => useFetcher,
+  useFetchers: () => useFetchers,
+  useFormAction: () => useFormAction,
+  useHref: () => useHref,
+  useInRouterContext: () => useInRouterContext,
+  useLinkClickHandler: () => useLinkClickHandler,
+  useLoaderData: () => useLoaderData,
+  useLocation: () => useLocation,
+  useMatch: () => useMatch,
+  useMatches: () => useMatches,
+  useNavigate: () => useNavigate,
+  useNavigation: () => useNavigation,
+  useNavigationType: () => useNavigationType,
+  useOutlet: () => useOutlet,
+  useOutletContext: () => useOutletContext,
+  useParams: () => useParams,
+  useResolvedPath: () => useResolvedPath,
+  useRevalidator: () => useRevalidator,
+  useRouteError: () => useRouteError,
+  useRouteLoaderData: () => useRouteLoaderData,
+  useRoutes: () => useRoutes,
+  useSearchParams: () => useSearchParams,
+  useSubmit: () => useSubmit
+});
+function _extends3() {
+  _extends3 = Object.assign ? Object.assign.bind() : function(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+    return target;
+  };
+  return _extends3.apply(this, arguments);
+}
+function _objectWithoutPropertiesLoose(source, excluded) {
+  if (source == null)
+    return {};
+  var target = {};
+  var sourceKeys = Object.keys(source);
+  var key, i;
+  for (i = 0; i < sourceKeys.length; i++) {
+    key = sourceKeys[i];
+    if (excluded.indexOf(key) >= 0)
+      continue;
+    target[key] = source[key];
+  }
+  return target;
+}
+function isHtmlElement(object) {
+  return object != null && typeof object.tagName === "string";
+}
+function isButtonElement(object) {
+  return isHtmlElement(object) && object.tagName.toLowerCase() === "button";
+}
+function isFormElement(object) {
+  return isHtmlElement(object) && object.tagName.toLowerCase() === "form";
+}
+function isInputElement(object) {
+  return isHtmlElement(object) && object.tagName.toLowerCase() === "input";
+}
+function isModifiedEvent(event) {
+  return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
+}
+function shouldProcessLinkClick(event, target) {
+  return event.button === 0 && // Ignore everything but left clicks
+  (!target || target === "_self") && // Let browser handle "target=_blank" etc.
+  !isModifiedEvent(event);
+}
+function createSearchParams(init) {
+  if (init === void 0) {
+    init = "";
+  }
+  return new URLSearchParams(typeof init === "string" || Array.isArray(init) || init instanceof URLSearchParams ? init : Object.keys(init).reduce((memo, key) => {
+    let value = init[key];
+    return memo.concat(Array.isArray(value) ? value.map((v) => [key, v]) : [[key, value]]);
+  }, []));
+}
+function getSearchParamsForLocation(locationSearch, defaultSearchParams) {
+  let searchParams = createSearchParams(locationSearch);
+  if (defaultSearchParams) {
+    defaultSearchParams.forEach((_, key) => {
+      if (!searchParams.has(key)) {
+        defaultSearchParams.getAll(key).forEach((value) => {
+          searchParams.append(key, value);
+        });
+      }
+    });
+  }
+  return searchParams;
+}
+function isFormDataSubmitterSupported() {
+  if (_formDataSupportsSubmitter === null) {
+    try {
+      new FormData(
+        document.createElement("form"),
+        // @ts-expect-error if FormData supports the submitter parameter, this will throw
+        0
+      );
+      _formDataSupportsSubmitter = false;
+    } catch (e) {
+      _formDataSupportsSubmitter = true;
+    }
+  }
+  return _formDataSupportsSubmitter;
+}
+function getFormEncType(encType) {
+  if (encType != null && !supportedFormEncTypes.has(encType)) {
+    true ? warning(false, '"' + encType + '" is not a valid `encType` for `<Form>`/`<fetcher.Form>` ' + ('and will default to "' + defaultEncType + '"')) : void 0;
+    return null;
+  }
+  return encType;
+}
+function getFormSubmissionInfo(target, basename) {
+  let method;
+  let action;
+  let encType;
+  let formData;
+  let body;
+  if (isFormElement(target)) {
+    let attr = target.getAttribute("action");
+    action = attr ? stripBasename(attr, basename) : null;
+    method = target.getAttribute("method") || defaultMethod;
+    encType = getFormEncType(target.getAttribute("enctype")) || defaultEncType;
+    formData = new FormData(target);
+  } else if (isButtonElement(target) || isInputElement(target) && (target.type === "submit" || target.type === "image")) {
+    let form = target.form;
+    if (form == null) {
+      throw new Error('Cannot submit a <button> or <input type="submit"> without a <form>');
+    }
+    let attr = target.getAttribute("formaction") || form.getAttribute("action");
+    action = attr ? stripBasename(attr, basename) : null;
+    method = target.getAttribute("formmethod") || form.getAttribute("method") || defaultMethod;
+    encType = getFormEncType(target.getAttribute("formenctype")) || getFormEncType(form.getAttribute("enctype")) || defaultEncType;
+    formData = new FormData(form, target);
+    if (!isFormDataSubmitterSupported()) {
+      let {
+        name,
+        type,
+        value
+      } = target;
+      if (type === "image") {
+        let prefix = name ? name + "." : "";
+        formData.append(prefix + "x", "0");
+        formData.append(prefix + "y", "0");
+      } else if (name) {
+        formData.append(name, value);
+      }
+    }
+  } else if (isHtmlElement(target)) {
+    throw new Error('Cannot submit element that is not <form>, <button>, or <input type="submit|image">');
+  } else {
+    method = defaultMethod;
+    action = null;
+    encType = defaultEncType;
+    body = target;
+  }
+  if (formData && encType === "text/plain") {
+    body = formData;
+    formData = void 0;
+  }
+  return {
+    action,
+    method: method.toLowerCase(),
+    encType,
+    formData,
+    body
+  };
+}
+function createBrowserRouter(routes, opts) {
+  return createRouter({
+    basename: opts == null ? void 0 : opts.basename,
+    future: _extends3({}, opts == null ? void 0 : opts.future, {
+      v7_prependBasename: true
+    }),
+    history: createBrowserHistory({
+      window: opts == null ? void 0 : opts.window
+    }),
+    hydrationData: (opts == null ? void 0 : opts.hydrationData) || parseHydrationData(),
+    routes,
+    mapRouteProperties,
+    unstable_dataStrategy: opts == null ? void 0 : opts.unstable_dataStrategy,
+    window: opts == null ? void 0 : opts.window
+  }).initialize();
+}
+function createHashRouter(routes, opts) {
+  return createRouter({
+    basename: opts == null ? void 0 : opts.basename,
+    future: _extends3({}, opts == null ? void 0 : opts.future, {
+      v7_prependBasename: true
+    }),
+    history: createHashHistory({
+      window: opts == null ? void 0 : opts.window
+    }),
+    hydrationData: (opts == null ? void 0 : opts.hydrationData) || parseHydrationData(),
+    routes,
+    mapRouteProperties,
+    unstable_dataStrategy: opts == null ? void 0 : opts.unstable_dataStrategy,
+    window: opts == null ? void 0 : opts.window
+  }).initialize();
+}
+function parseHydrationData() {
+  var _window;
+  let state = (_window = window) == null ? void 0 : _window.__staticRouterHydrationData;
+  if (state && state.errors) {
+    state = _extends3({}, state, {
+      errors: deserializeErrors(state.errors)
+    });
+  }
+  return state;
+}
+function deserializeErrors(errors) {
+  if (!errors)
+    return null;
+  let entries = Object.entries(errors);
+  let serialized = {};
+  for (let [key, val] of entries) {
+    if (val && val.__type === "RouteErrorResponse") {
+      serialized[key] = new ErrorResponseImpl(val.status, val.statusText, val.data, val.internal === true);
+    } else if (val && val.__type === "Error") {
+      if (val.__subType) {
+        let ErrorConstructor = window[val.__subType];
+        if (typeof ErrorConstructor === "function") {
+          try {
+            let error = new ErrorConstructor(val.message);
+            error.stack = "";
+            serialized[key] = error;
+          } catch (e) {
+          }
+        }
+      }
+      if (serialized[key] == null) {
+        let error = new Error(val.message);
+        error.stack = "";
+        serialized[key] = error;
+      }
+    } else {
+      serialized[key] = val;
+    }
+  }
+  return serialized;
+}
+function startTransitionSafe(cb) {
+  if (startTransitionImpl2) {
+    startTransitionImpl2(cb);
+  } else {
+    cb();
+  }
+}
+function flushSyncSafe(cb) {
+  if (flushSyncImpl) {
+    flushSyncImpl(cb);
+  } else {
+    cb();
+  }
+}
+function RouterProvider2(_ref) {
+  let {
+    fallbackElement,
+    router: router2,
+    future
+  } = _ref;
+  let [state, setStateImpl] = React2.useState(router2.state);
+  let [pendingState, setPendingState] = React2.useState();
+  let [vtContext, setVtContext] = React2.useState({
+    isTransitioning: false
+  });
+  let [renderDfd, setRenderDfd] = React2.useState();
+  let [transition, setTransition] = React2.useState();
+  let [interruption, setInterruption] = React2.useState();
+  let fetcherData = React2.useRef(/* @__PURE__ */ new Map());
+  let {
+    v7_startTransition
+  } = future || {};
+  let optInStartTransition = React2.useCallback((cb) => {
+    if (v7_startTransition) {
+      startTransitionSafe(cb);
+    } else {
+      cb();
+    }
+  }, [v7_startTransition]);
+  let setState = React2.useCallback((newState, _ref2) => {
+    let {
+      deletedFetchers,
+      unstable_flushSync: flushSync,
+      unstable_viewTransitionOpts: viewTransitionOpts
+    } = _ref2;
+    deletedFetchers.forEach((key) => fetcherData.current.delete(key));
+    newState.fetchers.forEach((fetcher, key) => {
+      if (fetcher.data !== void 0) {
+        fetcherData.current.set(key, fetcher.data);
+      }
+    });
+    let isViewTransitionUnavailable = router2.window == null || router2.window.document == null || typeof router2.window.document.startViewTransition !== "function";
+    if (!viewTransitionOpts || isViewTransitionUnavailable) {
+      if (flushSync) {
+        flushSyncSafe(() => setStateImpl(newState));
+      } else {
+        optInStartTransition(() => setStateImpl(newState));
+      }
+      return;
+    }
+    if (flushSync) {
+      flushSyncSafe(() => {
+        if (transition) {
+          renderDfd && renderDfd.resolve();
+          transition.skipTransition();
+        }
+        setVtContext({
+          isTransitioning: true,
+          flushSync: true,
+          currentLocation: viewTransitionOpts.currentLocation,
+          nextLocation: viewTransitionOpts.nextLocation
+        });
+      });
+      let t = router2.window.document.startViewTransition(() => {
+        flushSyncSafe(() => setStateImpl(newState));
+      });
+      t.finished.finally(() => {
+        flushSyncSafe(() => {
+          setRenderDfd(void 0);
+          setTransition(void 0);
+          setPendingState(void 0);
+          setVtContext({
+            isTransitioning: false
+          });
+        });
+      });
+      flushSyncSafe(() => setTransition(t));
+      return;
+    }
+    if (transition) {
+      renderDfd && renderDfd.resolve();
+      transition.skipTransition();
+      setInterruption({
+        state: newState,
+        currentLocation: viewTransitionOpts.currentLocation,
+        nextLocation: viewTransitionOpts.nextLocation
+      });
+    } else {
+      setPendingState(newState);
+      setVtContext({
+        isTransitioning: true,
+        flushSync: false,
+        currentLocation: viewTransitionOpts.currentLocation,
+        nextLocation: viewTransitionOpts.nextLocation
+      });
+    }
+  }, [router2.window, transition, renderDfd, fetcherData, optInStartTransition]);
+  React2.useLayoutEffect(() => router2.subscribe(setState), [router2, setState]);
+  React2.useEffect(() => {
+    if (vtContext.isTransitioning && !vtContext.flushSync) {
+      setRenderDfd(new Deferred());
+    }
+  }, [vtContext]);
+  React2.useEffect(() => {
+    if (renderDfd && pendingState && router2.window) {
+      let newState = pendingState;
+      let renderPromise = renderDfd.promise;
+      let transition2 = router2.window.document.startViewTransition(async () => {
+        optInStartTransition(() => setStateImpl(newState));
+        await renderPromise;
+      });
+      transition2.finished.finally(() => {
+        setRenderDfd(void 0);
+        setTransition(void 0);
+        setPendingState(void 0);
+        setVtContext({
+          isTransitioning: false
+        });
+      });
+      setTransition(transition2);
+    }
+  }, [optInStartTransition, pendingState, renderDfd, router2.window]);
+  React2.useEffect(() => {
+    if (renderDfd && pendingState && state.location.key === pendingState.location.key) {
+      renderDfd.resolve();
+    }
+  }, [renderDfd, transition, state.location, pendingState]);
+  React2.useEffect(() => {
+    if (!vtContext.isTransitioning && interruption) {
+      setPendingState(interruption.state);
+      setVtContext({
+        isTransitioning: true,
+        flushSync: false,
+        currentLocation: interruption.currentLocation,
+        nextLocation: interruption.nextLocation
+      });
+      setInterruption(void 0);
+    }
+  }, [vtContext.isTransitioning, interruption]);
+  React2.useEffect(() => {
+    true ? warning(fallbackElement == null || !router2.future.v7_partialHydration, "`<RouterProvider fallbackElement>` is deprecated when using `v7_partialHydration`, use a `HydrateFallback` component instead") : void 0;
+  }, []);
+  let navigator = React2.useMemo(() => {
+    return {
+      createHref: router2.createHref,
+      encodeLocation: router2.encodeLocation,
+      go: (n) => router2.navigate(n),
+      push: (to, state2, opts) => router2.navigate(to, {
+        state: state2,
+        preventScrollReset: opts == null ? void 0 : opts.preventScrollReset
+      }),
+      replace: (to, state2, opts) => router2.navigate(to, {
+        replace: true,
+        state: state2,
+        preventScrollReset: opts == null ? void 0 : opts.preventScrollReset
+      })
+    };
+  }, [router2]);
+  let basename = router2.basename || "/";
+  let dataRouterContext = React2.useMemo(() => ({
+    router: router2,
+    navigator,
+    static: false,
+    basename
+  }), [router2, navigator, basename]);
+  return /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(DataRouterContext.Provider, {
+    value: dataRouterContext
+  }, /* @__PURE__ */ React2.createElement(DataRouterStateContext.Provider, {
+    value: state
+  }, /* @__PURE__ */ React2.createElement(FetchersContext.Provider, {
+    value: fetcherData.current
+  }, /* @__PURE__ */ React2.createElement(ViewTransitionContext.Provider, {
+    value: vtContext
+  }, /* @__PURE__ */ React2.createElement(Router, {
+    basename,
+    location: state.location,
+    navigationType: state.historyAction,
+    navigator,
+    future: {
+      v7_relativeSplatPath: router2.future.v7_relativeSplatPath
+    }
+  }, state.initialized || router2.future.v7_partialHydration ? /* @__PURE__ */ React2.createElement(DataRoutes2, {
+    routes: router2.routes,
+    future: router2.future,
+    state
+  }) : fallbackElement))))), null);
+}
+function DataRoutes2(_ref3) {
+  let {
+    routes,
+    future,
+    state
+  } = _ref3;
+  return useRoutesImpl(routes, void 0, state, future);
+}
+function BrowserRouter(_ref4) {
+  let {
+    basename,
+    children,
+    future,
+    window: window2
+  } = _ref4;
+  let historyRef = React2.useRef();
+  if (historyRef.current == null) {
+    historyRef.current = createBrowserHistory({
+      window: window2,
+      v5Compat: true
+    });
+  }
+  let history = historyRef.current;
+  let [state, setStateImpl] = React2.useState({
+    action: history.action,
+    location: history.location
+  });
+  let {
+    v7_startTransition
+  } = future || {};
+  let setState = React2.useCallback((newState) => {
+    v7_startTransition && startTransitionImpl2 ? startTransitionImpl2(() => setStateImpl(newState)) : setStateImpl(newState);
+  }, [setStateImpl, v7_startTransition]);
+  React2.useLayoutEffect(() => history.listen(setState), [history, setState]);
+  return /* @__PURE__ */ React2.createElement(Router, {
+    basename,
+    children,
+    location: state.location,
+    navigationType: state.action,
+    navigator: history,
+    future
+  });
+}
+function HashRouter(_ref5) {
+  let {
+    basename,
+    children,
+    future,
+    window: window2
+  } = _ref5;
+  let historyRef = React2.useRef();
+  if (historyRef.current == null) {
+    historyRef.current = createHashHistory({
+      window: window2,
+      v5Compat: true
+    });
+  }
+  let history = historyRef.current;
+  let [state, setStateImpl] = React2.useState({
+    action: history.action,
+    location: history.location
+  });
+  let {
+    v7_startTransition
+  } = future || {};
+  let setState = React2.useCallback((newState) => {
+    v7_startTransition && startTransitionImpl2 ? startTransitionImpl2(() => setStateImpl(newState)) : setStateImpl(newState);
+  }, [setStateImpl, v7_startTransition]);
+  React2.useLayoutEffect(() => history.listen(setState), [history, setState]);
+  return /* @__PURE__ */ React2.createElement(Router, {
+    basename,
+    children,
+    location: state.location,
+    navigationType: state.action,
+    navigator: history,
+    future
+  });
+}
+function HistoryRouter(_ref6) {
+  let {
+    basename,
+    children,
+    future,
+    history
+  } = _ref6;
+  let [state, setStateImpl] = React2.useState({
+    action: history.action,
+    location: history.location
+  });
+  let {
+    v7_startTransition
+  } = future || {};
+  let setState = React2.useCallback((newState) => {
+    v7_startTransition && startTransitionImpl2 ? startTransitionImpl2(() => setStateImpl(newState)) : setStateImpl(newState);
+  }, [setStateImpl, v7_startTransition]);
+  React2.useLayoutEffect(() => history.listen(setState), [history, setState]);
+  return /* @__PURE__ */ React2.createElement(Router, {
+    basename,
+    children,
+    location: state.location,
+    navigationType: state.action,
+    navigator: history,
+    future
+  });
+}
+function ScrollRestoration(_ref10) {
+  let {
+    getKey,
+    storageKey
+  } = _ref10;
+  useScrollRestoration({
+    getKey,
+    storageKey
+  });
+  return null;
+}
+function getDataRouterConsoleError2(hookName) {
+  return hookName + " must be used within a data router.  See https://reactrouter.com/routers/picking-a-router.";
+}
+function useDataRouterContext2(hookName) {
+  let ctx = React2.useContext(DataRouterContext);
+  !ctx ? true ? invariant(false, getDataRouterConsoleError2(hookName)) : invariant(false) : void 0;
+  return ctx;
+}
+function useDataRouterState2(hookName) {
+  let state = React2.useContext(DataRouterStateContext);
+  !state ? true ? invariant(false, getDataRouterConsoleError2(hookName)) : invariant(false) : void 0;
+  return state;
+}
+function useLinkClickHandler(to, _temp) {
+  let {
+    target,
+    replace: replaceProp,
+    state,
+    preventScrollReset,
+    relative,
+    unstable_viewTransition
+  } = _temp === void 0 ? {} : _temp;
+  let navigate = useNavigate();
+  let location = useLocation();
+  let path = useResolvedPath(to, {
+    relative
+  });
+  return React2.useCallback((event) => {
+    if (shouldProcessLinkClick(event, target)) {
+      event.preventDefault();
+      let replace = replaceProp !== void 0 ? replaceProp : createPath(location) === createPath(path);
+      navigate(to, {
+        replace,
+        state,
+        preventScrollReset,
+        relative,
+        unstable_viewTransition
+      });
+    }
+  }, [location, navigate, path, replaceProp, state, target, to, preventScrollReset, relative, unstable_viewTransition]);
+}
+function useSearchParams(defaultInit) {
+  true ? warning(typeof URLSearchParams !== "undefined", "You cannot use the `useSearchParams` hook in a browser that does not support the URLSearchParams API. If you need to support Internet Explorer 11, we recommend you load a polyfill such as https://github.com/ungap/url-search-params\n\nIf you're unsure how to load polyfills, we recommend you check out https://polyfill.io/v3/ which provides some recommendations about how to load polyfills only for users that need them, instead of for every user.") : void 0;
+  let defaultSearchParamsRef = React2.useRef(createSearchParams(defaultInit));
+  let hasSetSearchParamsRef = React2.useRef(false);
+  let location = useLocation();
+  let searchParams = React2.useMemo(() => (
+    // Only merge in the defaults if we haven't yet called setSearchParams.
+    // Once we call that we want those to take precedence, otherwise you can't
+    // remove a param with setSearchParams({}) if it has an initial value
+    getSearchParamsForLocation(location.search, hasSetSearchParamsRef.current ? null : defaultSearchParamsRef.current)
+  ), [location.search]);
+  let navigate = useNavigate();
+  let setSearchParams = React2.useCallback((nextInit, navigateOptions) => {
+    const newSearchParams = createSearchParams(typeof nextInit === "function" ? nextInit(searchParams) : nextInit);
+    hasSetSearchParamsRef.current = true;
+    navigate("?" + newSearchParams, navigateOptions);
+  }, [navigate, searchParams]);
+  return [searchParams, setSearchParams];
+}
+function validateClientSideSubmission() {
+  if (typeof document === "undefined") {
+    throw new Error("You are calling submit during the server render. Try calling submit within a `useEffect` or callback instead.");
+  }
+}
+function useSubmit() {
+  let {
+    router: router2
+  } = useDataRouterContext2(DataRouterHook2.UseSubmit);
+  let {
+    basename
+  } = React2.useContext(NavigationContext);
+  let currentRouteId = useRouteId();
+  return React2.useCallback(function(target, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    validateClientSideSubmission();
+    let {
+      action,
+      method,
+      encType,
+      formData,
+      body
+    } = getFormSubmissionInfo(target, basename);
+    if (options.navigate === false) {
+      let key = options.fetcherKey || getUniqueFetcherId();
+      router2.fetch(key, currentRouteId, options.action || action, {
+        preventScrollReset: options.preventScrollReset,
+        formData,
+        body,
+        formMethod: options.method || method,
+        formEncType: options.encType || encType,
+        unstable_flushSync: options.unstable_flushSync
+      });
+    } else {
+      router2.navigate(options.action || action, {
+        preventScrollReset: options.preventScrollReset,
+        formData,
+        body,
+        formMethod: options.method || method,
+        formEncType: options.encType || encType,
+        replace: options.replace,
+        state: options.state,
+        fromRouteId: currentRouteId,
+        unstable_flushSync: options.unstable_flushSync,
+        unstable_viewTransition: options.unstable_viewTransition
+      });
+    }
+  }, [router2, basename, currentRouteId]);
+}
+function useFormAction(action, _temp2) {
+  let {
+    relative
+  } = _temp2 === void 0 ? {} : _temp2;
+  let {
+    basename
+  } = React2.useContext(NavigationContext);
+  let routeContext = React2.useContext(RouteContext);
+  !routeContext ? true ? invariant(false, "useFormAction must be used inside a RouteContext") : invariant(false) : void 0;
+  let [match] = routeContext.matches.slice(-1);
+  let path = _extends3({}, useResolvedPath(action ? action : ".", {
+    relative
+  }));
+  let location = useLocation();
+  if (action == null) {
+    path.search = location.search;
+    let params = new URLSearchParams(path.search);
+    if (params.has("index") && params.get("index") === "") {
+      params.delete("index");
+      path.search = params.toString() ? "?" + params.toString() : "";
+    }
+  }
+  if ((!action || action === ".") && match.route.index) {
+    path.search = path.search ? path.search.replace(/^\?/, "?index&") : "?index";
+  }
+  if (basename !== "/") {
+    path.pathname = path.pathname === "/" ? basename : joinPaths([basename, path.pathname]);
+  }
+  return createPath(path);
+}
+function useFetcher(_temp3) {
+  var _route$matches;
+  let {
+    key
+  } = _temp3 === void 0 ? {} : _temp3;
+  let {
+    router: router2
+  } = useDataRouterContext2(DataRouterHook2.UseFetcher);
+  let state = useDataRouterState2(DataRouterStateHook2.UseFetcher);
+  let fetcherData = React2.useContext(FetchersContext);
+  let route = React2.useContext(RouteContext);
+  let routeId = (_route$matches = route.matches[route.matches.length - 1]) == null ? void 0 : _route$matches.route.id;
+  !fetcherData ? true ? invariant(false, "useFetcher must be used inside a FetchersContext") : invariant(false) : void 0;
+  !route ? true ? invariant(false, "useFetcher must be used inside a RouteContext") : invariant(false) : void 0;
+  !(routeId != null) ? true ? invariant(false, 'useFetcher can only be used on routes that contain a unique "id"') : invariant(false) : void 0;
+  let defaultKey = useIdImpl ? useIdImpl() : "";
+  let [fetcherKey, setFetcherKey] = React2.useState(key || defaultKey);
+  if (key && key !== fetcherKey) {
+    setFetcherKey(key);
+  } else if (!fetcherKey) {
+    setFetcherKey(getUniqueFetcherId());
+  }
+  React2.useEffect(() => {
+    router2.getFetcher(fetcherKey);
+    return () => {
+      router2.deleteFetcher(fetcherKey);
+    };
+  }, [router2, fetcherKey]);
+  let load = React2.useCallback((href, opts) => {
+    !routeId ? true ? invariant(false, "No routeId available for fetcher.load()") : invariant(false) : void 0;
+    router2.fetch(fetcherKey, routeId, href, opts);
+  }, [fetcherKey, routeId, router2]);
+  let submitImpl = useSubmit();
+  let submit = React2.useCallback((target, opts) => {
+    submitImpl(target, _extends3({}, opts, {
+      navigate: false,
+      fetcherKey
+    }));
+  }, [fetcherKey, submitImpl]);
+  let FetcherForm = React2.useMemo(() => {
+    let FetcherForm2 = /* @__PURE__ */ React2.forwardRef((props, ref) => {
+      return /* @__PURE__ */ React2.createElement(Form, _extends3({}, props, {
+        navigate: false,
+        fetcherKey,
+        ref
+      }));
+    });
+    if (true) {
+      FetcherForm2.displayName = "fetcher.Form";
+    }
+    return FetcherForm2;
+  }, [fetcherKey]);
+  let fetcher = state.fetchers.get(fetcherKey) || IDLE_FETCHER;
+  let data = fetcherData.get(fetcherKey);
+  let fetcherWithComponents = React2.useMemo(() => _extends3({
+    Form: FetcherForm,
+    submit,
+    load
+  }, fetcher, {
+    data
+  }), [FetcherForm, submit, load, fetcher, data]);
+  return fetcherWithComponents;
+}
+function useFetchers() {
+  let state = useDataRouterState2(DataRouterStateHook2.UseFetchers);
+  return Array.from(state.fetchers.entries()).map((_ref11) => {
+    let [key, fetcher] = _ref11;
+    return _extends3({}, fetcher, {
+      key
+    });
+  });
+}
+function useScrollRestoration(_temp4) {
+  let {
+    getKey,
+    storageKey
+  } = _temp4 === void 0 ? {} : _temp4;
+  let {
+    router: router2
+  } = useDataRouterContext2(DataRouterHook2.UseScrollRestoration);
+  let {
+    restoreScrollPosition,
+    preventScrollReset
+  } = useDataRouterState2(DataRouterStateHook2.UseScrollRestoration);
+  let {
+    basename
+  } = React2.useContext(NavigationContext);
+  let location = useLocation();
+  let matches = useMatches();
+  let navigation = useNavigation();
+  React2.useEffect(() => {
+    window.history.scrollRestoration = "manual";
+    return () => {
+      window.history.scrollRestoration = "auto";
+    };
+  }, []);
+  usePageHide(React2.useCallback(() => {
+    if (navigation.state === "idle") {
+      let key = (getKey ? getKey(location, matches) : null) || location.key;
+      savedScrollPositions[key] = window.scrollY;
+    }
+    try {
+      sessionStorage.setItem(storageKey || SCROLL_RESTORATION_STORAGE_KEY, JSON.stringify(savedScrollPositions));
+    } catch (error) {
+      true ? warning(false, "Failed to save scroll positions in sessionStorage, <ScrollRestoration /> will not work properly (" + error + ").") : void 0;
+    }
+    window.history.scrollRestoration = "auto";
+  }, [storageKey, getKey, navigation.state, location, matches]));
+  if (typeof document !== "undefined") {
+    React2.useLayoutEffect(() => {
+      try {
+        let sessionPositions = sessionStorage.getItem(storageKey || SCROLL_RESTORATION_STORAGE_KEY);
+        if (sessionPositions) {
+          savedScrollPositions = JSON.parse(sessionPositions);
+        }
+      } catch (e) {
+      }
+    }, [storageKey]);
+    React2.useLayoutEffect(() => {
+      let getKeyWithoutBasename = getKey && basename !== "/" ? (location2, matches2) => getKey(
+        // Strip the basename to match useLocation()
+        _extends3({}, location2, {
+          pathname: stripBasename(location2.pathname, basename) || location2.pathname
+        }),
+        matches2
+      ) : getKey;
+      let disableScrollRestoration = router2 == null ? void 0 : router2.enableScrollRestoration(savedScrollPositions, () => window.scrollY, getKeyWithoutBasename);
+      return () => disableScrollRestoration && disableScrollRestoration();
+    }, [router2, basename, getKey]);
+    React2.useLayoutEffect(() => {
+      if (restoreScrollPosition === false) {
+        return;
+      }
+      if (typeof restoreScrollPosition === "number") {
+        window.scrollTo(0, restoreScrollPosition);
+        return;
+      }
+      if (location.hash) {
+        let el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+        if (el) {
+          el.scrollIntoView();
+          return;
+        }
+      }
+      if (preventScrollReset === true) {
+        return;
+      }
+      window.scrollTo(0, 0);
+    }, [location, restoreScrollPosition, preventScrollReset]);
+  }
+}
+function useBeforeUnload(callback, options) {
+  let {
+    capture
+  } = options || {};
+  React2.useEffect(() => {
+    let opts = capture != null ? {
+      capture
+    } : void 0;
+    window.addEventListener("beforeunload", callback, opts);
+    return () => {
+      window.removeEventListener("beforeunload", callback, opts);
+    };
+  }, [callback, capture]);
+}
+function usePageHide(callback, options) {
+  let {
+    capture
+  } = options || {};
+  React2.useEffect(() => {
+    let opts = capture != null ? {
+      capture
+    } : void 0;
+    window.addEventListener("pagehide", callback, opts);
+    return () => {
+      window.removeEventListener("pagehide", callback, opts);
+    };
+  }, [callback, capture]);
+}
+function usePrompt(_ref12) {
+  let {
+    when,
+    message
+  } = _ref12;
+  let blocker = useBlocker(when);
+  React2.useEffect(() => {
+    if (blocker.state === "blocked") {
+      let proceed = window.confirm(message);
+      if (proceed) {
+        setTimeout(blocker.proceed, 0);
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker, message]);
+  React2.useEffect(() => {
+    if (blocker.state === "blocked" && !when) {
+      blocker.reset();
+    }
+  }, [blocker, when]);
+}
+function useViewTransitionState(to, opts) {
+  if (opts === void 0) {
+    opts = {};
+  }
+  let vtContext = React2.useContext(ViewTransitionContext);
+  !(vtContext != null) ? true ? invariant(false, "`unstable_useViewTransitionState` must be used within `react-router-dom`'s `RouterProvider`.  Did you accidentally import `RouterProvider` from `react-router`?") : invariant(false) : void 0;
+  let {
+    basename
+  } = useDataRouterContext2(DataRouterHook2.useViewTransitionState);
+  let path = useResolvedPath(to, {
+    relative: opts.relative
+  });
+  if (!vtContext.isTransitioning) {
+    return false;
+  }
+  let currentPath = stripBasename(vtContext.currentLocation.pathname, basename) || vtContext.currentLocation.pathname;
+  let nextPath = stripBasename(vtContext.nextLocation.pathname, basename) || vtContext.nextLocation.pathname;
+  return matchPath(path.pathname, nextPath) != null || matchPath(path.pathname, currentPath) != null;
+}
+var React2, ReactDOM, defaultMethod, defaultEncType, _formDataSupportsSubmitter, supportedFormEncTypes, _excluded, _excluded2, _excluded3, REACT_ROUTER_VERSION, ViewTransitionContext, FetchersContext, START_TRANSITION2, startTransitionImpl2, FLUSH_SYNC, flushSyncImpl, USE_ID, useIdImpl, Deferred, isBrowser, ABSOLUTE_URL_REGEX2, Link, NavLink, Form, DataRouterHook2, DataRouterStateHook2, fetcherId, getUniqueFetcherId, SCROLL_RESTORATION_STORAGE_KEY, savedScrollPositions;
+var init_dist2 = __esm({
+  "node_modules/react-router-dom/dist/index.js"() {
+    React2 = __toESM(require_react());
+    ReactDOM = __toESM(require_react_dom());
+    init_dist();
+    init_dist();
+    init_router();
+    init_router();
+    defaultMethod = "get";
+    defaultEncType = "application/x-www-form-urlencoded";
+    _formDataSupportsSubmitter = null;
+    supportedFormEncTypes = /* @__PURE__ */ new Set(["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"]);
+    _excluded = ["onClick", "relative", "reloadDocument", "replace", "state", "target", "to", "preventScrollReset", "unstable_viewTransition"];
+    _excluded2 = ["aria-current", "caseSensitive", "className", "end", "style", "to", "unstable_viewTransition", "children"];
+    _excluded3 = ["fetcherKey", "navigate", "reloadDocument", "replace", "state", "method", "action", "onSubmit", "relative", "preventScrollReset", "unstable_viewTransition"];
+    REACT_ROUTER_VERSION = "6";
+    try {
+      window.__reactRouterVersion = REACT_ROUTER_VERSION;
+    } catch (e) {
+    }
+    ViewTransitionContext = /* @__PURE__ */ React2.createContext({
+      isTransitioning: false
+    });
+    if (true) {
+      ViewTransitionContext.displayName = "ViewTransition";
+    }
+    FetchersContext = /* @__PURE__ */ React2.createContext(/* @__PURE__ */ new Map());
+    if (true) {
+      FetchersContext.displayName = "Fetchers";
+    }
+    START_TRANSITION2 = "startTransition";
+    startTransitionImpl2 = React2[START_TRANSITION2];
+    FLUSH_SYNC = "flushSync";
+    flushSyncImpl = ReactDOM[FLUSH_SYNC];
+    USE_ID = "useId";
+    useIdImpl = React2[USE_ID];
+    Deferred = class {
+      constructor() {
+        this.status = "pending";
+        this.promise = new Promise((resolve, reject) => {
+          this.resolve = (value) => {
+            if (this.status === "pending") {
+              this.status = "resolved";
+              resolve(value);
+            }
+          };
+          this.reject = (reason) => {
+            if (this.status === "pending") {
+              this.status = "rejected";
+              reject(reason);
+            }
+          };
+        });
+      }
+    };
+    if (true) {
+      HistoryRouter.displayName = "unstable_HistoryRouter";
+    }
+    isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined";
+    ABSOLUTE_URL_REGEX2 = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+    Link = /* @__PURE__ */ React2.forwardRef(function LinkWithRef(_ref7, ref) {
+      let {
+        onClick,
+        relative,
+        reloadDocument,
+        replace,
+        state,
+        target,
+        to,
+        preventScrollReset,
+        unstable_viewTransition
+      } = _ref7, rest = _objectWithoutPropertiesLoose(_ref7, _excluded);
+      let {
+        basename
+      } = React2.useContext(NavigationContext);
+      let absoluteHref;
+      let isExternal = false;
+      if (typeof to === "string" && ABSOLUTE_URL_REGEX2.test(to)) {
+        absoluteHref = to;
+        if (isBrowser) {
+          try {
+            let currentUrl = new URL(window.location.href);
+            let targetUrl = to.startsWith("//") ? new URL(currentUrl.protocol + to) : new URL(to);
+            let path = stripBasename(targetUrl.pathname, basename);
+            if (targetUrl.origin === currentUrl.origin && path != null) {
+              to = path + targetUrl.search + targetUrl.hash;
+            } else {
+              isExternal = true;
+            }
+          } catch (e) {
+            true ? warning(false, '<Link to="' + to + '"> contains an invalid URL which will probably break when clicked - please update to a valid URL path.') : void 0;
+          }
+        }
+      }
+      let href = useHref(to, {
+        relative
+      });
+      let internalOnClick = useLinkClickHandler(to, {
+        replace,
+        state,
+        target,
+        preventScrollReset,
+        relative,
+        unstable_viewTransition
+      });
+      function handleClick(event) {
+        if (onClick)
+          onClick(event);
+        if (!event.defaultPrevented) {
+          internalOnClick(event);
+        }
+      }
+      return (
+        // eslint-disable-next-line jsx-a11y/anchor-has-content
+        /* @__PURE__ */ React2.createElement("a", _extends3({}, rest, {
+          href: absoluteHref || href,
+          onClick: isExternal || reloadDocument ? onClick : handleClick,
+          ref,
+          target
+        }))
+      );
+    });
+    if (true) {
+      Link.displayName = "Link";
+    }
+    NavLink = /* @__PURE__ */ React2.forwardRef(function NavLinkWithRef(_ref8, ref) {
+      let {
+        "aria-current": ariaCurrentProp = "page",
+        caseSensitive = false,
+        className: classNameProp = "",
+        end = false,
+        style: styleProp,
+        to,
+        unstable_viewTransition,
+        children
+      } = _ref8, rest = _objectWithoutPropertiesLoose(_ref8, _excluded2);
+      let path = useResolvedPath(to, {
+        relative: rest.relative
+      });
+      let location = useLocation();
+      let routerState = React2.useContext(DataRouterStateContext);
+      let {
+        navigator,
+        basename
+      } = React2.useContext(NavigationContext);
+      let isTransitioning = routerState != null && // Conditional usage is OK here because the usage of a data router is static
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      useViewTransitionState(path) && unstable_viewTransition === true;
+      let toPathname = navigator.encodeLocation ? navigator.encodeLocation(path).pathname : path.pathname;
+      let locationPathname = location.pathname;
+      let nextLocationPathname = routerState && routerState.navigation && routerState.navigation.location ? routerState.navigation.location.pathname : null;
+      if (!caseSensitive) {
+        locationPathname = locationPathname.toLowerCase();
+        nextLocationPathname = nextLocationPathname ? nextLocationPathname.toLowerCase() : null;
+        toPathname = toPathname.toLowerCase();
+      }
+      if (nextLocationPathname && basename) {
+        nextLocationPathname = stripBasename(nextLocationPathname, basename) || nextLocationPathname;
+      }
+      const endSlashPosition = toPathname !== "/" && toPathname.endsWith("/") ? toPathname.length - 1 : toPathname.length;
+      let isActive = locationPathname === toPathname || !end && locationPathname.startsWith(toPathname) && locationPathname.charAt(endSlashPosition) === "/";
+      let isPending = nextLocationPathname != null && (nextLocationPathname === toPathname || !end && nextLocationPathname.startsWith(toPathname) && nextLocationPathname.charAt(toPathname.length) === "/");
+      let renderProps = {
+        isActive,
+        isPending,
+        isTransitioning
+      };
+      let ariaCurrent = isActive ? ariaCurrentProp : void 0;
+      let className;
+      if (typeof classNameProp === "function") {
+        className = classNameProp(renderProps);
+      } else {
+        className = [classNameProp, isActive ? "active" : null, isPending ? "pending" : null, isTransitioning ? "transitioning" : null].filter(Boolean).join(" ");
+      }
+      let style = typeof styleProp === "function" ? styleProp(renderProps) : styleProp;
+      return /* @__PURE__ */ React2.createElement(Link, _extends3({}, rest, {
+        "aria-current": ariaCurrent,
+        className,
+        ref,
+        style,
+        to,
+        unstable_viewTransition
+      }), typeof children === "function" ? children(renderProps) : children);
+    });
+    if (true) {
+      NavLink.displayName = "NavLink";
+    }
+    Form = /* @__PURE__ */ React2.forwardRef((_ref9, forwardedRef) => {
+      let {
+        fetcherKey,
+        navigate,
+        reloadDocument,
+        replace,
+        state,
+        method = defaultMethod,
+        action,
+        onSubmit,
+        relative,
+        preventScrollReset,
+        unstable_viewTransition
+      } = _ref9, props = _objectWithoutPropertiesLoose(_ref9, _excluded3);
+      let submit = useSubmit();
+      let formAction = useFormAction(action, {
+        relative
+      });
+      let formMethod = method.toLowerCase() === "get" ? "get" : "post";
+      let submitHandler = (event) => {
+        onSubmit && onSubmit(event);
+        if (event.defaultPrevented)
+          return;
+        event.preventDefault();
+        let submitter = event.nativeEvent.submitter;
+        let submitMethod = (submitter == null ? void 0 : submitter.getAttribute("formmethod")) || method;
+        submit(submitter || event.currentTarget, {
+          fetcherKey,
+          method: submitMethod,
+          navigate,
+          replace,
+          state,
+          relative,
+          preventScrollReset,
+          unstable_viewTransition
+        });
+      };
+      return /* @__PURE__ */ React2.createElement("form", _extends3({
+        ref: forwardedRef,
+        method: formMethod,
+        action: formAction,
+        onSubmit: reloadDocument ? onSubmit : submitHandler
+      }, props));
+    });
+    if (true) {
+      Form.displayName = "Form";
+    }
+    if (true) {
+      ScrollRestoration.displayName = "ScrollRestoration";
+    }
+    (function(DataRouterHook3) {
+      DataRouterHook3["UseScrollRestoration"] = "useScrollRestoration";
+      DataRouterHook3["UseSubmit"] = "useSubmit";
+      DataRouterHook3["UseSubmitFetcher"] = "useSubmitFetcher";
+      DataRouterHook3["UseFetcher"] = "useFetcher";
+      DataRouterHook3["useViewTransitionState"] = "useViewTransitionState";
+    })(DataRouterHook2 || (DataRouterHook2 = {}));
+    (function(DataRouterStateHook3) {
+      DataRouterStateHook3["UseFetcher"] = "useFetcher";
+      DataRouterStateHook3["UseFetchers"] = "useFetchers";
+      DataRouterStateHook3["UseScrollRestoration"] = "useScrollRestoration";
+    })(DataRouterStateHook2 || (DataRouterStateHook2 = {}));
+    fetcherId = 0;
+    getUniqueFetcherId = () => "__" + String(++fetcherId) + "__";
+    SCROLL_RESTORATION_STORAGE_KEY = "react-router-scroll-positions";
+    savedScrollPositions = {};
+  }
+});
+
 // node_modules/react-router-dom/server.js
 var require_server = __commonJS({
   "node_modules/react-router-dom/server.js"(exports) {
@@ -4821,7 +6053,7 @@ var require_server = __commonJS({
     var React11 = require_react();
     var router2 = (init_router(), __toCommonJS(router_exports));
     var reactRouter = (init_dist(), __toCommonJS(dist_exports));
-    require_react_dom();
+    var reactRouterDom = (init_dist2(), __toCommonJS(dist_exports2));
     function _interopNamespace(e) {
       if (e && e.__esModule)
         return e;
@@ -4843,457 +6075,6 @@ var require_server = __commonJS({
       return Object.freeze(n);
     }
     var React__namespace = /* @__PURE__ */ _interopNamespace(React11);
-    function _extends5() {
-      _extends5 = Object.assign ? Object.assign.bind() : function(target) {
-        for (var i = 1; i < arguments.length; i++) {
-          var source = arguments[i];
-          for (var key in source) {
-            if (Object.prototype.hasOwnProperty.call(source, key)) {
-              target[key] = source[key];
-            }
-          }
-        }
-        return target;
-      };
-      return _extends5.apply(this, arguments);
-    }
-    var defaultMethod2 = "get";
-    var defaultEncType2 = "application/x-www-form-urlencoded";
-    function isHtmlElement2(object) {
-      return object != null && typeof object.tagName === "string";
-    }
-    function isButtonElement2(object) {
-      return isHtmlElement2(object) && object.tagName.toLowerCase() === "button";
-    }
-    function isFormElement2(object) {
-      return isHtmlElement2(object) && object.tagName.toLowerCase() === "form";
-    }
-    function isInputElement2(object) {
-      return isHtmlElement2(object) && object.tagName.toLowerCase() === "input";
-    }
-    function isModifiedEvent2(event) {
-      return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
-    }
-    function shouldProcessLinkClick2(event, target) {
-      return event.button === 0 && // Ignore everything but left clicks
-      (!target || target === "_self") && // Let browser handle "target=_blank" etc.
-      !isModifiedEvent2(event);
-    }
-    var _formDataSupportsSubmitter2 = null;
-    function isFormDataSubmitterSupported2() {
-      if (_formDataSupportsSubmitter2 === null) {
-        try {
-          new FormData(
-            document.createElement("form"),
-            // @ts-expect-error if FormData supports the submitter parameter, this will throw
-            0
-          );
-          _formDataSupportsSubmitter2 = false;
-        } catch (e) {
-          _formDataSupportsSubmitter2 = true;
-        }
-      }
-      return _formDataSupportsSubmitter2;
-    }
-    var supportedFormEncTypes2 = /* @__PURE__ */ new Set(["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"]);
-    function getFormEncType2(encType) {
-      if (encType != null && !supportedFormEncTypes2.has(encType)) {
-        true ? router2.UNSAFE_warning(false, `"${encType}" is not a valid \`encType\` for \`<Form>\`/\`<fetcher.Form>\` and will default to "${defaultEncType2}"`) : void 0;
-        return null;
-      }
-      return encType;
-    }
-    function getFormSubmissionInfo2(target, basename) {
-      let method;
-      let action;
-      let encType;
-      let formData;
-      let body;
-      if (isFormElement2(target)) {
-        let attr = target.getAttribute("action");
-        action = attr ? router2.stripBasename(attr, basename) : null;
-        method = target.getAttribute("method") || defaultMethod2;
-        encType = getFormEncType2(target.getAttribute("enctype")) || defaultEncType2;
-        formData = new FormData(target);
-      } else if (isButtonElement2(target) || isInputElement2(target) && (target.type === "submit" || target.type === "image")) {
-        let form = target.form;
-        if (form == null) {
-          throw new Error(`Cannot submit a <button> or <input type="submit"> without a <form>`);
-        }
-        let attr = target.getAttribute("formaction") || form.getAttribute("action");
-        action = attr ? router2.stripBasename(attr, basename) : null;
-        method = target.getAttribute("formmethod") || form.getAttribute("method") || defaultMethod2;
-        encType = getFormEncType2(target.getAttribute("formenctype")) || getFormEncType2(form.getAttribute("enctype")) || defaultEncType2;
-        formData = new FormData(form, target);
-        if (!isFormDataSubmitterSupported2()) {
-          let {
-            name,
-            type,
-            value
-          } = target;
-          if (type === "image") {
-            let prefix = name ? `${name}.` : "";
-            formData.append(`${prefix}x`, "0");
-            formData.append(`${prefix}y`, "0");
-          } else if (name) {
-            formData.append(name, value);
-          }
-        }
-      } else if (isHtmlElement2(target)) {
-        throw new Error(`Cannot submit element that is not <form>, <button>, or <input type="submit|image">`);
-      } else {
-        method = defaultMethod2;
-        action = null;
-        encType = defaultEncType2;
-        body = target;
-      }
-      if (formData && encType === "text/plain") {
-        body = formData;
-        formData = void 0;
-      }
-      return {
-        action,
-        method: method.toLowerCase(),
-        encType,
-        formData,
-        body
-      };
-    }
-    var REACT_ROUTER_VERSION2 = "6";
-    try {
-      window.__reactRouterVersion = REACT_ROUTER_VERSION2;
-    } catch (e) {
-    }
-    var ViewTransitionContext2 = /* @__PURE__ */ React__namespace.createContext({
-      isTransitioning: false
-    });
-    if (true) {
-      ViewTransitionContext2.displayName = "ViewTransition";
-    }
-    var FetchersContext2 = /* @__PURE__ */ React__namespace.createContext(/* @__PURE__ */ new Map());
-    if (true) {
-      FetchersContext2.displayName = "Fetchers";
-    }
-    if (true)
-      ;
-    var isBrowser2 = typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined";
-    var ABSOLUTE_URL_REGEX$1 = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
-    var Link3 = /* @__PURE__ */ React__namespace.forwardRef(function LinkWithRef2({
-      onClick,
-      relative,
-      reloadDocument,
-      replace,
-      state,
-      target,
-      to,
-      preventScrollReset,
-      unstable_viewTransition,
-      ...rest
-    }, ref) {
-      let {
-        basename
-      } = React__namespace.useContext(reactRouter.UNSAFE_NavigationContext);
-      let absoluteHref;
-      let isExternal = false;
-      if (typeof to === "string" && ABSOLUTE_URL_REGEX$1.test(to)) {
-        absoluteHref = to;
-        if (isBrowser2) {
-          try {
-            let currentUrl = new URL(window.location.href);
-            let targetUrl = to.startsWith("//") ? new URL(currentUrl.protocol + to) : new URL(to);
-            let path = router2.stripBasename(targetUrl.pathname, basename);
-            if (targetUrl.origin === currentUrl.origin && path != null) {
-              to = path + targetUrl.search + targetUrl.hash;
-            } else {
-              isExternal = true;
-            }
-          } catch (e) {
-            true ? router2.UNSAFE_warning(false, `<Link to="${to}"> contains an invalid URL which will probably break when clicked - please update to a valid URL path.`) : void 0;
-          }
-        }
-      }
-      let href = reactRouter.useHref(to, {
-        relative
-      });
-      let internalOnClick = useLinkClickHandler2(to, {
-        replace,
-        state,
-        target,
-        preventScrollReset,
-        relative,
-        unstable_viewTransition
-      });
-      function handleClick(event) {
-        if (onClick)
-          onClick(event);
-        if (!event.defaultPrevented) {
-          internalOnClick(event);
-        }
-      }
-      return (
-        // eslint-disable-next-line jsx-a11y/anchor-has-content
-        /* @__PURE__ */ React__namespace.createElement("a", _extends5({}, rest, {
-          href: absoluteHref || href,
-          onClick: isExternal || reloadDocument ? onClick : handleClick,
-          ref,
-          target
-        }))
-      );
-    });
-    if (true) {
-      Link3.displayName = "Link";
-    }
-    var NavLink3 = /* @__PURE__ */ React__namespace.forwardRef(function NavLinkWithRef2({
-      "aria-current": ariaCurrentProp = "page",
-      caseSensitive = false,
-      className: classNameProp = "",
-      end = false,
-      style: styleProp,
-      to,
-      unstable_viewTransition,
-      children,
-      ...rest
-    }, ref) {
-      let path = reactRouter.useResolvedPath(to, {
-        relative: rest.relative
-      });
-      let location = reactRouter.useLocation();
-      let routerState = React__namespace.useContext(reactRouter.UNSAFE_DataRouterStateContext);
-      let {
-        navigator,
-        basename
-      } = React__namespace.useContext(reactRouter.UNSAFE_NavigationContext);
-      let isTransitioning = routerState != null && // Conditional usage is OK here because the usage of a data router is static
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      useViewTransitionState2(path) && unstable_viewTransition === true;
-      let toPathname = navigator.encodeLocation ? navigator.encodeLocation(path).pathname : path.pathname;
-      let locationPathname = location.pathname;
-      let nextLocationPathname = routerState && routerState.navigation && routerState.navigation.location ? routerState.navigation.location.pathname : null;
-      if (!caseSensitive) {
-        locationPathname = locationPathname.toLowerCase();
-        nextLocationPathname = nextLocationPathname ? nextLocationPathname.toLowerCase() : null;
-        toPathname = toPathname.toLowerCase();
-      }
-      if (nextLocationPathname && basename) {
-        nextLocationPathname = router2.stripBasename(nextLocationPathname, basename) || nextLocationPathname;
-      }
-      const endSlashPosition = toPathname !== "/" && toPathname.endsWith("/") ? toPathname.length - 1 : toPathname.length;
-      let isActive = locationPathname === toPathname || !end && locationPathname.startsWith(toPathname) && locationPathname.charAt(endSlashPosition) === "/";
-      let isPending = nextLocationPathname != null && (nextLocationPathname === toPathname || !end && nextLocationPathname.startsWith(toPathname) && nextLocationPathname.charAt(toPathname.length) === "/");
-      let renderProps = {
-        isActive,
-        isPending,
-        isTransitioning
-      };
-      let ariaCurrent = isActive ? ariaCurrentProp : void 0;
-      let className;
-      if (typeof classNameProp === "function") {
-        className = classNameProp(renderProps);
-      } else {
-        className = [classNameProp, isActive ? "active" : null, isPending ? "pending" : null, isTransitioning ? "transitioning" : null].filter(Boolean).join(" ");
-      }
-      let style = typeof styleProp === "function" ? styleProp(renderProps) : styleProp;
-      return /* @__PURE__ */ React__namespace.createElement(Link3, _extends5({}, rest, {
-        "aria-current": ariaCurrent,
-        className,
-        ref,
-        style,
-        to,
-        unstable_viewTransition
-      }), typeof children === "function" ? children(renderProps) : children);
-    });
-    if (true) {
-      NavLink3.displayName = "NavLink";
-    }
-    var Form2 = /* @__PURE__ */ React__namespace.forwardRef(({
-      fetcherKey,
-      navigate,
-      reloadDocument,
-      replace,
-      state,
-      method = defaultMethod2,
-      action,
-      onSubmit,
-      relative,
-      preventScrollReset,
-      unstable_viewTransition,
-      ...props
-    }, forwardedRef) => {
-      let submit = useSubmit2();
-      let formAction = useFormAction2(action, {
-        relative
-      });
-      let formMethod = method.toLowerCase() === "get" ? "get" : "post";
-      let submitHandler = (event) => {
-        onSubmit && onSubmit(event);
-        if (event.defaultPrevented)
-          return;
-        event.preventDefault();
-        let submitter = event.nativeEvent.submitter;
-        let submitMethod = submitter?.getAttribute("formmethod") || method;
-        submit(submitter || event.currentTarget, {
-          fetcherKey,
-          method: submitMethod,
-          navigate,
-          replace,
-          state,
-          relative,
-          preventScrollReset,
-          unstable_viewTransition
-        });
-      };
-      return /* @__PURE__ */ React__namespace.createElement("form", _extends5({
-        ref: forwardedRef,
-        method: formMethod,
-        action: formAction,
-        onSubmit: reloadDocument ? onSubmit : submitHandler
-      }, props));
-    });
-    if (true) {
-      Form2.displayName = "Form";
-    }
-    if (true)
-      ;
-    var DataRouterHook3 = /* @__PURE__ */ function(DataRouterHook4) {
-      DataRouterHook4["UseScrollRestoration"] = "useScrollRestoration";
-      DataRouterHook4["UseSubmit"] = "useSubmit";
-      DataRouterHook4["UseSubmitFetcher"] = "useSubmitFetcher";
-      DataRouterHook4["UseFetcher"] = "useFetcher";
-      DataRouterHook4["useViewTransitionState"] = "useViewTransitionState";
-      return DataRouterHook4;
-    }(DataRouterHook3 || {});
-    function getDataRouterConsoleError3(hookName) {
-      return `${hookName} must be used within a data router.  See https://reactrouter.com/routers/picking-a-router.`;
-    }
-    function useDataRouterContext4(hookName) {
-      let ctx = React__namespace.useContext(reactRouter.UNSAFE_DataRouterContext);
-      !ctx ? true ? router2.UNSAFE_invariant(false, getDataRouterConsoleError3(hookName)) : router2.UNSAFE_invariant(false) : void 0;
-      return ctx;
-    }
-    function useLinkClickHandler2(to, {
-      target,
-      replace: replaceProp,
-      state,
-      preventScrollReset,
-      relative,
-      unstable_viewTransition
-    } = {}) {
-      let navigate = reactRouter.useNavigate();
-      let location = reactRouter.useLocation();
-      let path = reactRouter.useResolvedPath(to, {
-        relative
-      });
-      return React__namespace.useCallback((event) => {
-        if (shouldProcessLinkClick2(event, target)) {
-          event.preventDefault();
-          let replace = replaceProp !== void 0 ? replaceProp : reactRouter.createPath(location) === reactRouter.createPath(path);
-          navigate(to, {
-            replace,
-            state,
-            preventScrollReset,
-            relative,
-            unstable_viewTransition
-          });
-        }
-      }, [location, navigate, path, replaceProp, state, target, to, preventScrollReset, relative, unstable_viewTransition]);
-    }
-    function validateClientSideSubmission2() {
-      if (typeof document === "undefined") {
-        throw new Error("You are calling submit during the server render. Try calling submit within a `useEffect` or callback instead.");
-      }
-    }
-    var fetcherId2 = 0;
-    var getUniqueFetcherId2 = () => `__${String(++fetcherId2)}__`;
-    function useSubmit2() {
-      let {
-        router: router3
-      } = useDataRouterContext4(DataRouterHook3.UseSubmit);
-      let {
-        basename
-      } = React__namespace.useContext(reactRouter.UNSAFE_NavigationContext);
-      let currentRouteId = reactRouter.UNSAFE_useRouteId();
-      return React__namespace.useCallback((target, options = {}) => {
-        validateClientSideSubmission2();
-        let {
-          action,
-          method,
-          encType,
-          formData,
-          body
-        } = getFormSubmissionInfo2(target, basename);
-        if (options.navigate === false) {
-          let key = options.fetcherKey || getUniqueFetcherId2();
-          router3.fetch(key, currentRouteId, options.action || action, {
-            preventScrollReset: options.preventScrollReset,
-            formData,
-            body,
-            formMethod: options.method || method,
-            formEncType: options.encType || encType,
-            unstable_flushSync: options.unstable_flushSync
-          });
-        } else {
-          router3.navigate(options.action || action, {
-            preventScrollReset: options.preventScrollReset,
-            formData,
-            body,
-            formMethod: options.method || method,
-            formEncType: options.encType || encType,
-            replace: options.replace,
-            state: options.state,
-            fromRouteId: currentRouteId,
-            unstable_flushSync: options.unstable_flushSync,
-            unstable_viewTransition: options.unstable_viewTransition
-          });
-        }
-      }, [router3, basename, currentRouteId]);
-    }
-    function useFormAction2(action, {
-      relative
-    } = {}) {
-      let {
-        basename
-      } = React__namespace.useContext(reactRouter.UNSAFE_NavigationContext);
-      let routeContext = React__namespace.useContext(reactRouter.UNSAFE_RouteContext);
-      !routeContext ? true ? router2.UNSAFE_invariant(false, "useFormAction must be used inside a RouteContext") : router2.UNSAFE_invariant(false) : void 0;
-      let [match] = routeContext.matches.slice(-1);
-      let path = {
-        ...reactRouter.useResolvedPath(action ? action : ".", {
-          relative
-        })
-      };
-      let location = reactRouter.useLocation();
-      if (action == null) {
-        path.search = location.search;
-        let params = new URLSearchParams(path.search);
-        if (params.has("index") && params.get("index") === "") {
-          params.delete("index");
-          path.search = params.toString() ? `?${params.toString()}` : "";
-        }
-      }
-      if ((!action || action === ".") && match.route.index) {
-        path.search = path.search ? path.search.replace(/^\?/, "?index&") : "?index";
-      }
-      if (basename !== "/") {
-        path.pathname = path.pathname === "/" ? basename : router2.joinPaths([basename, path.pathname]);
-      }
-      return reactRouter.createPath(path);
-    }
-    function useViewTransitionState2(to, opts = {}) {
-      let vtContext = React__namespace.useContext(ViewTransitionContext2);
-      !(vtContext != null) ? true ? router2.UNSAFE_invariant(false, "`unstable_useViewTransitionState` must be used within `react-router-dom`'s `RouterProvider`.  Did you accidentally import `RouterProvider` from `react-router`?") : router2.UNSAFE_invariant(false) : void 0;
-      let {
-        basename
-      } = useDataRouterContext4(DataRouterHook3.useViewTransitionState);
-      let path = reactRouter.useResolvedPath(to, {
-        relative: opts.relative
-      });
-      if (!vtContext.isTransitioning) {
-        return false;
-      }
-      let currentPath = router2.stripBasename(vtContext.currentLocation.pathname, basename) || vtContext.currentLocation.pathname;
-      let nextPath = router2.stripBasename(vtContext.nextLocation.pathname, basename) || vtContext.nextLocation.pathname;
-      return router2.matchPath(path.pathname, nextPath) != null || router2.matchPath(path.pathname, currentPath) != null;
-    }
     function StaticRouter({
       basename,
       children,
@@ -5301,7 +6082,7 @@ var require_server = __commonJS({
       future
     }) {
       if (typeof locationProp === "string") {
-        locationProp = reactRouter.parsePath(locationProp);
+        locationProp = reactRouterDom.parsePath(locationProp);
       }
       let action = router2.Action.Pop;
       let location = {
@@ -5312,7 +6093,7 @@ var require_server = __commonJS({
         key: locationProp.key || "default"
       };
       let staticNavigator = getStatelessNavigator();
-      return /* @__PURE__ */ React__namespace.createElement(reactRouter.Router, {
+      return /* @__PURE__ */ React__namespace.createElement(reactRouterDom.Router, {
         basename,
         children,
         location,
@@ -5350,17 +6131,17 @@ var require_server = __commonJS({
       let {
         state
       } = dataRouterContext.router;
-      return /* @__PURE__ */ React__namespace.createElement(React__namespace.Fragment, null, /* @__PURE__ */ React__namespace.createElement(reactRouter.UNSAFE_DataRouterContext.Provider, {
+      return /* @__PURE__ */ React__namespace.createElement(React__namespace.Fragment, null, /* @__PURE__ */ React__namespace.createElement(reactRouterDom.UNSAFE_DataRouterContext.Provider, {
         value: dataRouterContext
-      }, /* @__PURE__ */ React__namespace.createElement(reactRouter.UNSAFE_DataRouterStateContext.Provider, {
+      }, /* @__PURE__ */ React__namespace.createElement(reactRouterDom.UNSAFE_DataRouterStateContext.Provider, {
         value: state
-      }, /* @__PURE__ */ React__namespace.createElement(FetchersContext2.Provider, {
+      }, /* @__PURE__ */ React__namespace.createElement(reactRouterDom.UNSAFE_FetchersContext.Provider, {
         value: fetchersContext
-      }, /* @__PURE__ */ React__namespace.createElement(ViewTransitionContext2.Provider, {
+      }, /* @__PURE__ */ React__namespace.createElement(reactRouterDom.UNSAFE_ViewTransitionContext.Provider, {
         value: {
           isTransitioning: false
         }
-      }, /* @__PURE__ */ React__namespace.createElement(reactRouter.Router, {
+      }, /* @__PURE__ */ React__namespace.createElement(reactRouterDom.Router, {
         basename: dataRouterContext.basename,
         location: state.location,
         navigationType: state.historyAction,
@@ -5533,10 +6314,10 @@ var require_server = __commonJS({
       };
     }
     function createHref(to) {
-      return typeof to === "string" ? to : reactRouter.createPath(to);
+      return typeof to === "string" ? to : reactRouterDom.createPath(to);
     }
     function encodeLocation(to) {
-      let href = typeof to === "string" ? to : reactRouter.createPath(to);
+      let href = typeof to === "string" ? to : reactRouterDom.createPath(to);
       href = href.replace(/ $/, "%20");
       let encoded = ABSOLUTE_URL_REGEX4.test(href) ? new URL(href) : new URL(href, "http://localhost");
       return {
@@ -5564,1011 +6345,8 @@ var require_server = __commonJS({
   }
 });
 
-// node_modules/react-router-dom/dist/index.js
-var React2 = __toESM(require_react());
-var ReactDOM = __toESM(require_react_dom());
-init_dist();
-init_dist();
-init_router();
-function _extends3() {
-  _extends3 = Object.assign ? Object.assign.bind() : function(target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-    return target;
-  };
-  return _extends3.apply(this, arguments);
-}
-function _objectWithoutPropertiesLoose(source, excluded) {
-  if (source == null)
-    return {};
-  var target = {};
-  var sourceKeys = Object.keys(source);
-  var key, i;
-  for (i = 0; i < sourceKeys.length; i++) {
-    key = sourceKeys[i];
-    if (excluded.indexOf(key) >= 0)
-      continue;
-    target[key] = source[key];
-  }
-  return target;
-}
-var defaultMethod = "get";
-var defaultEncType = "application/x-www-form-urlencoded";
-function isHtmlElement(object) {
-  return object != null && typeof object.tagName === "string";
-}
-function isButtonElement(object) {
-  return isHtmlElement(object) && object.tagName.toLowerCase() === "button";
-}
-function isFormElement(object) {
-  return isHtmlElement(object) && object.tagName.toLowerCase() === "form";
-}
-function isInputElement(object) {
-  return isHtmlElement(object) && object.tagName.toLowerCase() === "input";
-}
-function isModifiedEvent(event) {
-  return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
-}
-function shouldProcessLinkClick(event, target) {
-  return event.button === 0 && // Ignore everything but left clicks
-  (!target || target === "_self") && // Let browser handle "target=_blank" etc.
-  !isModifiedEvent(event);
-}
-function createSearchParams(init) {
-  if (init === void 0) {
-    init = "";
-  }
-  return new URLSearchParams(typeof init === "string" || Array.isArray(init) || init instanceof URLSearchParams ? init : Object.keys(init).reduce((memo, key) => {
-    let value = init[key];
-    return memo.concat(Array.isArray(value) ? value.map((v) => [key, v]) : [[key, value]]);
-  }, []));
-}
-function getSearchParamsForLocation(locationSearch, defaultSearchParams) {
-  let searchParams = createSearchParams(locationSearch);
-  if (defaultSearchParams) {
-    defaultSearchParams.forEach((_, key) => {
-      if (!searchParams.has(key)) {
-        defaultSearchParams.getAll(key).forEach((value) => {
-          searchParams.append(key, value);
-        });
-      }
-    });
-  }
-  return searchParams;
-}
-var _formDataSupportsSubmitter = null;
-function isFormDataSubmitterSupported() {
-  if (_formDataSupportsSubmitter === null) {
-    try {
-      new FormData(
-        document.createElement("form"),
-        // @ts-expect-error if FormData supports the submitter parameter, this will throw
-        0
-      );
-      _formDataSupportsSubmitter = false;
-    } catch (e) {
-      _formDataSupportsSubmitter = true;
-    }
-  }
-  return _formDataSupportsSubmitter;
-}
-var supportedFormEncTypes = /* @__PURE__ */ new Set(["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"]);
-function getFormEncType(encType) {
-  if (encType != null && !supportedFormEncTypes.has(encType)) {
-    true ? warning(false, '"' + encType + '" is not a valid `encType` for `<Form>`/`<fetcher.Form>` ' + ('and will default to "' + defaultEncType + '"')) : void 0;
-    return null;
-  }
-  return encType;
-}
-function getFormSubmissionInfo(target, basename) {
-  let method;
-  let action;
-  let encType;
-  let formData;
-  let body;
-  if (isFormElement(target)) {
-    let attr = target.getAttribute("action");
-    action = attr ? stripBasename(attr, basename) : null;
-    method = target.getAttribute("method") || defaultMethod;
-    encType = getFormEncType(target.getAttribute("enctype")) || defaultEncType;
-    formData = new FormData(target);
-  } else if (isButtonElement(target) || isInputElement(target) && (target.type === "submit" || target.type === "image")) {
-    let form = target.form;
-    if (form == null) {
-      throw new Error('Cannot submit a <button> or <input type="submit"> without a <form>');
-    }
-    let attr = target.getAttribute("formaction") || form.getAttribute("action");
-    action = attr ? stripBasename(attr, basename) : null;
-    method = target.getAttribute("formmethod") || form.getAttribute("method") || defaultMethod;
-    encType = getFormEncType(target.getAttribute("formenctype")) || getFormEncType(form.getAttribute("enctype")) || defaultEncType;
-    formData = new FormData(form, target);
-    if (!isFormDataSubmitterSupported()) {
-      let {
-        name,
-        type,
-        value
-      } = target;
-      if (type === "image") {
-        let prefix = name ? name + "." : "";
-        formData.append(prefix + "x", "0");
-        formData.append(prefix + "y", "0");
-      } else if (name) {
-        formData.append(name, value);
-      }
-    }
-  } else if (isHtmlElement(target)) {
-    throw new Error('Cannot submit element that is not <form>, <button>, or <input type="submit|image">');
-  } else {
-    method = defaultMethod;
-    action = null;
-    encType = defaultEncType;
-    body = target;
-  }
-  if (formData && encType === "text/plain") {
-    body = formData;
-    formData = void 0;
-  }
-  return {
-    action,
-    method: method.toLowerCase(),
-    encType,
-    formData,
-    body
-  };
-}
-var _excluded = ["onClick", "relative", "reloadDocument", "replace", "state", "target", "to", "preventScrollReset", "unstable_viewTransition"];
-var _excluded2 = ["aria-current", "caseSensitive", "className", "end", "style", "to", "unstable_viewTransition", "children"];
-var _excluded3 = ["fetcherKey", "navigate", "reloadDocument", "replace", "state", "method", "action", "onSubmit", "relative", "preventScrollReset", "unstable_viewTransition"];
-var REACT_ROUTER_VERSION = "6";
-try {
-  window.__reactRouterVersion = REACT_ROUTER_VERSION;
-} catch (e) {
-}
-var ViewTransitionContext = /* @__PURE__ */ React2.createContext({
-  isTransitioning: false
-});
-if (true) {
-  ViewTransitionContext.displayName = "ViewTransition";
-}
-var FetchersContext = /* @__PURE__ */ React2.createContext(/* @__PURE__ */ new Map());
-if (true) {
-  FetchersContext.displayName = "Fetchers";
-}
-var START_TRANSITION2 = "startTransition";
-var startTransitionImpl2 = React2[START_TRANSITION2];
-var FLUSH_SYNC = "flushSync";
-var flushSyncImpl = ReactDOM[FLUSH_SYNC];
-var USE_ID = "useId";
-var useIdImpl = React2[USE_ID];
-function startTransitionSafe(cb) {
-  if (startTransitionImpl2) {
-    startTransitionImpl2(cb);
-  } else {
-    cb();
-  }
-}
-function flushSyncSafe(cb) {
-  if (flushSyncImpl) {
-    flushSyncImpl(cb);
-  } else {
-    cb();
-  }
-}
-var Deferred = class {
-  constructor() {
-    this.status = "pending";
-    this.promise = new Promise((resolve, reject) => {
-      this.resolve = (value) => {
-        if (this.status === "pending") {
-          this.status = "resolved";
-          resolve(value);
-        }
-      };
-      this.reject = (reason) => {
-        if (this.status === "pending") {
-          this.status = "rejected";
-          reject(reason);
-        }
-      };
-    });
-  }
-};
-function RouterProvider2(_ref) {
-  let {
-    fallbackElement,
-    router: router2,
-    future
-  } = _ref;
-  let [state, setStateImpl] = React2.useState(router2.state);
-  let [pendingState, setPendingState] = React2.useState();
-  let [vtContext, setVtContext] = React2.useState({
-    isTransitioning: false
-  });
-  let [renderDfd, setRenderDfd] = React2.useState();
-  let [transition, setTransition] = React2.useState();
-  let [interruption, setInterruption] = React2.useState();
-  let fetcherData = React2.useRef(/* @__PURE__ */ new Map());
-  let {
-    v7_startTransition
-  } = future || {};
-  let optInStartTransition = React2.useCallback((cb) => {
-    if (v7_startTransition) {
-      startTransitionSafe(cb);
-    } else {
-      cb();
-    }
-  }, [v7_startTransition]);
-  let setState = React2.useCallback((newState, _ref2) => {
-    let {
-      deletedFetchers,
-      unstable_flushSync: flushSync,
-      unstable_viewTransitionOpts: viewTransitionOpts
-    } = _ref2;
-    deletedFetchers.forEach((key) => fetcherData.current.delete(key));
-    newState.fetchers.forEach((fetcher, key) => {
-      if (fetcher.data !== void 0) {
-        fetcherData.current.set(key, fetcher.data);
-      }
-    });
-    let isViewTransitionUnavailable = router2.window == null || typeof router2.window.document.startViewTransition !== "function";
-    if (!viewTransitionOpts || isViewTransitionUnavailable) {
-      if (flushSync) {
-        flushSyncSafe(() => setStateImpl(newState));
-      } else {
-        optInStartTransition(() => setStateImpl(newState));
-      }
-      return;
-    }
-    if (flushSync) {
-      flushSyncSafe(() => {
-        if (transition) {
-          renderDfd && renderDfd.resolve();
-          transition.skipTransition();
-        }
-        setVtContext({
-          isTransitioning: true,
-          flushSync: true,
-          currentLocation: viewTransitionOpts.currentLocation,
-          nextLocation: viewTransitionOpts.nextLocation
-        });
-      });
-      let t = router2.window.document.startViewTransition(() => {
-        flushSyncSafe(() => setStateImpl(newState));
-      });
-      t.finished.finally(() => {
-        flushSyncSafe(() => {
-          setRenderDfd(void 0);
-          setTransition(void 0);
-          setPendingState(void 0);
-          setVtContext({
-            isTransitioning: false
-          });
-        });
-      });
-      flushSyncSafe(() => setTransition(t));
-      return;
-    }
-    if (transition) {
-      renderDfd && renderDfd.resolve();
-      transition.skipTransition();
-      setInterruption({
-        state: newState,
-        currentLocation: viewTransitionOpts.currentLocation,
-        nextLocation: viewTransitionOpts.nextLocation
-      });
-    } else {
-      setPendingState(newState);
-      setVtContext({
-        isTransitioning: true,
-        flushSync: false,
-        currentLocation: viewTransitionOpts.currentLocation,
-        nextLocation: viewTransitionOpts.nextLocation
-      });
-    }
-  }, [router2.window, transition, renderDfd, fetcherData, optInStartTransition]);
-  React2.useLayoutEffect(() => router2.subscribe(setState), [router2, setState]);
-  React2.useEffect(() => {
-    if (vtContext.isTransitioning && !vtContext.flushSync) {
-      setRenderDfd(new Deferred());
-    }
-  }, [vtContext]);
-  React2.useEffect(() => {
-    if (renderDfd && pendingState && router2.window) {
-      let newState = pendingState;
-      let renderPromise = renderDfd.promise;
-      let transition2 = router2.window.document.startViewTransition(async () => {
-        optInStartTransition(() => setStateImpl(newState));
-        await renderPromise;
-      });
-      transition2.finished.finally(() => {
-        setRenderDfd(void 0);
-        setTransition(void 0);
-        setPendingState(void 0);
-        setVtContext({
-          isTransitioning: false
-        });
-      });
-      setTransition(transition2);
-    }
-  }, [optInStartTransition, pendingState, renderDfd, router2.window]);
-  React2.useEffect(() => {
-    if (renderDfd && pendingState && state.location.key === pendingState.location.key) {
-      renderDfd.resolve();
-    }
-  }, [renderDfd, transition, state.location, pendingState]);
-  React2.useEffect(() => {
-    if (!vtContext.isTransitioning && interruption) {
-      setPendingState(interruption.state);
-      setVtContext({
-        isTransitioning: true,
-        flushSync: false,
-        currentLocation: interruption.currentLocation,
-        nextLocation: interruption.nextLocation
-      });
-      setInterruption(void 0);
-    }
-  }, [vtContext.isTransitioning, interruption]);
-  React2.useEffect(() => {
-    true ? warning(fallbackElement == null || !router2.future.v7_partialHydration, "`<RouterProvider fallbackElement>` is deprecated when using `v7_partialHydration`, use a `HydrateFallback` component instead") : void 0;
-  }, []);
-  let navigator = React2.useMemo(() => {
-    return {
-      createHref: router2.createHref,
-      encodeLocation: router2.encodeLocation,
-      go: (n) => router2.navigate(n),
-      push: (to, state2, opts) => router2.navigate(to, {
-        state: state2,
-        preventScrollReset: opts == null ? void 0 : opts.preventScrollReset
-      }),
-      replace: (to, state2, opts) => router2.navigate(to, {
-        replace: true,
-        state: state2,
-        preventScrollReset: opts == null ? void 0 : opts.preventScrollReset
-      })
-    };
-  }, [router2]);
-  let basename = router2.basename || "/";
-  let dataRouterContext = React2.useMemo(() => ({
-    router: router2,
-    navigator,
-    static: false,
-    basename
-  }), [router2, navigator, basename]);
-  return /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(DataRouterContext.Provider, {
-    value: dataRouterContext
-  }, /* @__PURE__ */ React2.createElement(DataRouterStateContext.Provider, {
-    value: state
-  }, /* @__PURE__ */ React2.createElement(FetchersContext.Provider, {
-    value: fetcherData.current
-  }, /* @__PURE__ */ React2.createElement(ViewTransitionContext.Provider, {
-    value: vtContext
-  }, /* @__PURE__ */ React2.createElement(Router, {
-    basename,
-    location: state.location,
-    navigationType: state.historyAction,
-    navigator,
-    future: {
-      v7_relativeSplatPath: router2.future.v7_relativeSplatPath
-    }
-  }, state.initialized || router2.future.v7_partialHydration ? /* @__PURE__ */ React2.createElement(DataRoutes2, {
-    routes: router2.routes,
-    future: router2.future,
-    state
-  }) : fallbackElement))))), null);
-}
-function DataRoutes2(_ref3) {
-  let {
-    routes,
-    future,
-    state
-  } = _ref3;
-  return useRoutesImpl(routes, void 0, state, future);
-}
-function HistoryRouter(_ref6) {
-  let {
-    basename,
-    children,
-    future,
-    history
-  } = _ref6;
-  let [state, setStateImpl] = React2.useState({
-    action: history.action,
-    location: history.location
-  });
-  let {
-    v7_startTransition
-  } = future || {};
-  let setState = React2.useCallback((newState) => {
-    v7_startTransition && startTransitionImpl2 ? startTransitionImpl2(() => setStateImpl(newState)) : setStateImpl(newState);
-  }, [setStateImpl, v7_startTransition]);
-  React2.useLayoutEffect(() => history.listen(setState), [history, setState]);
-  return /* @__PURE__ */ React2.createElement(Router, {
-    basename,
-    children,
-    location: state.location,
-    navigationType: state.action,
-    navigator: history,
-    future
-  });
-}
-if (true) {
-  HistoryRouter.displayName = "unstable_HistoryRouter";
-}
-var isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined";
-var ABSOLUTE_URL_REGEX2 = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
-var Link = /* @__PURE__ */ React2.forwardRef(function LinkWithRef(_ref7, ref) {
-  let {
-    onClick,
-    relative,
-    reloadDocument,
-    replace,
-    state,
-    target,
-    to,
-    preventScrollReset,
-    unstable_viewTransition
-  } = _ref7, rest = _objectWithoutPropertiesLoose(_ref7, _excluded);
-  let {
-    basename
-  } = React2.useContext(NavigationContext);
-  let absoluteHref;
-  let isExternal = false;
-  if (typeof to === "string" && ABSOLUTE_URL_REGEX2.test(to)) {
-    absoluteHref = to;
-    if (isBrowser) {
-      try {
-        let currentUrl = new URL(window.location.href);
-        let targetUrl = to.startsWith("//") ? new URL(currentUrl.protocol + to) : new URL(to);
-        let path = stripBasename(targetUrl.pathname, basename);
-        if (targetUrl.origin === currentUrl.origin && path != null) {
-          to = path + targetUrl.search + targetUrl.hash;
-        } else {
-          isExternal = true;
-        }
-      } catch (e) {
-        true ? warning(false, '<Link to="' + to + '"> contains an invalid URL which will probably break when clicked - please update to a valid URL path.') : void 0;
-      }
-    }
-  }
-  let href = useHref(to, {
-    relative
-  });
-  let internalOnClick = useLinkClickHandler(to, {
-    replace,
-    state,
-    target,
-    preventScrollReset,
-    relative,
-    unstable_viewTransition
-  });
-  function handleClick(event) {
-    if (onClick)
-      onClick(event);
-    if (!event.defaultPrevented) {
-      internalOnClick(event);
-    }
-  }
-  return (
-    // eslint-disable-next-line jsx-a11y/anchor-has-content
-    /* @__PURE__ */ React2.createElement("a", _extends3({}, rest, {
-      href: absoluteHref || href,
-      onClick: isExternal || reloadDocument ? onClick : handleClick,
-      ref,
-      target
-    }))
-  );
-});
-if (true) {
-  Link.displayName = "Link";
-}
-var NavLink = /* @__PURE__ */ React2.forwardRef(function NavLinkWithRef(_ref8, ref) {
-  let {
-    "aria-current": ariaCurrentProp = "page",
-    caseSensitive = false,
-    className: classNameProp = "",
-    end = false,
-    style: styleProp,
-    to,
-    unstable_viewTransition,
-    children
-  } = _ref8, rest = _objectWithoutPropertiesLoose(_ref8, _excluded2);
-  let path = useResolvedPath(to, {
-    relative: rest.relative
-  });
-  let location = useLocation();
-  let routerState = React2.useContext(DataRouterStateContext);
-  let {
-    navigator,
-    basename
-  } = React2.useContext(NavigationContext);
-  let isTransitioning = routerState != null && // Conditional usage is OK here because the usage of a data router is static
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useViewTransitionState(path) && unstable_viewTransition === true;
-  let toPathname = navigator.encodeLocation ? navigator.encodeLocation(path).pathname : path.pathname;
-  let locationPathname = location.pathname;
-  let nextLocationPathname = routerState && routerState.navigation && routerState.navigation.location ? routerState.navigation.location.pathname : null;
-  if (!caseSensitive) {
-    locationPathname = locationPathname.toLowerCase();
-    nextLocationPathname = nextLocationPathname ? nextLocationPathname.toLowerCase() : null;
-    toPathname = toPathname.toLowerCase();
-  }
-  if (nextLocationPathname && basename) {
-    nextLocationPathname = stripBasename(nextLocationPathname, basename) || nextLocationPathname;
-  }
-  const endSlashPosition = toPathname !== "/" && toPathname.endsWith("/") ? toPathname.length - 1 : toPathname.length;
-  let isActive = locationPathname === toPathname || !end && locationPathname.startsWith(toPathname) && locationPathname.charAt(endSlashPosition) === "/";
-  let isPending = nextLocationPathname != null && (nextLocationPathname === toPathname || !end && nextLocationPathname.startsWith(toPathname) && nextLocationPathname.charAt(toPathname.length) === "/");
-  let renderProps = {
-    isActive,
-    isPending,
-    isTransitioning
-  };
-  let ariaCurrent = isActive ? ariaCurrentProp : void 0;
-  let className;
-  if (typeof classNameProp === "function") {
-    className = classNameProp(renderProps);
-  } else {
-    className = [classNameProp, isActive ? "active" : null, isPending ? "pending" : null, isTransitioning ? "transitioning" : null].filter(Boolean).join(" ");
-  }
-  let style = typeof styleProp === "function" ? styleProp(renderProps) : styleProp;
-  return /* @__PURE__ */ React2.createElement(Link, _extends3({}, rest, {
-    "aria-current": ariaCurrent,
-    className,
-    ref,
-    style,
-    to,
-    unstable_viewTransition
-  }), typeof children === "function" ? children(renderProps) : children);
-});
-if (true) {
-  NavLink.displayName = "NavLink";
-}
-var Form = /* @__PURE__ */ React2.forwardRef((_ref9, forwardedRef) => {
-  let {
-    fetcherKey,
-    navigate,
-    reloadDocument,
-    replace,
-    state,
-    method = defaultMethod,
-    action,
-    onSubmit,
-    relative,
-    preventScrollReset,
-    unstable_viewTransition
-  } = _ref9, props = _objectWithoutPropertiesLoose(_ref9, _excluded3);
-  let submit = useSubmit();
-  let formAction = useFormAction(action, {
-    relative
-  });
-  let formMethod = method.toLowerCase() === "get" ? "get" : "post";
-  let submitHandler = (event) => {
-    onSubmit && onSubmit(event);
-    if (event.defaultPrevented)
-      return;
-    event.preventDefault();
-    let submitter = event.nativeEvent.submitter;
-    let submitMethod = (submitter == null ? void 0 : submitter.getAttribute("formmethod")) || method;
-    submit(submitter || event.currentTarget, {
-      fetcherKey,
-      method: submitMethod,
-      navigate,
-      replace,
-      state,
-      relative,
-      preventScrollReset,
-      unstable_viewTransition
-    });
-  };
-  return /* @__PURE__ */ React2.createElement("form", _extends3({
-    ref: forwardedRef,
-    method: formMethod,
-    action: formAction,
-    onSubmit: reloadDocument ? onSubmit : submitHandler
-  }, props));
-});
-if (true) {
-  Form.displayName = "Form";
-}
-function ScrollRestoration(_ref10) {
-  let {
-    getKey,
-    storageKey
-  } = _ref10;
-  useScrollRestoration({
-    getKey,
-    storageKey
-  });
-  return null;
-}
-if (true) {
-  ScrollRestoration.displayName = "ScrollRestoration";
-}
-var DataRouterHook2;
-(function(DataRouterHook3) {
-  DataRouterHook3["UseScrollRestoration"] = "useScrollRestoration";
-  DataRouterHook3["UseSubmit"] = "useSubmit";
-  DataRouterHook3["UseSubmitFetcher"] = "useSubmitFetcher";
-  DataRouterHook3["UseFetcher"] = "useFetcher";
-  DataRouterHook3["useViewTransitionState"] = "useViewTransitionState";
-})(DataRouterHook2 || (DataRouterHook2 = {}));
-var DataRouterStateHook2;
-(function(DataRouterStateHook3) {
-  DataRouterStateHook3["UseFetcher"] = "useFetcher";
-  DataRouterStateHook3["UseFetchers"] = "useFetchers";
-  DataRouterStateHook3["UseScrollRestoration"] = "useScrollRestoration";
-})(DataRouterStateHook2 || (DataRouterStateHook2 = {}));
-function getDataRouterConsoleError2(hookName) {
-  return hookName + " must be used within a data router.  See https://reactrouter.com/routers/picking-a-router.";
-}
-function useDataRouterContext2(hookName) {
-  let ctx = React2.useContext(DataRouterContext);
-  !ctx ? true ? invariant(false, getDataRouterConsoleError2(hookName)) : invariant(false) : void 0;
-  return ctx;
-}
-function useDataRouterState2(hookName) {
-  let state = React2.useContext(DataRouterStateContext);
-  !state ? true ? invariant(false, getDataRouterConsoleError2(hookName)) : invariant(false) : void 0;
-  return state;
-}
-function useLinkClickHandler(to, _temp) {
-  let {
-    target,
-    replace: replaceProp,
-    state,
-    preventScrollReset,
-    relative,
-    unstable_viewTransition
-  } = _temp === void 0 ? {} : _temp;
-  let navigate = useNavigate();
-  let location = useLocation();
-  let path = useResolvedPath(to, {
-    relative
-  });
-  return React2.useCallback((event) => {
-    if (shouldProcessLinkClick(event, target)) {
-      event.preventDefault();
-      let replace = replaceProp !== void 0 ? replaceProp : createPath(location) === createPath(path);
-      navigate(to, {
-        replace,
-        state,
-        preventScrollReset,
-        relative,
-        unstable_viewTransition
-      });
-    }
-  }, [location, navigate, path, replaceProp, state, target, to, preventScrollReset, relative, unstable_viewTransition]);
-}
-function useSearchParams(defaultInit) {
-  true ? warning(typeof URLSearchParams !== "undefined", "You cannot use the `useSearchParams` hook in a browser that does not support the URLSearchParams API. If you need to support Internet Explorer 11, we recommend you load a polyfill such as https://github.com/ungap/url-search-params\n\nIf you're unsure how to load polyfills, we recommend you check out https://polyfill.io/v3/ which provides some recommendations about how to load polyfills only for users that need them, instead of for every user.") : void 0;
-  let defaultSearchParamsRef = React2.useRef(createSearchParams(defaultInit));
-  let hasSetSearchParamsRef = React2.useRef(false);
-  let location = useLocation();
-  let searchParams = React2.useMemo(() => (
-    // Only merge in the defaults if we haven't yet called setSearchParams.
-    // Once we call that we want those to take precedence, otherwise you can't
-    // remove a param with setSearchParams({}) if it has an initial value
-    getSearchParamsForLocation(location.search, hasSetSearchParamsRef.current ? null : defaultSearchParamsRef.current)
-  ), [location.search]);
-  let navigate = useNavigate();
-  let setSearchParams = React2.useCallback((nextInit, navigateOptions) => {
-    const newSearchParams = createSearchParams(typeof nextInit === "function" ? nextInit(searchParams) : nextInit);
-    hasSetSearchParamsRef.current = true;
-    navigate("?" + newSearchParams, navigateOptions);
-  }, [navigate, searchParams]);
-  return [searchParams, setSearchParams];
-}
-function validateClientSideSubmission() {
-  if (typeof document === "undefined") {
-    throw new Error("You are calling submit during the server render. Try calling submit within a `useEffect` or callback instead.");
-  }
-}
-var fetcherId = 0;
-var getUniqueFetcherId = () => "__" + String(++fetcherId) + "__";
-function useSubmit() {
-  let {
-    router: router2
-  } = useDataRouterContext2(DataRouterHook2.UseSubmit);
-  let {
-    basename
-  } = React2.useContext(NavigationContext);
-  let currentRouteId = useRouteId();
-  return React2.useCallback(function(target, options) {
-    if (options === void 0) {
-      options = {};
-    }
-    validateClientSideSubmission();
-    let {
-      action,
-      method,
-      encType,
-      formData,
-      body
-    } = getFormSubmissionInfo(target, basename);
-    if (options.navigate === false) {
-      let key = options.fetcherKey || getUniqueFetcherId();
-      router2.fetch(key, currentRouteId, options.action || action, {
-        preventScrollReset: options.preventScrollReset,
-        formData,
-        body,
-        formMethod: options.method || method,
-        formEncType: options.encType || encType,
-        unstable_flushSync: options.unstable_flushSync
-      });
-    } else {
-      router2.navigate(options.action || action, {
-        preventScrollReset: options.preventScrollReset,
-        formData,
-        body,
-        formMethod: options.method || method,
-        formEncType: options.encType || encType,
-        replace: options.replace,
-        state: options.state,
-        fromRouteId: currentRouteId,
-        unstable_flushSync: options.unstable_flushSync,
-        unstable_viewTransition: options.unstable_viewTransition
-      });
-    }
-  }, [router2, basename, currentRouteId]);
-}
-function useFormAction(action, _temp2) {
-  let {
-    relative
-  } = _temp2 === void 0 ? {} : _temp2;
-  let {
-    basename
-  } = React2.useContext(NavigationContext);
-  let routeContext = React2.useContext(RouteContext);
-  !routeContext ? true ? invariant(false, "useFormAction must be used inside a RouteContext") : invariant(false) : void 0;
-  let [match] = routeContext.matches.slice(-1);
-  let path = _extends3({}, useResolvedPath(action ? action : ".", {
-    relative
-  }));
-  let location = useLocation();
-  if (action == null) {
-    path.search = location.search;
-    let params = new URLSearchParams(path.search);
-    if (params.has("index") && params.get("index") === "") {
-      params.delete("index");
-      path.search = params.toString() ? "?" + params.toString() : "";
-    }
-  }
-  if ((!action || action === ".") && match.route.index) {
-    path.search = path.search ? path.search.replace(/^\?/, "?index&") : "?index";
-  }
-  if (basename !== "/") {
-    path.pathname = path.pathname === "/" ? basename : joinPaths([basename, path.pathname]);
-  }
-  return createPath(path);
-}
-function useFetcher(_temp3) {
-  var _route$matches;
-  let {
-    key
-  } = _temp3 === void 0 ? {} : _temp3;
-  let {
-    router: router2
-  } = useDataRouterContext2(DataRouterHook2.UseFetcher);
-  let state = useDataRouterState2(DataRouterStateHook2.UseFetcher);
-  let fetcherData = React2.useContext(FetchersContext);
-  let route = React2.useContext(RouteContext);
-  let routeId = (_route$matches = route.matches[route.matches.length - 1]) == null ? void 0 : _route$matches.route.id;
-  !fetcherData ? true ? invariant(false, "useFetcher must be used inside a FetchersContext") : invariant(false) : void 0;
-  !route ? true ? invariant(false, "useFetcher must be used inside a RouteContext") : invariant(false) : void 0;
-  !(routeId != null) ? true ? invariant(false, 'useFetcher can only be used on routes that contain a unique "id"') : invariant(false) : void 0;
-  let defaultKey = useIdImpl ? useIdImpl() : "";
-  let [fetcherKey, setFetcherKey] = React2.useState(key || defaultKey);
-  if (key && key !== fetcherKey) {
-    setFetcherKey(key);
-  } else if (!fetcherKey) {
-    setFetcherKey(getUniqueFetcherId());
-  }
-  React2.useEffect(() => {
-    router2.getFetcher(fetcherKey);
-    return () => {
-      router2.deleteFetcher(fetcherKey);
-    };
-  }, [router2, fetcherKey]);
-  let load = React2.useCallback((href, opts) => {
-    !routeId ? true ? invariant(false, "No routeId available for fetcher.load()") : invariant(false) : void 0;
-    router2.fetch(fetcherKey, routeId, href, opts);
-  }, [fetcherKey, routeId, router2]);
-  let submitImpl = useSubmit();
-  let submit = React2.useCallback((target, opts) => {
-    submitImpl(target, _extends3({}, opts, {
-      navigate: false,
-      fetcherKey
-    }));
-  }, [fetcherKey, submitImpl]);
-  let FetcherForm = React2.useMemo(() => {
-    let FetcherForm2 = /* @__PURE__ */ React2.forwardRef((props, ref) => {
-      return /* @__PURE__ */ React2.createElement(Form, _extends3({}, props, {
-        navigate: false,
-        fetcherKey,
-        ref
-      }));
-    });
-    if (true) {
-      FetcherForm2.displayName = "fetcher.Form";
-    }
-    return FetcherForm2;
-  }, [fetcherKey]);
-  let fetcher = state.fetchers.get(fetcherKey) || IDLE_FETCHER;
-  let data = fetcherData.get(fetcherKey);
-  let fetcherWithComponents = React2.useMemo(() => _extends3({
-    Form: FetcherForm,
-    submit,
-    load
-  }, fetcher, {
-    data
-  }), [FetcherForm, submit, load, fetcher, data]);
-  return fetcherWithComponents;
-}
-function useFetchers() {
-  let state = useDataRouterState2(DataRouterStateHook2.UseFetchers);
-  return Array.from(state.fetchers.entries()).map((_ref11) => {
-    let [key, fetcher] = _ref11;
-    return _extends3({}, fetcher, {
-      key
-    });
-  });
-}
-var SCROLL_RESTORATION_STORAGE_KEY = "react-router-scroll-positions";
-var savedScrollPositions = {};
-function useScrollRestoration(_temp4) {
-  let {
-    getKey,
-    storageKey
-  } = _temp4 === void 0 ? {} : _temp4;
-  let {
-    router: router2
-  } = useDataRouterContext2(DataRouterHook2.UseScrollRestoration);
-  let {
-    restoreScrollPosition,
-    preventScrollReset
-  } = useDataRouterState2(DataRouterStateHook2.UseScrollRestoration);
-  let {
-    basename
-  } = React2.useContext(NavigationContext);
-  let location = useLocation();
-  let matches = useMatches();
-  let navigation = useNavigation();
-  React2.useEffect(() => {
-    window.history.scrollRestoration = "manual";
-    return () => {
-      window.history.scrollRestoration = "auto";
-    };
-  }, []);
-  usePageHide(React2.useCallback(() => {
-    if (navigation.state === "idle") {
-      let key = (getKey ? getKey(location, matches) : null) || location.key;
-      savedScrollPositions[key] = window.scrollY;
-    }
-    try {
-      sessionStorage.setItem(storageKey || SCROLL_RESTORATION_STORAGE_KEY, JSON.stringify(savedScrollPositions));
-    } catch (error) {
-      true ? warning(false, "Failed to save scroll positions in sessionStorage, <ScrollRestoration /> will not work properly (" + error + ").") : void 0;
-    }
-    window.history.scrollRestoration = "auto";
-  }, [storageKey, getKey, navigation.state, location, matches]));
-  if (typeof document !== "undefined") {
-    React2.useLayoutEffect(() => {
-      try {
-        let sessionPositions = sessionStorage.getItem(storageKey || SCROLL_RESTORATION_STORAGE_KEY);
-        if (sessionPositions) {
-          savedScrollPositions = JSON.parse(sessionPositions);
-        }
-      } catch (e) {
-      }
-    }, [storageKey]);
-    React2.useLayoutEffect(() => {
-      let getKeyWithoutBasename = getKey && basename !== "/" ? (location2, matches2) => getKey(
-        // Strip the basename to match useLocation()
-        _extends3({}, location2, {
-          pathname: stripBasename(location2.pathname, basename) || location2.pathname
-        }),
-        matches2
-      ) : getKey;
-      let disableScrollRestoration = router2 == null ? void 0 : router2.enableScrollRestoration(savedScrollPositions, () => window.scrollY, getKeyWithoutBasename);
-      return () => disableScrollRestoration && disableScrollRestoration();
-    }, [router2, basename, getKey]);
-    React2.useLayoutEffect(() => {
-      if (restoreScrollPosition === false) {
-        return;
-      }
-      if (typeof restoreScrollPosition === "number") {
-        window.scrollTo(0, restoreScrollPosition);
-        return;
-      }
-      if (location.hash) {
-        let el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
-        if (el) {
-          el.scrollIntoView();
-          return;
-        }
-      }
-      if (preventScrollReset === true) {
-        return;
-      }
-      window.scrollTo(0, 0);
-    }, [location, restoreScrollPosition, preventScrollReset]);
-  }
-}
-function useBeforeUnload(callback, options) {
-  let {
-    capture
-  } = options || {};
-  React2.useEffect(() => {
-    let opts = capture != null ? {
-      capture
-    } : void 0;
-    window.addEventListener("beforeunload", callback, opts);
-    return () => {
-      window.removeEventListener("beforeunload", callback, opts);
-    };
-  }, [callback, capture]);
-}
-function usePageHide(callback, options) {
-  let {
-    capture
-  } = options || {};
-  React2.useEffect(() => {
-    let opts = capture != null ? {
-      capture
-    } : void 0;
-    window.addEventListener("pagehide", callback, opts);
-    return () => {
-      window.removeEventListener("pagehide", callback, opts);
-    };
-  }, [callback, capture]);
-}
-function usePrompt(_ref12) {
-  let {
-    when,
-    message
-  } = _ref12;
-  let blocker = useBlocker(when);
-  React2.useEffect(() => {
-    if (blocker.state === "blocked") {
-      let proceed = window.confirm(message);
-      if (proceed) {
-        setTimeout(blocker.proceed, 0);
-      } else {
-        blocker.reset();
-      }
-    }
-  }, [blocker, message]);
-  React2.useEffect(() => {
-    if (blocker.state === "blocked" && !when) {
-      blocker.reset();
-    }
-  }, [blocker, when]);
-}
-function useViewTransitionState(to, opts) {
-  if (opts === void 0) {
-    opts = {};
-  }
-  let vtContext = React2.useContext(ViewTransitionContext);
-  !(vtContext != null) ? true ? invariant(false, "`unstable_useViewTransitionState` must be used within `react-router-dom`'s `RouterProvider`.  Did you accidentally import `RouterProvider` from `react-router`?") : invariant(false) : void 0;
-  let {
-    basename
-  } = useDataRouterContext2(DataRouterHook2.useViewTransitionState);
-  let path = useResolvedPath(to, {
-    relative: opts.relative
-  });
-  if (!vtContext.isTransitioning) {
-    return false;
-  }
-  let currentPath = stripBasename(vtContext.currentLocation.pathname, basename) || vtContext.currentLocation.pathname;
-  let nextPath = stripBasename(vtContext.nextLocation.pathname, basename) || vtContext.nextLocation.pathname;
-  return matchPath(path.pathname, nextPath) != null || matchPath(path.pathname, currentPath) != null;
-}
+// node_modules/@remix-run/react/dist/esm/index.js
+init_dist2();
 
 // node_modules/@remix-run/server-runtime/dist/esm/responses.js
 init_router();
@@ -6845,11 +6623,13 @@ async function decodeDeferred(reader) {
 // node_modules/@remix-run/server-runtime/dist/esm/single-fetch.js
 var SingleFetchRedirectSymbol = Symbol("SingleFetchRedirect");
 var ResponseStubActionSymbol = Symbol("ResponseStubAction");
+var ResponseStubOperationsSymbol = Symbol("ResponseStubOperations");
 
 // node_modules/@remix-run/react/dist/esm/browser.js
 init_router();
 var React8 = __toESM(require_react());
 init_dist();
+init_dist2();
 
 // node_modules/@remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js
 function _extends4() {
@@ -6869,6 +6649,7 @@ function _extends4() {
 
 // node_modules/@remix-run/react/dist/esm/components.js
 var React4 = __toESM(require_react());
+init_dist2();
 
 // node_modules/@remix-run/react/dist/esm/invariant.js
 function invariant2(value, message) {
@@ -6876,6 +6657,9 @@ function invariant2(value, message) {
     throw new Error(message);
   }
 }
+
+// node_modules/@remix-run/react/dist/esm/links.js
+init_dist2();
 
 // node_modules/@remix-run/react/dist/esm/routeModules.js
 async function loadRouteModule(route, routeModulesCache) {
@@ -7345,11 +7129,14 @@ function mergeArrays(...arrays) {
 }
 
 // node_modules/@remix-run/react/dist/esm/single-fetch.js
+var defineClientLoader = (clientLoader) => clientLoader;
+var defineClientAction = (clientAction) => clientAction;
 function StreamTransfer({
   context,
   identifier,
   reader,
-  textDecoder
+  textDecoder,
+  nonce
 }) {
   if (!context.renderMeta || !context.renderMeta.didRenderScripts) {
     return null;
@@ -7384,12 +7171,14 @@ function StreamTransfer({
     value
   } = promise.result;
   let scriptTag = value ? /* @__PURE__ */ React3.createElement("script", {
+    nonce,
     dangerouslySetInnerHTML: {
       __html: `window.__remixContext.streamController.enqueue(${escapeHtml(JSON.stringify(value))});`
     }
   }) : null;
   if (done) {
     return /* @__PURE__ */ React3.createElement(React3.Fragment, null, scriptTag, /* @__PURE__ */ React3.createElement("script", {
+      nonce,
       dangerouslySetInnerHTML: {
         __html: `window.__remixContext.streamController.close();`
       }
@@ -7399,7 +7188,8 @@ function StreamTransfer({
       context,
       identifier: identifier + 1,
       reader,
-      textDecoder
+      textDecoder,
+      nonce
     })));
   }
 }
@@ -8296,6 +8086,7 @@ function mergeRefs(...refs) {
 
 // node_modules/@remix-run/react/dist/esm/errorBoundaries.js
 var React5 = __toESM(require_react());
+init_dist2();
 var RemixErrorBoundary = class extends React5.Component {
   constructor(props) {
     super(props);
@@ -8404,7 +8195,7 @@ function BoundaryShell({
 
 // node_modules/@remix-run/react/dist/esm/errors.js
 init_router();
-function deserializeErrors(errors) {
+function deserializeErrors2(errors) {
   if (!errors)
     return null;
   let entries = Object.entries(errors);
@@ -8439,6 +8230,7 @@ function deserializeErrors(errors) {
 // node_modules/@remix-run/react/dist/esm/routes.js
 var React7 = __toESM(require_react());
 init_router();
+init_dist2();
 
 // node_modules/@remix-run/react/dist/esm/fallback.js
 var React6 = __toESM(require_react());
@@ -8945,7 +8737,7 @@ function RemixBrowser(_props) {
         }
       }
       if (hydrationData && hydrationData.errors) {
-        hydrationData.errors = deserializeErrors(hydrationData.errors);
+        hydrationData.errors = deserializeErrors2(hydrationData.errors);
       }
     }
     router = createRouter({
@@ -9024,6 +8816,7 @@ window.$RefreshSig$ = prevRefreshSig;
 
 // node_modules/@remix-run/react/dist/esm/scroll-restoration.js
 var React9 = __toESM(require_react());
+init_dist2();
 var STORAGE_KEY = "positions";
 function ScrollRestoration2({
   getKey,
@@ -9084,7 +8877,8 @@ var import_server = __toESM(require_server());
 function RemixServer({
   context,
   url,
-  abortDelay
+  abortDelay,
+  nonce
 }) {
   if (typeof url === "string") {
     url = new URL(url);
@@ -9135,7 +8929,8 @@ function RemixServer({
     context,
     identifier: 0,
     reader: context.serverHandoffStream.getReader(),
-    textDecoder: new TextDecoder()
+    textDecoder: new TextDecoder(),
+    nonce
   })) : null);
 }
 
@@ -9185,6 +8980,8 @@ export {
   defer3 as defer,
   redirect3 as redirect,
   redirectDocument2 as redirectDocument,
+  defineClientLoader,
+  defineClientAction,
   RemixContext,
   NavLink2 as NavLink,
   Link2 as Link,
@@ -9207,7 +9004,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.16.0
+   * @remix-run/router v1.16.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9219,7 +9016,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.23.0
+   * React Router v6.23.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9231,7 +9028,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.23.0
+   * React Router DOM v6.23.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9243,7 +9040,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/responses.js:
   (**
-   * @remix-run/server-runtime v2.9.1
+   * @remix-run/server-runtime v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9255,7 +9052,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/single-fetch.js:
   (**
-   * @remix-run/server-runtime v2.9.1
+   * @remix-run/server-runtime v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9267,7 +9064,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/index.js:
   (**
-   * @remix-run/server-runtime v2.9.1
+   * @remix-run/server-runtime v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9279,7 +9076,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9291,7 +9088,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9303,7 +9100,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9315,7 +9112,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9327,7 +9124,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9339,7 +9136,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9351,7 +9148,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/single-fetch.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9363,7 +9160,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9375,7 +9172,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9387,7 +9184,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9399,7 +9196,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fallback.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9411,7 +9208,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9423,7 +9220,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9435,7 +9232,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9447,7 +9244,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/server.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9459,7 +9256,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v2.9.1
+   * @remix-run/react v2.9.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9469,4 +9266,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-CE6MK3QB.js.map
+//# sourceMappingURL=/build/_shared/chunk-LLWUPXF3.js.map
