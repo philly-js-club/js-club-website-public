@@ -1,10 +1,10 @@
 import {
   constructSiteTitle,
   upperFirst
-} from "/build/_shared/chunk-D3OTV7UP.js";
+} from "/build/_shared/chunk-I75PPYC3.js";
 import {
   site
-} from "/build/_shared/chunk-ZEOLLBE4.js";
+} from "/build/_shared/chunk-UUX37ZRW.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XGOTYLZ5.js";
@@ -40,7 +40,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/AdLogo.tsx"
   );
-  import.meta.hot.lastModified = "1716693914558.8018";
+  import.meta.hot.lastModified = "1716697748584.5525";
 }
 function AdLogo({
   className
@@ -88,7 +88,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/utils/dates.ts"
   );
-  import.meta.hot.lastModified = "1716693914558.8018";
+  import.meta.hot.lastModified = "1716697748584.5525";
 }
 function getMonthAndYear(params) {
   const month = params.get("month")?.toLowerCase();
@@ -143,7 +143,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/AdText.tsx"
   );
-  import.meta.hot.lastModified = "1716693914558.8018";
+  import.meta.hot.lastModified = "1716697748584.5525";
 }
 function AdText() {
   _s();
@@ -200,7 +200,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/routes/ad.tsx"
   );
-  import.meta.hot.lastModified = "1716693914558.8018";
+  import.meta.hot.lastModified = "1716697748584.5525";
 }
 var meta = ({
   location
@@ -244,4 +244,4 @@ export {
   Ad as default,
   meta
 };
-//# sourceMappingURL=/build/routes/ad-J5QCZWFD.js.map
+//# sourceMappingURL=/build/routes/ad-K4VLN7FK.js.map
