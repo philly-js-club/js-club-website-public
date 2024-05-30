@@ -6381,6 +6381,7 @@ var TYPE_REGEXP = "R";
 var TYPE_SET = "S";
 var TYPE_SYMBOL = "Y";
 var TYPE_URL = "U";
+var TYPE_PREVIOUS_RESOLVED = "Z";
 var Deferred2 = class {
   promise;
   resolve;
@@ -6494,6 +6495,8 @@ function hydrate(index) {
           let error = errorType && globalObj && globalObj[errorType] ? new globalObj[errorType](message) : new Error(message);
           hydrated[index] = error;
           return error;
+        case TYPE_PREVIOUS_RESOLVED:
+          return hydrate.call(this, b);
         default:
           if (Array.isArray(plugins)) {
             const args = value.slice(1).map((i) => hydrate.call(this, i));
@@ -9266,4 +9269,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-LLWUPXF3.js.map
+//# sourceMappingURL=/build/_shared/chunk-KH6FS2D5.js.map
