@@ -9,7 +9,7 @@ X-PUBLISHED-TTL:PT1H
 BEGIN:VEVENT
 UID:0
 SUMMARY:Our very first meeting!
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20220609T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-meetup-tickets-345
 	760176997
@@ -19,7 +19,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:1
 SUMMARY:Social meeting / sharing projects
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20220714T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-meetup-tickets-370
 	871054307
@@ -29,7 +29,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:2
 SUMMARY:Social meeting / sharing projects
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20220811T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-38723
 	3926097
@@ -39,7 +39,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:3
 SUMMARY:Social meeting / sharing projects
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20220908T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-40097
 	2919797
@@ -49,7 +49,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:4
 SUMMARY:Social meeting / sharing projects
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20221013T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-42095
 	8005727
@@ -59,7 +59,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:5
 SUMMARY:Linting & Mastodon!
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20221110T230000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-45121
 	6569907
@@ -69,7 +69,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:6
 SUMMARY:JavaScript build systems + TypeScript projects
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230111T230000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-47256
 	5545267
@@ -79,7 +79,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:7
 SUMMARY:Social meeting / hack night
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230209T230000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-51996
 	5168817
@@ -90,7 +90,7 @@ BEGIN:VEVENT
 UID:8
 SUMMARY:We're very excited to welcome Alexa Stefanou from PhillyCHI to shar
 	e her expertise with JavaScript Design Systems.
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230309T230000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-54186
 	8732967
@@ -101,7 +101,7 @@ BEGIN:VEVENT
 UID:9
 SUMMARY:We're very excited to welcome Ken Rimple to share the latest develo
 	pments in Next.js 13.x!
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230420T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-56992
 	0616907
@@ -111,7 +111,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:10
 SUMMARY:Technical.ly Super Meetup during Philly Tech Week
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230510T220000Z
 URL:https://www.eventbrite.com/e/technically-super-meetup-during-philly-tec
 	h-week-tickets-611213515077
@@ -121,7 +121,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:11
 SUMMARY:Contributing to Open Source Projects
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230517T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-contributing-
 	to-open-source-projects-tickets-621853449407
@@ -131,7 +131,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:12
 SUMMARY:Developments in React Router (and Remix) with Matt Brophy
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230608T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-developments-
 	in-react-router-and-remix-tickets-627760688117
@@ -142,7 +142,7 @@ BEGIN:VEVENT
 UID:13
 SUMMARY:Scripted Philadelphia: a Python\, JavaScript\, and Ruby joint meetu
 	p
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230629T213000Z
 URL:https://www.eventbrite.com/e/scripted-philadelphia-a-python-javascript-
 	and-ruby-joint-meetup-tickets-626403759507
@@ -152,7 +152,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:14
 SUMMARY:Image Processing with JavaScript with Colby Fayock and Joe Woods
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230713T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-image-process
 	ing-with-javascript-tickets-654081735077
@@ -162,7 +162,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:15
 SUMMARY:Hack Night at Iffy Books
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230728T220000Z
 URL:https://www.eventbrite.com/e/philly-js-club-hack-night-tickets-67570470
 	9977
@@ -172,7 +172,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:16
 SUMMARY:Authenticate Your Next.js App with Auth0 with Ceora Ford
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230810T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-authenticate-
 	your-nextjs-app-with-auth0-tickets-676231214767
@@ -182,7 +182,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:17
 SUMMARY:Hack Night at Iffy Books
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230825T210000Z
 URL:https://www.eventbrite.com/e/philly-js-club-august-hack-night-tickets-6
 	99155150877
@@ -192,7 +192,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:18
 SUMMARY:Debugging JavaScript Applications with Matt Brophy
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230914T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-debugging-jav
 	ascript-applications-tickets-695620659117
@@ -202,7 +202,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:19
 SUMMARY:Hack Night at Iffy Books
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20230922T210000Z
 URL:https://www.eventbrite.com/e/philly-js-club-september-hack-night-ticket
 	s-713047844297
@@ -212,7 +212,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20
 SUMMARY:Program the Cloud in TypeScript with Josh Kodroff
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20231019T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-program-the-c
 	loud-in-typescript-tickets-695626937897
@@ -222,7 +222,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:21
 SUMMARY:Hack Night at Iffy Books
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20231027T210000Z
 URL:https://www.eventbrite.com/e/philly-js-club-october-hack-night-tickets-
 	729326343727
@@ -232,7 +232,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:22
 SUMMARY:Behind the Code: Panel Discussion on Software Development Careers
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20231109T230000Z
 URL:https://www.eventbrite.com/e/behind-the-code-panel-discussion-on-softwa
 	re-development-careers-tickets-741030440997
@@ -242,7 +242,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:23
 SUMMARY:Project Showcase!
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20240111T230000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-project-showc
 	ase-tickets-784514593267
@@ -252,7 +252,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:24
 SUMMARY:Better JavaScript Code for "Free" with ESLint! with Cody Lewis
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20240208T230000Z
 URL:https://www.eventbrite.com/e/philadelphia-javascript-club-better-javasc
 	ript-code-for-free-w-eslint-tickets-803507501567
@@ -263,7 +263,7 @@ BEGIN:VEVENT
 UID:25
 SUMMARY:Style and Authenticate Your Next.js App with Josh Goldberg & Joe Wo
 	ods
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20240314T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-js-club-style-authenticate-yo
 	ur-nextjs-app-w-josh-joe-tickets-828968245337
@@ -273,7 +273,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:26
 SUMMARY:Hot Module Replacement with Chasen Stark
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20240411T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-js-club-hot-module-replacemen
 	t-with-chasen-stark-tickets-863156082077
@@ -285,7 +285,7 @@ UID:27
 SUMMARY:Technical.ly Super Meetup during Philly Tech Week\, Join JS Club at
 	 the annual Super Meetup — use code "SUPERMEETUP" at the link for a free t
 	icket!
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20240508T210000Z
 URL:https://www.eventbrite.com/e/technically-developers-conference-tickets-
 	825942023827
@@ -295,7 +295,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:28
 SUMMARY:Rooftop Social Hour
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20240516T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-js-club-rooftop-social-hour-t
 	ickets-883420192577
@@ -305,7 +305,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:29
 SUMMARY:Debug like a Scientist with Jason Voccia
-DTSTAMP:20240602T102851Z
+DTSTAMP:20240602T112107Z
 DTSTART:20240613T220000Z
 URL:https://www.eventbrite.com/e/philadelphia-js-club-debug-like-a-scientis
 	t-with-jason-voccia-tickets-899252126317
