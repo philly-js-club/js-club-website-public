@@ -13,6 +13,12 @@ var currentSponsors = [
     href: "https://indyhall.org/",
     imageHref: "/assets/logos/indy-hall.png",
     name: "Indy Hall"
+  },
+  {
+    description: "The essential destination site for technical job seekers.",
+    href: "https://libertyjobs.com",
+    imageHref: "/assets/logos/liberty.png",
+    name: "Liberty Jobs"
   }
 ];
 var sponsors_default = {
@@ -22,4 +28,4 @@ export {
   currentSponsors,
   sponsors_default as default
 };
-//# sourceMappingURL=/build/_shared/sponsors-3FBXCW6Y.js.map
+//# sourceMappingURL=/build/_shared/sponsors-4VV6QA4J.js.map
