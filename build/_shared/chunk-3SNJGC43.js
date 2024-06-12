@@ -1,6 +1,6 @@
 import {
   Arrow
-} from "/build/_shared/chunk-TE4AEUA4.js";
+} from "/build/_shared/chunk-OS2JP7W6.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XGOTYLZ5.js";
@@ -30,22 +30,28 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/Icons.tsx"
   );
-  import.meta.hot.lastModified = "1718198748728.6619";
+  import.meta.hot.lastModified = "1718198940279.4067";
 }
 function Icons({
   icons,
   imageClassName
 }) {
   return /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("ol", { className: "icons", children: icons.map(({
+    darkModeImageHref,
     description,
     href,
     imageHref,
     name
   }) => /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("li", { className: "icon-list", children: /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("div", { className: "icon", children: [
-    /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("img", { alt: `${name} logo`, className: imageClassName, src: imageHref }, void 0, false, {
+    /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("img", { alt: `${name} logo`, className: (imageClassName ?? "") + (darkModeImageHref ? " only-light" : ""), src: imageHref }, void 0, false, {
       fileName: "app/components/Icons.tsx",
-      lineNumber: 34,
-      columnNumber: 7
+      lineNumber: 35,
+      columnNumber: 8
+    }, this),
+    darkModeImageHref && /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("img", { alt: `${name} logo`, className: (imageClassName ?? "") + " only-dark", src: darkModeImageHref }, void 0, false, {
+      fileName: "app/components/Icons.tsx",
+      lineNumber: 36,
+      columnNumber: 30
     }, this),
     /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("div", { className: "icon-info", children: [
       /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("a", { href, rel: "noreferrer", target: "_blank", children: /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("h3", { className: "larger", children: [
@@ -53,35 +59,35 @@ function Icons({
         " ",
         /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(Arrow, { className: "arrow-out medium", label: "External link indication arrow", rotate: -45 }, void 0, false, {
           fileName: "app/components/Icons.tsx",
-          lineNumber: 39,
-          columnNumber: 10
+          lineNumber: 41,
+          columnNumber: 11
         }, this)
       ] }, void 0, true, {
         fileName: "app/components/Icons.tsx",
-        lineNumber: 37,
-        columnNumber: 9
+        lineNumber: 39,
+        columnNumber: 10
       }, this) }, void 0, false, {
         fileName: "app/components/Icons.tsx",
-        lineNumber: 36,
-        columnNumber: 8
+        lineNumber: 38,
+        columnNumber: 9
       }, this),
       description && /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("p", { className: "smaller", children: description }, void 0, false, {
         fileName: "app/components/Icons.tsx",
-        lineNumber: 42,
-        columnNumber: 24
+        lineNumber: 44,
+        columnNumber: 25
       }, this)
     ] }, void 0, true, {
       fileName: "app/components/Icons.tsx",
-      lineNumber: 35,
-      columnNumber: 7
+      lineNumber: 37,
+      columnNumber: 8
     }, this)
   ] }, void 0, true, {
     fileName: "app/components/Icons.tsx",
-    lineNumber: 33,
-    columnNumber: 6
+    lineNumber: 34,
+    columnNumber: 7
   }, this) }, name, false, {
     fileName: "app/components/Icons.tsx",
-    lineNumber: 32,
+    lineNumber: 33,
     columnNumber: 11
   }, this)) }, void 0, false, {
     fileName: "app/components/Icons.tsx",
@@ -98,4 +104,4 @@ window.$RefreshSig$ = prevRefreshSig;
 export {
   Icons
 };
-//# sourceMappingURL=/build/_shared/chunk-SNYKU3EI.js.map
+//# sourceMappingURL=/build/_shared/chunk-3SNJGC43.js.map

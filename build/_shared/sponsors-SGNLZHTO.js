@@ -15,9 +15,10 @@ var currentSponsors = [
     name: "Indy Hall"
   },
   {
+    darkModeImageHref: "/assets/logos/liberty.png",
     description: "The essential destination site for technical job seekers.",
     href: "https://libertyjobs.com",
-    imageHref: "/assets/logos/liberty.png",
+    imageHref: "/assets/logos/liberty-regular.png",
     name: "Liberty Jobs"
   }
 ];
@@ -28,4 +29,4 @@ export {
   currentSponsors,
   sponsors_default as default
 };
-//# sourceMappingURL=/build/_shared/sponsors-4VV6QA4J.js.map
+//# sourceMappingURL=/build/_shared/sponsors-SGNLZHTO.js.map
