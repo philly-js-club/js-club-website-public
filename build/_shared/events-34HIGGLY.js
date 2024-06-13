@@ -3,6 +3,15 @@ import "/build/_shared/chunk-PNG5AS42.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2024-07-11T18:00:00.000-04:00",
+    duration: {
+      hours: 2
+    },
+    link: "https://www.eventbrite.com/e/philadelphia-js-club-passwordless-authentication-with-ceora-ford-tickets-925430005057",
+    location: "Indy Hall",
+    topics: ["Passwordless Authentication with Ceora Ford"]
+  },
+  {
     date: "2024-06-13T18:00:00.000-04:00",
     duration: {
       hours: 2
@@ -293,4 +302,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-6LFVDVSF.js.map
+//# sourceMappingURL=/build/_shared/events-34HIGGLY.js.map
