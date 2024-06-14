@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../app/data/sponsors.json"],
+  "sourcesContent": ["{\n\t\"currentSponsors\": [\n\t\t{\n\t\t\t\"description\": \"Join hundreds of people who choose Indy Hall as their work community, online and in person.\",\n\t\t\t\"href\": \"https://indyhall.org/\",\n\t\t\t\"imageHref\": \"/assets/logos/indy-hall.png\",\n\t\t\t\"name\": \"Indy Hall\"\n\t\t},\n\t\t{\n\t\t\t\"darkModeImageHref\": \"/assets/logos/liberty.png\",\n\t\t\t\"description\": \"The essential destination site for technical job seekers.\",\n\t\t\t\"href\": \"https://libertyjobs.com\",\n\t\t\t\"imageHref\": \"/assets/logos/liberty-regular.png\",\n\t\t\t\"name\": \"Liberty Jobs\"\n\t\t}\n\t]\n}\n"],
+  "mappings": ";;;AACC,sBAAmB;AAAA,EAClB;AAAA,IACC,aAAe;AAAA,IACf,MAAQ;AAAA,IACR,WAAa;AAAA,IACb,MAAQ;AAAA,EACT;AAAA,EACA;AAAA,IACC,mBAAqB;AAAA,IACrB,aAAe;AAAA,IACf,MAAQ;AAAA,IACR,WAAa;AAAA,IACb,MAAQ;AAAA,EACT;AACD;AAfD;AAAA,EACC;AAeD;",
+  "names": []
+}
