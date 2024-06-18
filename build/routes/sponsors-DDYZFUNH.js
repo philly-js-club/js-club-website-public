@@ -1,13 +1,13 @@
 import {
   Icons
-} from "/build/_shared/chunk-K4CIWIAV.js";
+} from "/build/_shared/chunk-Q2RE6HBB.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-DEE6V4OL.js";
+} from "/build/_shared/chunk-MR2K7SQD.js";
 import {
   constructSiteTitle
-} from "/build/_shared/chunk-3D3EGROW.js";
-import "/build/_shared/chunk-CBKSYON5.js";
+} from "/build/_shared/chunk-ZHITS6BP.js";
+import "/build/_shared/chunk-HLRU74ZD.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XGOTYLZ5.js";
@@ -44,7 +44,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/routes/sponsors.tsx"
   );
-  import.meta.hot.lastModified = "1718724317883.0325";
+  import.meta.hot.lastModified = "1718728235261.066";
 }
 var meta = () => {
   return [{
@@ -100,4 +100,4 @@ export {
   Sponsors as default,
   meta
 };
-//# sourceMappingURL=/build/routes/sponsors-P77OMIOA.js.map
+//# sourceMappingURL=/build/routes/sponsors-DDYZFUNH.js.map
