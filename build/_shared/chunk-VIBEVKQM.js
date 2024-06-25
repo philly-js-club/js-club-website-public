@@ -444,7 +444,7 @@ function convertRoutesToDataRoutes(routes, mapRouteProperties2, parentPath, mani
     manifest = {};
   }
   return routes.map((route, index) => {
-    let treePath = [...parentPath, index];
+    let treePath = [...parentPath, String(index)];
     let id = typeof route.id === "string" ? route.id : treePath.join("-");
     invariant(route.index !== true || !route.children, "Cannot specify children on an index route");
     invariant(!manifest[id], 'Found a route id collision on id "' + id + `".  Route id's must be globally unique within Data Router usages`);
@@ -471,6 +471,9 @@ function matchRoutes(routes, locationArg, basename) {
   if (basename === void 0) {
     basename = "/";
   }
+  return matchRoutesImpl(routes, locationArg, basename, false);
+}
+function matchRoutesImpl(routes, locationArg, basename, allowPartial) {
   let location = typeof locationArg === "string" ? parsePath(locationArg) : locationArg;
   let pathname = stripBasename(location.pathname || "/", basename);
   if (pathname == null) {
@@ -481,7 +484,7 @@ function matchRoutes(routes, locationArg, basename) {
   let matches = null;
   for (let i = 0; matches == null && i < branches.length; ++i) {
     let decoded = decodePath(pathname);
-    matches = matchRouteBranch(branches[i], decoded);
+    matches = matchRouteBranch(branches[i], decoded, allowPartial);
   }
   return matches;
 }
@@ -598,7 +601,10 @@ function compareIndexes(a, b) {
     0
   );
 }
-function matchRouteBranch(branch, pathname) {
+function matchRouteBranch(branch, pathname, allowPartial) {
+  if (allowPartial === void 0) {
+    allowPartial = false;
+  }
   let {
     routesMeta
   } = branch;
@@ -614,10 +620,18 @@ function matchRouteBranch(branch, pathname) {
       caseSensitive: meta.caseSensitive,
       end
     }, remainingPathname);
-    if (!match)
-      return null;
-    Object.assign(matchedParams, match.params);
     let route = meta.route;
+    if (!match && end && allowPartial && !routesMeta[routesMeta.length - 1].route.index) {
+      match = matchPath({
+        path: meta.relativePath,
+        caseSensitive: meta.caseSensitive,
+        end: false
+      }, remainingPathname);
+    }
+    if (!match) {
+      return null;
+    }
+    Object.assign(matchedParams, match.params);
     matches.push({
       // TODO: Can this as be avoided?
       params: matchedParams,
@@ -868,6 +882,7 @@ function createRouter(init) {
   let inFlightDataRoutes;
   let basename = init.basename || "/";
   let dataStrategyImpl = init.unstable_dataStrategy || defaultDataStrategy;
+  let patchRoutesOnMissImpl = init.unstable_patchRoutesOnMiss;
   let future = _extends({
     v7_fetcherPersist: false,
     v7_normalizeFormMethod: false,
@@ -884,7 +899,7 @@ function createRouter(init) {
   let initialScrollRestored = init.hydrationData != null;
   let initialMatches = matchRoutes(dataRoutes, init.history.location, basename);
   let initialErrors = null;
-  if (initialMatches == null) {
+  if (initialMatches == null && !patchRoutesOnMissImpl) {
     let error = getInternalRouterError(404, {
       pathname: init.history.location.pathname
     });
@@ -898,11 +913,12 @@ function createRouter(init) {
     };
   }
   let initialized;
-  let hasLazyRoutes = initialMatches.some((m) => m.route.lazy);
-  let hasLoaders = initialMatches.some((m) => m.route.loader);
-  if (hasLazyRoutes) {
+  if (!initialMatches) {
     initialized = false;
-  } else if (!hasLoaders) {
+    initialMatches = [];
+  } else if (initialMatches.some((m) => m.route.lazy)) {
+    initialized = false;
+  } else if (!initialMatches.some((m) => m.route.loader)) {
     initialized = true;
   } else if (future.v7_partialHydration) {
     let loaderData = init.hydrationData ? init.hydrationData.loaderData : null;
@@ -962,6 +978,7 @@ function createRouter(init) {
   let deletedFetchers = /* @__PURE__ */ new Set();
   let activeDeferreds = /* @__PURE__ */ new Map();
   let blockerFunctions = /* @__PURE__ */ new Map();
+  let pendingPatchRoutes = /* @__PURE__ */ new Map();
   let ignoreNextHistoryUpdate = false;
   function initialize() {
     unlistenHistory = init.history.listen((_ref) => {
@@ -1246,15 +1263,16 @@ function createRouter(init) {
     let loadingNavigation = opts && opts.overrideNavigation;
     let matches = matchRoutes(routesToUse, location, basename);
     let flushSync = (opts && opts.flushSync) === true;
+    let fogOfWar2 = checkFogOfWar(matches, routesToUse, location.pathname);
+    if (fogOfWar2.active && fogOfWar2.matches) {
+      matches = fogOfWar2.matches;
+    }
     if (!matches) {
-      let error = getInternalRouterError(404, {
-        pathname: location.pathname
-      });
       let {
-        matches: notFoundMatches,
+        error,
+        notFoundMatches,
         route
-      } = getShortCircuitMatches(routesToUse);
-      cancelActiveDeferreds();
+      } = handleNavigational404(location.pathname);
       completeNavigation(location, {
         matches: notFoundMatches,
         loaderData: {},
@@ -1283,35 +1301,52 @@ function createRouter(init) {
         error: opts.pendingError
       }];
     } else if (opts && opts.submission && isMutationMethod(opts.submission.formMethod)) {
-      let actionResult = await handleAction(request, location, opts.submission, matches, {
+      let actionResult = await handleAction(request, location, opts.submission, matches, fogOfWar2.active, {
         replace: opts.replace,
         flushSync
       });
       if (actionResult.shortCircuited) {
         return;
       }
+      if (actionResult.pendingActionResult) {
+        let [routeId, result] = actionResult.pendingActionResult;
+        if (isErrorResult(result) && isRouteErrorResponse(result.error) && result.error.status === 404) {
+          pendingNavigationController = null;
+          completeNavigation(location, {
+            matches: actionResult.matches,
+            loaderData: {},
+            errors: {
+              [routeId]: result.error
+            }
+          });
+          return;
+        }
+      }
+      matches = actionResult.matches || matches;
       pendingActionResult = actionResult.pendingActionResult;
       loadingNavigation = getLoadingNavigation(location, opts.submission);
       flushSync = false;
+      fogOfWar2.active = false;
       request = createClientSideRequest(init.history, request.url, request.signal);
     }
     let {
       shortCircuited,
+      matches: updatedMatches,
       loaderData,
       errors
-    } = await handleLoaders(request, location, matches, loadingNavigation, opts && opts.submission, opts && opts.fetcherSubmission, opts && opts.replace, opts && opts.initialHydration === true, flushSync, pendingActionResult);
+    } = await handleLoaders(request, location, matches, fogOfWar2.active, loadingNavigation, opts && opts.submission, opts && opts.fetcherSubmission, opts && opts.replace, opts && opts.initialHydration === true, flushSync, pendingActionResult);
     if (shortCircuited) {
       return;
     }
     pendingNavigationController = null;
     completeNavigation(location, _extends({
-      matches
+      matches: updatedMatches || matches
     }, getActionDataForCommit(pendingActionResult), {
       loaderData,
       errors
     }));
   }
-  async function handleAction(request, location, submission, matches, opts) {
+  async function handleAction(request, location, submission, matches, isFogOfWar, opts) {
     if (opts === void 0) {
       opts = {};
     }
@@ -1322,6 +1357,42 @@ function createRouter(init) {
     }, {
       flushSync: opts.flushSync === true
     });
+    if (isFogOfWar) {
+      let discoverResult = await discoverRoutes(matches, location.pathname, request.signal);
+      if (discoverResult.type === "aborted") {
+        return {
+          shortCircuited: true
+        };
+      } else if (discoverResult.type === "error") {
+        let {
+          error,
+          notFoundMatches,
+          route
+        } = handleDiscoverRouteError(location.pathname, discoverResult);
+        return {
+          matches: notFoundMatches,
+          pendingActionResult: [route.id, {
+            type: ResultType.error,
+            error
+          }]
+        };
+      } else if (!discoverResult.matches) {
+        let {
+          notFoundMatches,
+          error,
+          route
+        } = handleNavigational404(location.pathname);
+        return {
+          matches: notFoundMatches,
+          pendingActionResult: [route.id, {
+            type: ResultType.error,
+            error
+          }]
+        };
+      } else {
+        matches = discoverResult.matches;
+      }
+    }
     let result;
     let actionMatch = getTargetMatch(matches, location);
     if (!actionMatch.route.action && !actionMatch.route.lazy) {
@@ -1369,16 +1440,65 @@ function createRouter(init) {
         pendingAction = Action.Push;
       }
       return {
+        matches,
         pendingActionResult: [boundaryMatch.route.id, result]
       };
     }
     return {
+      matches,
       pendingActionResult: [actionMatch.route.id, result]
     };
   }
-  async function handleLoaders(request, location, matches, overrideNavigation, submission, fetcherSubmission, replace, initialHydration, flushSync, pendingActionResult) {
+  async function handleLoaders(request, location, matches, isFogOfWar, overrideNavigation, submission, fetcherSubmission, replace, initialHydration, flushSync, pendingActionResult) {
     let loadingNavigation = overrideNavigation || getLoadingNavigation(location, submission);
     let activeSubmission = submission || fetcherSubmission || getSubmissionFromNavigation(loadingNavigation);
+    let shouldUpdateNavigationState = !isUninterruptedRevalidation && (!future.v7_partialHydration || !initialHydration);
+    if (isFogOfWar) {
+      if (shouldUpdateNavigationState) {
+        let actionData = getUpdatedActionData(pendingActionResult);
+        updateState(_extends({
+          navigation: loadingNavigation
+        }, actionData !== void 0 ? {
+          actionData
+        } : {}), {
+          flushSync
+        });
+      }
+      let discoverResult = await discoverRoutes(matches, location.pathname, request.signal);
+      if (discoverResult.type === "aborted") {
+        return {
+          shortCircuited: true
+        };
+      } else if (discoverResult.type === "error") {
+        let {
+          error,
+          notFoundMatches,
+          route
+        } = handleDiscoverRouteError(location.pathname, discoverResult);
+        return {
+          matches: notFoundMatches,
+          loaderData: {},
+          errors: {
+            [route.id]: error
+          }
+        };
+      } else if (!discoverResult.matches) {
+        let {
+          error,
+          notFoundMatches,
+          route
+        } = handleNavigational404(location.pathname);
+        return {
+          matches: notFoundMatches,
+          loaderData: {},
+          errors: {
+            [route.id]: error
+          }
+        };
+      } else {
+        matches = discoverResult.matches;
+      }
+    }
     let routesToUse = inFlightDataRoutes || dataRoutes;
     let [matchesToLoad, revalidatingFetchers] = getMatchesToLoad(init.history, state, matches, activeSubmission, location, future.v7_partialHydration && initialHydration === true, future.unstable_skipActionErrorRevalidation, isRevalidationRequired, cancelledDeferredRoutes, cancelledFetcherLoads, deletedFetchers, fetchLoadMatches, fetchRedirectIds, routesToUse, basename, pendingActionResult);
     cancelActiveDeferreds((routeId) => !(matches && matches.some((m) => m.route.id === routeId)) || matchesToLoad && matchesToLoad.some((m) => m.route.id === routeId));
@@ -1401,31 +1521,19 @@ function createRouter(init) {
         shortCircuited: true
       };
     }
-    if (!isUninterruptedRevalidation && (!future.v7_partialHydration || !initialHydration)) {
-      revalidatingFetchers.forEach((rf) => {
-        let fetcher = state.fetchers.get(rf.key);
-        let revalidatingFetcher = getLoadingFetcher(void 0, fetcher ? fetcher.data : void 0);
-        state.fetchers.set(rf.key, revalidatingFetcher);
-      });
-      let actionData;
-      if (pendingActionResult && !isErrorResult(pendingActionResult[1])) {
-        actionData = {
-          [pendingActionResult[0]]: pendingActionResult[1].data
-        };
-      } else if (state.actionData) {
-        if (Object.keys(state.actionData).length === 0) {
-          actionData = null;
-        } else {
-          actionData = state.actionData;
+    if (shouldUpdateNavigationState) {
+      let updates = {};
+      if (!isFogOfWar) {
+        updates.navigation = loadingNavigation;
+        let actionData = getUpdatedActionData(pendingActionResult);
+        if (actionData !== void 0) {
+          updates.actionData = actionData;
         }
       }
-      updateState(_extends({
-        navigation: loadingNavigation
-      }, actionData !== void 0 ? {
-        actionData
-      } : {}, revalidatingFetchers.length > 0 ? {
-        fetchers: new Map(state.fetchers)
-      } : {}), {
+      if (revalidatingFetchers.length > 0) {
+        updates.fetchers = getUpdatedRevalidatingFetchers(revalidatingFetchers);
+      }
+      updateState(updates, {
         flushSync
       });
     }
@@ -1493,11 +1601,33 @@ function createRouter(init) {
     let didAbortFetchLoads = abortStaleFetchLoads(pendingNavigationLoadId);
     let shouldUpdateFetchers = updatedFetchers || didAbortFetchLoads || revalidatingFetchers.length > 0;
     return _extends({
+      matches,
       loaderData,
       errors
     }, shouldUpdateFetchers ? {
       fetchers: new Map(state.fetchers)
     } : {});
+  }
+  function getUpdatedActionData(pendingActionResult) {
+    if (pendingActionResult && !isErrorResult(pendingActionResult[1])) {
+      return {
+        [pendingActionResult[0]]: pendingActionResult[1].data
+      };
+    } else if (state.actionData) {
+      if (Object.keys(state.actionData).length === 0) {
+        return null;
+      } else {
+        return state.actionData;
+      }
+    }
+  }
+  function getUpdatedRevalidatingFetchers(revalidatingFetchers) {
+    revalidatingFetchers.forEach((rf) => {
+      let fetcher = state.fetchers.get(rf.key);
+      let revalidatingFetcher = getLoadingFetcher(void 0, fetcher ? fetcher.data : void 0);
+      state.fetchers.set(rf.key, revalidatingFetcher);
+    });
+    return new Map(state.fetchers);
   }
   function fetch2(key, routeId, href, opts) {
     if (isServer) {
@@ -1509,6 +1639,10 @@ function createRouter(init) {
     let routesToUse = inFlightDataRoutes || dataRoutes;
     let normalizedPath = normalizeTo(state.location, state.matches, basename, future.v7_prependBasename, href, future.v7_relativeSplatPath, routeId, opts == null ? void 0 : opts.relative);
     let matches = matchRoutes(routesToUse, normalizedPath, basename);
+    let fogOfWar2 = checkFogOfWar(matches, routesToUse, normalizedPath);
+    if (fogOfWar2.active && fogOfWar2.matches) {
+      matches = fogOfWar2.matches;
+    }
     if (!matches) {
       setFetcherError(key, routeId, getInternalRouterError(404, {
         pathname: normalizedPath
@@ -1531,27 +1665,33 @@ function createRouter(init) {
     let match = getTargetMatch(matches, path);
     pendingPreventScrollReset = (opts && opts.preventScrollReset) === true;
     if (submission && isMutationMethod(submission.formMethod)) {
-      handleFetcherAction(key, routeId, path, match, matches, flushSync, submission);
+      handleFetcherAction(key, routeId, path, match, matches, fogOfWar2.active, flushSync, submission);
       return;
     }
     fetchLoadMatches.set(key, {
       routeId,
       path
     });
-    handleFetcherLoader(key, routeId, path, match, matches, flushSync, submission);
+    handleFetcherLoader(key, routeId, path, match, matches, fogOfWar2.active, flushSync, submission);
   }
-  async function handleFetcherAction(key, routeId, path, match, requestMatches, flushSync, submission) {
+  async function handleFetcherAction(key, routeId, path, match, requestMatches, isFogOfWar, flushSync, submission) {
     interruptActiveLoads();
     fetchLoadMatches.delete(key);
-    if (!match.route.action && !match.route.lazy) {
-      let error = getInternalRouterError(405, {
-        method: submission.formMethod,
-        pathname: path,
-        routeId
-      });
-      setFetcherError(key, routeId, error, {
-        flushSync
-      });
+    function detectAndHandle405Error(m) {
+      if (!m.route.action && !m.route.lazy) {
+        let error = getInternalRouterError(405, {
+          method: submission.formMethod,
+          pathname: path,
+          routeId
+        });
+        setFetcherError(key, routeId, error, {
+          flushSync
+        });
+        return true;
+      }
+      return false;
+    }
+    if (!isFogOfWar && detectAndHandle405Error(match)) {
       return;
     }
     let existingFetcher = state.fetchers.get(key);
@@ -1560,6 +1700,33 @@ function createRouter(init) {
     });
     let abortController = new AbortController();
     let fetchRequest = createClientSideRequest(init.history, path, abortController.signal, submission);
+    if (isFogOfWar) {
+      let discoverResult = await discoverRoutes(requestMatches, path, fetchRequest.signal);
+      if (discoverResult.type === "aborted") {
+        return;
+      } else if (discoverResult.type === "error") {
+        let {
+          error
+        } = handleDiscoverRouteError(path, discoverResult);
+        setFetcherError(key, routeId, error, {
+          flushSync
+        });
+        return;
+      } else if (!discoverResult.matches) {
+        setFetcherError(key, routeId, getInternalRouterError(404, {
+          pathname: path
+        }), {
+          flushSync
+        });
+        return;
+      } else {
+        requestMatches = discoverResult.matches;
+        match = getTargetMatch(requestMatches, path);
+        if (detectAndHandle405Error(match)) {
+          return;
+        }
+      }
+    }
     fetchControllers.set(key, abortController);
     let originatingLoadId = incrementingLoadId;
     let actionResults = await callDataStrategy("action", fetchRequest, [match], requestMatches);
@@ -1672,13 +1839,37 @@ function createRouter(init) {
       isRevalidationRequired = false;
     }
   }
-  async function handleFetcherLoader(key, routeId, path, match, matches, flushSync, submission) {
+  async function handleFetcherLoader(key, routeId, path, match, matches, isFogOfWar, flushSync, submission) {
     let existingFetcher = state.fetchers.get(key);
     updateFetcherState(key, getLoadingFetcher(submission, existingFetcher ? existingFetcher.data : void 0), {
       flushSync
     });
     let abortController = new AbortController();
     let fetchRequest = createClientSideRequest(init.history, path, abortController.signal);
+    if (isFogOfWar) {
+      let discoverResult = await discoverRoutes(matches, path, fetchRequest.signal);
+      if (discoverResult.type === "aborted") {
+        return;
+      } else if (discoverResult.type === "error") {
+        let {
+          error
+        } = handleDiscoverRouteError(path, discoverResult);
+        setFetcherError(key, routeId, error, {
+          flushSync
+        });
+        return;
+      } else if (!discoverResult.matches) {
+        setFetcherError(key, routeId, getInternalRouterError(404, {
+          pathname: path
+        }), {
+          flushSync
+        });
+        return;
+      } else {
+        matches = discoverResult.matches;
+        match = getTargetMatch(matches, path);
+      }
+    }
     fetchControllers.set(key, abortController);
     let originatingLoadId = incrementingLoadId;
     let results = await callDataStrategy("loader", fetchRequest, [match], matches);
@@ -1979,6 +2170,37 @@ function createRouter(init) {
       return blockerKey;
     }
   }
+  function handleNavigational404(pathname) {
+    let error = getInternalRouterError(404, {
+      pathname
+    });
+    let routesToUse = inFlightDataRoutes || dataRoutes;
+    let {
+      matches,
+      route
+    } = getShortCircuitMatches(routesToUse);
+    cancelActiveDeferreds();
+    return {
+      notFoundMatches: matches,
+      route,
+      error
+    };
+  }
+  function handleDiscoverRouteError(pathname, discoverResult) {
+    let matches = discoverResult.partialMatches;
+    let route = matches[matches.length - 1].route;
+    let error = getInternalRouterError(400, {
+      type: "route-discovery",
+      routeId: route.id,
+      pathname,
+      message: discoverResult.error != null && "message" in discoverResult.error ? discoverResult.error : String(discoverResult.error)
+    });
+    return {
+      notFoundMatches: matches,
+      route,
+      error
+    };
+  }
   function cancelActiveDeferreds(predicate) {
     let cancelledRouteIds = [];
     activeDeferreds.forEach((dfd, routeId) => {
@@ -2032,6 +2254,87 @@ function createRouter(init) {
     }
     return null;
   }
+  function checkFogOfWar(matches, routesToUse, pathname) {
+    if (patchRoutesOnMissImpl) {
+      if (!matches) {
+        let fogMatches = matchRoutesImpl(routesToUse, pathname, basename, true);
+        return {
+          active: true,
+          matches: fogMatches || []
+        };
+      } else {
+        let leafRoute = matches[matches.length - 1].route;
+        if (leafRoute.path === "*") {
+          let partialMatches = matchRoutesImpl(routesToUse, pathname, basename, true);
+          return {
+            active: true,
+            matches: partialMatches
+          };
+        }
+      }
+    }
+    return {
+      active: false,
+      matches: null
+    };
+  }
+  async function discoverRoutes(matches, pathname, signal) {
+    let partialMatches = matches;
+    let route = partialMatches.length > 0 ? partialMatches[partialMatches.length - 1].route : null;
+    while (true) {
+      try {
+        await loadLazyRouteChildren(patchRoutesOnMissImpl, pathname, partialMatches, dataRoutes || inFlightDataRoutes, manifest, mapRouteProperties2, pendingPatchRoutes, signal);
+      } catch (e) {
+        return {
+          type: "error",
+          error: e,
+          partialMatches
+        };
+      }
+      if (signal.aborted) {
+        return {
+          type: "aborted"
+        };
+      }
+      let routesToUse = inFlightDataRoutes || dataRoutes;
+      let newMatches = matchRoutes(routesToUse, pathname, basename);
+      let matchedSplat = false;
+      if (newMatches) {
+        let leafRoute = newMatches[newMatches.length - 1].route;
+        if (leafRoute.index) {
+          return {
+            type: "success",
+            matches: newMatches
+          };
+        }
+        if (leafRoute.path && leafRoute.path.length > 0) {
+          if (leafRoute.path === "*") {
+            matchedSplat = true;
+          } else {
+            return {
+              type: "success",
+              matches: newMatches
+            };
+          }
+        }
+      }
+      let newPartialMatches = matchRoutesImpl(routesToUse, pathname, basename, true);
+      if (!newPartialMatches || partialMatches.map((m) => m.route.id).join("-") === newPartialMatches.map((m) => m.route.id).join("-")) {
+        return {
+          type: "success",
+          matches: matchedSplat ? newMatches : null
+        };
+      }
+      partialMatches = newPartialMatches;
+      route = partialMatches[partialMatches.length - 1].route;
+      if (route.path === "*") {
+        return {
+          type: "success",
+          matches: partialMatches
+        };
+      }
+    }
+  }
   function _internalSetRoutes(newRoutes) {
     manifest = {};
     inFlightDataRoutes = convertRoutesToDataRoutes(newRoutes, mapRouteProperties2, void 0, manifest);
@@ -2067,6 +2370,9 @@ function createRouter(init) {
     dispose,
     getBlocker,
     deleteBlocker,
+    patchRoutes(routeId, children) {
+      return patchRoutes(routeId, children, dataRoutes || inFlightDataRoutes, manifest, mapRouteProperties2);
+    },
     _internalFetchControllers: fetchControllers,
     _internalActiveDeferreds: activeDeferreds,
     // TODO: Remove setRoutes, it's temporary to avoid dealing with
@@ -2683,6 +2989,45 @@ function shouldRevalidateLoader(loaderMatch, arg) {
   }
   return arg.defaultShouldRevalidate;
 }
+async function loadLazyRouteChildren(patchRoutesOnMissImpl, path, matches, routes, manifest, mapRouteProperties2, pendingRouteChildren, signal) {
+  let key = [path, ...matches.map((m) => m.route.id)].join("-");
+  try {
+    let pending = pendingRouteChildren.get(key);
+    if (!pending) {
+      pending = patchRoutesOnMissImpl({
+        path,
+        matches,
+        patch: (routeId, children) => {
+          if (!signal.aborted) {
+            patchRoutes(routeId, children, routes, manifest, mapRouteProperties2);
+          }
+        }
+      });
+      pendingRouteChildren.set(key, pending);
+    }
+    if (pending && isPromise(pending)) {
+      await pending;
+    }
+  } finally {
+    pendingRouteChildren.delete(key);
+  }
+}
+function patchRoutes(routeId, children, routes, manifest, mapRouteProperties2) {
+  if (routeId) {
+    var _route$children;
+    let route = manifest[routeId];
+    invariant(route, "No route found to patch children into: routeId = " + routeId);
+    let dataChildren = convertRoutesToDataRoutes(children, mapRouteProperties2, [routeId, "patch", String(((_route$children = route.children) == null ? void 0 : _route$children.length) || "0")], manifest);
+    if (route.children) {
+      route.children.push(...dataChildren);
+    } else {
+      route.children = dataChildren;
+    }
+  } else {
+    let dataChildren = convertRoutesToDataRoutes(children, mapRouteProperties2, ["patch", String(routes.length || "0")], manifest);
+    routes.push(...dataChildren);
+  }
+}
 async function loadLazyRouteModule(route, mapRouteProperties2, manifest) {
   if (!route.lazy) {
     return;
@@ -3124,13 +3469,16 @@ function getInternalRouterError(status, _temp5) {
     pathname,
     routeId,
     method,
-    type
+    type,
+    message
   } = _temp5 === void 0 ? {} : _temp5;
   let statusText = "Unknown Server Error";
   let errorMessage = "Unknown @remix-run/router error";
   if (status === 400) {
     statusText = "Bad Request";
-    if (method && pathname && routeId) {
+    if (type === "route-discovery") {
+      errorMessage = 'Unable to match URL "' + pathname + '" - the `children()` function for ' + ("route `" + routeId + "` threw the following error:\n" + message);
+    } else if (method && pathname && routeId) {
       errorMessage = "You made a " + method + ' request to "' + pathname + '" but ' + ('did not provide a `loader` for route "' + routeId + '", ') + "so there is no way to handle the request.";
     } else if (type === "defer-action") {
       errorMessage = "defer() is not supported in actions";
@@ -3182,6 +3530,9 @@ function isHashChangeOnly(a, b) {
     return true;
   }
   return false;
+}
+function isPromise(val) {
+  return typeof val === "object" && val != null && "then" in val;
 }
 function isHandlerResult(result) {
   return result != null && typeof result === "object" && "type" in result && "result" in result && (result.type === ResultType.data || result.type === ResultType.error);
@@ -3768,7 +4119,7 @@ function useHref(to, _temp) {
   ) : invariant(false) : void 0;
   let {
     basename,
-    navigator
+    navigator: navigator2
   } = React.useContext(NavigationContext);
   let {
     hash,
@@ -3781,7 +4132,7 @@ function useHref(to, _temp) {
   if (basename !== "/") {
     joinedPathname = pathname === "/" ? basename : joinPaths([basename, pathname]);
   }
-  return navigator.createHref({
+  return navigator2.createHref({
     pathname: joinedPathname,
     search,
     hash
@@ -3837,7 +4188,7 @@ function useNavigateUnstable() {
   let {
     basename,
     future,
-    navigator
+    navigator: navigator2
   } = React.useContext(NavigationContext);
   let {
     matches
@@ -3858,15 +4209,15 @@ function useNavigateUnstable() {
     if (!activeRef.current)
       return;
     if (typeof to === "number") {
-      navigator.go(to);
+      navigator2.go(to);
       return;
     }
     let path = resolveTo(to, JSON.parse(routePathnamesJson), locationPathname, options.relative === "path");
     if (dataRouterContext == null && basename !== "/") {
       path.pathname = path.pathname === "/" ? basename : joinPaths([basename, path.pathname]);
     }
-    (!!options.replace ? navigator.replace : navigator.push)(path, options.state, options);
-  }, [basename, navigator, routePathnamesJson, locationPathname, dataRouterContext]);
+    (!!options.replace ? navigator2.replace : navigator2.push)(path, options.state, options);
+  }, [basename, navigator2, routePathnamesJson, locationPathname, dataRouterContext]);
   return navigate;
 }
 function useOutletContext() {
@@ -3915,7 +4266,7 @@ function useRoutesImpl(routes, locationArg, dataRouterState, future) {
     "useRoutes() may be used only in the context of a <Router> component."
   ) : invariant(false) : void 0;
   let {
-    navigator
+    navigator: navigator2
   } = React.useContext(NavigationContext);
   let {
     matches: parentMatches
@@ -3960,12 +4311,12 @@ function useRoutesImpl(routes, locationArg, dataRouterState, future) {
     pathname: joinPaths([
       parentPathnameBase,
       // Re-encode pathnames that were decoded inside matchRoutes
-      navigator.encodeLocation ? navigator.encodeLocation(match.pathname).pathname : match.pathname
+      navigator2.encodeLocation ? navigator2.encodeLocation(match.pathname).pathname : match.pathname
     ]),
     pathnameBase: match.pathnameBase === "/" ? parentPathnameBase : joinPaths([
       parentPathnameBase,
       // Re-encode pathnames that were decoded inside matchRoutes
-      navigator.encodeLocation ? navigator.encodeLocation(match.pathnameBase).pathname : match.pathnameBase
+      navigator2.encodeLocation ? navigator2.encodeLocation(match.pathnameBase).pathname : match.pathnameBase
     ])
   })), parentMatches, dataRouterState, future);
   if (locationArg && renderedMatches) {
@@ -4313,7 +4664,7 @@ function RouterProvider(_ref) {
   React.useEffect(() => {
     true ? warning(fallbackElement == null || !router2.future.v7_partialHydration, "`<RouterProvider fallbackElement>` is deprecated when using `v7_partialHydration`, use a `HydrateFallback` component instead") : void 0;
   }, []);
-  let navigator = React.useMemo(() => {
+  let navigator2 = React.useMemo(() => {
     return {
       createHref: router2.createHref,
       encodeLocation: router2.encodeLocation,
@@ -4332,10 +4683,10 @@ function RouterProvider(_ref) {
   let basename = router2.basename || "/";
   let dataRouterContext = React.useMemo(() => ({
     router: router2,
-    navigator,
+    navigator: navigator2,
     static: false,
     basename
-  }), [router2, navigator, basename]);
+  }), [router2, navigator2, basename]);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(DataRouterContext.Provider, {
     value: dataRouterContext
   }, /* @__PURE__ */ React.createElement(DataRouterStateContext.Provider, {
@@ -4344,7 +4695,7 @@ function RouterProvider(_ref) {
     basename,
     location: state.location,
     navigationType: state.historyAction,
-    navigator,
+    navigator: navigator2,
     future: {
       v7_relativeSplatPath: router2.future.v7_relativeSplatPath
     }
@@ -4445,7 +4796,7 @@ function Router(_ref5) {
     children = null,
     location: locationProp,
     navigationType = Action.Pop,
-    navigator,
+    navigator: navigator2,
     static: staticProp = false,
     future
   } = _ref5;
@@ -4453,12 +4804,12 @@ function Router(_ref5) {
   let basename = basenameProp.replace(/^\/*/, "/");
   let navigationContext = React.useMemo(() => ({
     basename,
-    navigator,
+    navigator: navigator2,
     static: staticProp,
     future: _extends2({
       v7_relativeSplatPath: false
     }, future)
-  }), [basename, future, navigator, staticProp]);
+  }), [basename, future, navigator2, staticProp]);
   if (typeof locationProp === "string") {
     locationProp = parsePath(locationProp);
   }
@@ -4618,7 +4969,8 @@ function createMemoryRouter(routes, opts) {
     hydrationData: opts == null ? void 0 : opts.hydrationData,
     routes,
     mapRouteProperties,
-    unstable_dataStrategy: opts == null ? void 0 : opts.unstable_dataStrategy
+    unstable_dataStrategy: opts == null ? void 0 : opts.unstable_dataStrategy,
+    unstable_patchRoutesOnMiss: opts == null ? void 0 : opts.unstable_patchRoutesOnMiss
   }).initialize();
 }
 var React, DataRouterContext, DataRouterStateContext, AwaitContext, NavigationContext, LocationContext, RouteContext, RouteErrorContext, navigateEffectWarning, OutletContext, defaultErrorElement, RenderErrorBoundary, DataRouterHook, DataRouterStateHook, blockerId, alreadyWarned, START_TRANSITION, startTransitionImpl, AwaitRenderStatus, neverSettledPromise, AwaitErrorBoundary;
@@ -5054,6 +5406,7 @@ function createBrowserRouter(routes, opts) {
     routes,
     mapRouteProperties,
     unstable_dataStrategy: opts == null ? void 0 : opts.unstable_dataStrategy,
+    unstable_patchRoutesOnMiss: opts == null ? void 0 : opts.unstable_patchRoutesOnMiss,
     window: opts == null ? void 0 : opts.window
   }).initialize();
 }
@@ -5070,6 +5423,7 @@ function createHashRouter(routes, opts) {
     routes,
     mapRouteProperties,
     unstable_dataStrategy: opts == null ? void 0 : opts.unstable_dataStrategy,
+    unstable_patchRoutesOnMiss: opts == null ? void 0 : opts.unstable_patchRoutesOnMiss,
     window: opts == null ? void 0 : opts.window
   }).initialize();
 }
@@ -5266,7 +5620,7 @@ function RouterProvider2(_ref) {
   React2.useEffect(() => {
     true ? warning(fallbackElement == null || !router2.future.v7_partialHydration, "`<RouterProvider fallbackElement>` is deprecated when using `v7_partialHydration`, use a `HydrateFallback` component instead") : void 0;
   }, []);
-  let navigator = React2.useMemo(() => {
+  let navigator2 = React2.useMemo(() => {
     return {
       createHref: router2.createHref,
       encodeLocation: router2.encodeLocation,
@@ -5285,10 +5639,10 @@ function RouterProvider2(_ref) {
   let basename = router2.basename || "/";
   let dataRouterContext = React2.useMemo(() => ({
     router: router2,
-    navigator,
+    navigator: navigator2,
     static: false,
     basename
-  }), [router2, navigator, basename]);
+  }), [router2, navigator2, basename]);
   return /* @__PURE__ */ React2.createElement(React2.Fragment, null, /* @__PURE__ */ React2.createElement(DataRouterContext.Provider, {
     value: dataRouterContext
   }, /* @__PURE__ */ React2.createElement(DataRouterStateContext.Provider, {
@@ -5301,7 +5655,7 @@ function RouterProvider2(_ref) {
     basename,
     location: state.location,
     navigationType: state.historyAction,
-    navigator,
+    navigator: navigator2,
     future: {
       v7_relativeSplatPath: router2.future.v7_relativeSplatPath
     }
@@ -5931,13 +6285,13 @@ var init_dist2 = __esm({
       let location = useLocation();
       let routerState = React2.useContext(DataRouterStateContext);
       let {
-        navigator,
+        navigator: navigator2,
         basename
       } = React2.useContext(NavigationContext);
       let isTransitioning = routerState != null && // Conditional usage is OK here because the usage of a data router is static
       // eslint-disable-next-line react-hooks/rules-of-hooks
       useViewTransitionState(path) && unstable_viewTransition === true;
-      let toPathname = navigator.encodeLocation ? navigator.encodeLocation(path).pathname : path.pathname;
+      let toPathname = navigator2.encodeLocation ? navigator2.encodeLocation(path).pathname : path.pathname;
       let locationPathname = location.pathname;
       let nextLocationPathname = routerState && routerState.navigation && routerState.navigation.location ? routerState.navigation.location.pathname : null;
       if (!caseSensitive) {
@@ -6050,7 +6404,7 @@ var require_server = __commonJS({
   "node_modules/react-router-dom/server.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var React11 = require_react();
+    var React12 = require_react();
     var router2 = (init_router(), __toCommonJS(router_exports));
     var reactRouter = (init_dist(), __toCommonJS(dist_exports));
     var reactRouterDom = (init_dist2(), __toCommonJS(dist_exports2));
@@ -6074,7 +6428,7 @@ var require_server = __commonJS({
       n["default"] = e;
       return Object.freeze(n);
     }
-    var React__namespace = /* @__PURE__ */ _interopNamespace(React11);
+    var React__namespace = /* @__PURE__ */ _interopNamespace(React12);
     function StaticRouter({
       basename,
       children,
@@ -6089,7 +6443,7 @@ var require_server = __commonJS({
         pathname: locationProp.pathname || "/",
         search: locationProp.search || "",
         hash: locationProp.hash || "",
-        state: locationProp.state || null,
+        state: locationProp.state != null ? locationProp.state : null,
         key: locationProp.key || "default"
       };
       let staticNavigator = getStatelessNavigator();
@@ -6305,6 +6659,9 @@ var require_server = __commonJS({
         },
         deleteBlocker() {
           throw msg("deleteBlocker");
+        },
+        patchRoutes() {
+          throw msg("patchRoutes");
         },
         _internalFetchControllers: /* @__PURE__ */ new Map(),
         _internalActiveDeferreds: /* @__PURE__ */ new Map(),
@@ -6630,7 +6987,7 @@ var ResponseStubOperationsSymbol = Symbol("ResponseStubOperations");
 
 // node_modules/@remix-run/react/dist/esm/browser.js
 init_router();
-var React8 = __toESM(require_react());
+var React9 = __toESM(require_react());
 init_dist();
 init_dist2();
 
@@ -6651,7 +7008,7 @@ function _extends4() {
 }
 
 // node_modules/@remix-run/react/dist/esm/components.js
-var React4 = __toESM(require_react());
+var React8 = __toESM(require_react());
 init_dist2();
 
 // node_modules/@remix-run/react/dist/esm/invariant.js
@@ -6821,7 +7178,7 @@ function getNewMatchesForLinks(page, nextMatches, currentMatches, manifest, loca
 }
 function getDataLinkHrefs(page, matches, manifest) {
   let path = parsePathPatch(page);
-  return dedupeHrefs(matches.filter((match) => manifest.routes[match.route.id].hasLoader).map((match) => {
+  return dedupeHrefs(matches.filter((match) => manifest.routes[match.route.id].hasLoader && !manifest.routes[match.route.id].hasClientLoader).map((match) => {
     let {
       pathname,
       search
@@ -7372,725 +7729,19 @@ function unwrapSingleFetchResult(result, routeId) {
   }
 }
 
-// node_modules/@remix-run/react/dist/esm/components.js
-function useDataRouterContext3() {
-  let context = React4.useContext(DataRouterContext);
-  invariant2(context, "You must render this element inside a <DataRouterContext.Provider> element");
-  return context;
-}
-function useDataRouterStateContext() {
-  let context = React4.useContext(DataRouterStateContext);
-  invariant2(context, "You must render this element inside a <DataRouterStateContext.Provider> element");
-  return context;
-}
-var RemixContext = /* @__PURE__ */ React4.createContext(void 0);
-RemixContext.displayName = "Remix";
-function useRemixContext() {
-  let context = React4.useContext(RemixContext);
-  invariant2(context, "You must render this element inside a <Remix> element");
-  return context;
-}
-function usePrefetchBehavior(prefetch, theirElementProps) {
-  let [maybePrefetch, setMaybePrefetch] = React4.useState(false);
-  let [shouldPrefetch, setShouldPrefetch] = React4.useState(false);
-  let {
-    onFocus,
-    onBlur,
-    onMouseEnter,
-    onMouseLeave,
-    onTouchStart
-  } = theirElementProps;
-  let ref = React4.useRef(null);
-  React4.useEffect(() => {
-    if (prefetch === "render") {
-      setShouldPrefetch(true);
-    }
-    if (prefetch === "viewport") {
-      let callback = (entries) => {
-        entries.forEach((entry) => {
-          setShouldPrefetch(entry.isIntersecting);
-        });
-      };
-      let observer = new IntersectionObserver(callback, {
-        threshold: 0.5
-      });
-      if (ref.current)
-        observer.observe(ref.current);
-      return () => {
-        observer.disconnect();
-      };
-    }
-  }, [prefetch]);
-  let setIntent = () => {
-    if (prefetch === "intent") {
-      setMaybePrefetch(true);
-    }
-  };
-  let cancelIntent = () => {
-    if (prefetch === "intent") {
-      setMaybePrefetch(false);
-      setShouldPrefetch(false);
-    }
-  };
-  React4.useEffect(() => {
-    if (maybePrefetch) {
-      let id = setTimeout(() => {
-        setShouldPrefetch(true);
-      }, 100);
-      return () => {
-        clearTimeout(id);
-      };
-    }
-  }, [maybePrefetch]);
-  return [shouldPrefetch, ref, {
-    onFocus: composeEventHandlers(onFocus, setIntent),
-    onBlur: composeEventHandlers(onBlur, cancelIntent),
-    onMouseEnter: composeEventHandlers(onMouseEnter, setIntent),
-    onMouseLeave: composeEventHandlers(onMouseLeave, cancelIntent),
-    onTouchStart: composeEventHandlers(onTouchStart, setIntent)
-  }];
-}
-var ABSOLUTE_URL_REGEX3 = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
-var NavLink2 = /* @__PURE__ */ React4.forwardRef(({
-  to,
-  prefetch = "none",
-  ...props
-}, forwardedRef) => {
-  let isAbsolute = typeof to === "string" && ABSOLUTE_URL_REGEX3.test(to);
-  let href = useHref(to);
-  let [shouldPrefetch, ref, prefetchHandlers] = usePrefetchBehavior(prefetch, props);
-  return /* @__PURE__ */ React4.createElement(React4.Fragment, null, /* @__PURE__ */ React4.createElement(NavLink, _extends4({}, props, prefetchHandlers, {
-    ref: mergeRefs(forwardedRef, ref),
-    to
-  })), shouldPrefetch && !isAbsolute ? /* @__PURE__ */ React4.createElement(PrefetchPageLinks, {
-    page: href
-  }) : null);
-});
-NavLink2.displayName = "NavLink";
-var Link2 = /* @__PURE__ */ React4.forwardRef(({
-  to,
-  prefetch = "none",
-  ...props
-}, forwardedRef) => {
-  let isAbsolute = typeof to === "string" && ABSOLUTE_URL_REGEX3.test(to);
-  let href = useHref(to);
-  let [shouldPrefetch, ref, prefetchHandlers] = usePrefetchBehavior(prefetch, props);
-  return /* @__PURE__ */ React4.createElement(React4.Fragment, null, /* @__PURE__ */ React4.createElement(Link, _extends4({}, props, prefetchHandlers, {
-    ref: mergeRefs(forwardedRef, ref),
-    to
-  })), shouldPrefetch && !isAbsolute ? /* @__PURE__ */ React4.createElement(PrefetchPageLinks, {
-    page: href
-  }) : null);
-});
-Link2.displayName = "Link";
-function composeEventHandlers(theirHandler, ourHandler) {
-  return (event) => {
-    theirHandler && theirHandler(event);
-    if (!event.defaultPrevented) {
-      ourHandler(event);
-    }
-  };
-}
-function getActiveMatches(matches, errors, isSpaMode) {
-  if (isSpaMode && !isHydrated) {
-    return [matches[0]];
-  }
-  if (errors) {
-    let errorIdx = matches.findIndex((m) => errors[m.route.id] !== void 0);
-    return matches.slice(0, errorIdx + 1);
-  }
-  return matches;
-}
-function Links() {
-  let {
-    isSpaMode,
-    manifest,
-    routeModules,
-    criticalCss
-  } = useRemixContext();
-  let {
-    errors,
-    matches: routerMatches
-  } = useDataRouterStateContext();
-  let matches = getActiveMatches(routerMatches, errors, isSpaMode);
-  let keyedLinks = React4.useMemo(() => getKeyedLinksForMatches(matches, routeModules, manifest), [matches, routeModules, manifest]);
-  return /* @__PURE__ */ React4.createElement(React4.Fragment, null, criticalCss ? /* @__PURE__ */ React4.createElement("style", {
-    dangerouslySetInnerHTML: {
-      __html: criticalCss
-    }
-  }) : null, keyedLinks.map(({
-    key,
-    link
-  }) => isPageLinkDescriptor(link) ? /* @__PURE__ */ React4.createElement(PrefetchPageLinks, _extends4({
-    key
-  }, link)) : /* @__PURE__ */ React4.createElement("link", _extends4({
-    key
-  }, link))));
-}
-function PrefetchPageLinks({
-  page,
-  ...dataLinkProps
-}) {
-  let {
-    router: router2
-  } = useDataRouterContext3();
-  let matches = React4.useMemo(() => matchRoutes(router2.routes, page, router2.basename), [router2.routes, page, router2.basename]);
-  if (!matches) {
-    console.warn(`Tried to prefetch ${page} but no routes matched.`);
-    return null;
-  }
-  return /* @__PURE__ */ React4.createElement(PrefetchPageLinksImpl, _extends4({
-    page,
-    matches
-  }, dataLinkProps));
-}
-function useKeyedPrefetchLinks(matches) {
-  let {
-    manifest,
-    routeModules
-  } = useRemixContext();
-  let [keyedPrefetchLinks, setKeyedPrefetchLinks] = React4.useState([]);
-  React4.useEffect(() => {
-    let interrupted = false;
-    void getKeyedPrefetchLinks(matches, manifest, routeModules).then((links) => {
-      if (!interrupted) {
-        setKeyedPrefetchLinks(links);
-      }
-    });
-    return () => {
-      interrupted = true;
-    };
-  }, [matches, manifest, routeModules]);
-  return keyedPrefetchLinks;
-}
-function PrefetchPageLinksImpl({
-  page,
-  matches: nextMatches,
-  ...linkProps
-}) {
-  let location = useLocation();
-  let {
-    future,
-    manifest,
-    routeModules
-  } = useRemixContext();
-  let {
-    matches
-  } = useDataRouterStateContext();
-  let newMatchesForData = React4.useMemo(() => getNewMatchesForLinks(page, nextMatches, matches, manifest, location, "data"), [page, nextMatches, matches, manifest, location]);
-  let newMatchesForAssets = React4.useMemo(() => getNewMatchesForLinks(page, nextMatches, matches, manifest, location, "assets"), [page, nextMatches, matches, manifest, location]);
-  let dataHrefs = React4.useMemo(() => getDataLinkHrefs(page, newMatchesForData, manifest), [newMatchesForData, page, manifest]);
-  let moduleHrefs = React4.useMemo(() => getModuleLinkHrefs(newMatchesForAssets, manifest), [newMatchesForAssets, manifest]);
-  let keyedPrefetchLinks = useKeyedPrefetchLinks(newMatchesForAssets);
-  let linksToRender = null;
-  if (!future.unstable_singleFetch) {
-    linksToRender = dataHrefs.map((href) => /* @__PURE__ */ React4.createElement("link", _extends4({
-      key: href,
-      rel: "prefetch",
-      as: "fetch",
-      href
-    }, linkProps)));
-  } else if (newMatchesForData.length > 0) {
-    let url = addRevalidationParam(manifest, routeModules, nextMatches.map((m) => m.route), newMatchesForData.map((m) => m.route), singleFetchUrl(page));
-    if (url.searchParams.get("_routes") !== "") {
-      linksToRender = /* @__PURE__ */ React4.createElement("link", _extends4({
-        key: url.pathname + url.search,
-        rel: "prefetch",
-        as: "fetch",
-        href: url.pathname + url.search
-      }, linkProps));
-    }
-  } else
-    ;
-  return /* @__PURE__ */ React4.createElement(React4.Fragment, null, linksToRender, moduleHrefs.map((href) => /* @__PURE__ */ React4.createElement("link", _extends4({
-    key: href,
-    rel: "modulepreload",
-    href
-  }, linkProps))), keyedPrefetchLinks.map(({
-    key,
-    link
-  }) => (
-    // these don't spread `linkProps` because they are full link descriptors
-    // already with their own props
-    /* @__PURE__ */ React4.createElement("link", _extends4({
-      key
-    }, link))
-  )));
-}
-function Meta() {
-  let {
-    isSpaMode,
-    routeModules
-  } = useRemixContext();
-  let {
-    errors,
-    matches: routerMatches,
-    loaderData
-  } = useDataRouterStateContext();
-  let location = useLocation();
-  let _matches = getActiveMatches(routerMatches, errors, isSpaMode);
-  let error = null;
-  if (errors) {
-    error = errors[_matches[_matches.length - 1].route.id];
-  }
-  let meta = [];
-  let leafMeta = null;
-  let matches = [];
-  for (let i = 0; i < _matches.length; i++) {
-    let _match = _matches[i];
-    let routeId = _match.route.id;
-    let data = loaderData[routeId];
-    let params = _match.params;
-    let routeModule = routeModules[routeId];
-    let routeMeta = [];
-    let match = {
-      id: routeId,
-      data,
-      meta: [],
-      params: _match.params,
-      pathname: _match.pathname,
-      handle: _match.route.handle,
-      error
-    };
-    matches[i] = match;
-    if (routeModule !== null && routeModule !== void 0 && routeModule.meta) {
-      routeMeta = typeof routeModule.meta === "function" ? routeModule.meta({
-        data,
-        params,
-        location,
-        matches,
-        error
-      }) : Array.isArray(routeModule.meta) ? [...routeModule.meta] : routeModule.meta;
-    } else if (leafMeta) {
-      routeMeta = [...leafMeta];
-    }
-    routeMeta = routeMeta || [];
-    if (!Array.isArray(routeMeta)) {
-      throw new Error("The route at " + _match.route.path + " returns an invalid value. All route meta functions must return an array of meta objects.\n\nTo reference the meta function API, see https://remix.run/route/meta");
-    }
-    match.meta = routeMeta;
-    matches[i] = match;
-    meta = [...routeMeta];
-    leafMeta = meta;
-  }
-  return /* @__PURE__ */ React4.createElement(React4.Fragment, null, meta.flat().map((metaProps) => {
-    if (!metaProps) {
-      return null;
-    }
-    if ("tagName" in metaProps) {
-      let {
-        tagName,
-        ...rest
-      } = metaProps;
-      if (!isValidMetaTag(tagName)) {
-        console.warn(`A meta object uses an invalid tagName: ${tagName}. Expected either 'link' or 'meta'`);
-        return null;
-      }
-      let Comp = tagName;
-      return /* @__PURE__ */ React4.createElement(Comp, _extends4({
-        key: JSON.stringify(rest)
-      }, rest));
-    }
-    if ("title" in metaProps) {
-      return /* @__PURE__ */ React4.createElement("title", {
-        key: "title"
-      }, String(metaProps.title));
-    }
-    if ("charset" in metaProps) {
-      metaProps.charSet ??= metaProps.charset;
-      delete metaProps.charset;
-    }
-    if ("charSet" in metaProps && metaProps.charSet != null) {
-      return typeof metaProps.charSet === "string" ? /* @__PURE__ */ React4.createElement("meta", {
-        key: "charSet",
-        charSet: metaProps.charSet
-      }) : null;
-    }
-    if ("script:ld+json" in metaProps) {
-      try {
-        let json4 = JSON.stringify(metaProps["script:ld+json"]);
-        return /* @__PURE__ */ React4.createElement("script", {
-          key: `script:ld+json:${json4}`,
-          type: "application/ld+json",
-          dangerouslySetInnerHTML: {
-            __html: json4
-          }
-        });
-      } catch (err) {
-        return null;
-      }
-    }
-    return /* @__PURE__ */ React4.createElement("meta", _extends4({
-      key: JSON.stringify(metaProps)
-    }, metaProps));
-  }));
-}
-function isValidMetaTag(tagName) {
-  return typeof tagName === "string" && /^(meta|link)$/.test(tagName);
-}
-function Await2(props) {
-  return /* @__PURE__ */ React4.createElement(Await, props);
-}
-var isHydrated = false;
-function Scripts(props) {
-  let {
-    manifest,
-    serverHandoffString,
-    abortDelay,
-    serializeError,
-    isSpaMode,
-    future,
-    renderMeta
-  } = useRemixContext();
-  let {
-    router: router2,
-    static: isStatic,
-    staticContext
-  } = useDataRouterContext3();
-  let {
-    matches: routerMatches
-  } = useDataRouterStateContext();
-  let navigation = useNavigation();
-  if (renderMeta) {
-    renderMeta.didRenderScripts = true;
-  }
-  let matches = getActiveMatches(routerMatches, null, isSpaMode);
-  React4.useEffect(() => {
-    isHydrated = true;
-  }, []);
-  let serializePreResolvedErrorImp = (key, error) => {
-    let toSerialize;
-    if (serializeError && error instanceof Error) {
-      toSerialize = serializeError(error);
-    } else {
-      toSerialize = error;
-    }
-    return `${JSON.stringify(key)}:__remixContext.p(!1, ${escapeHtml(JSON.stringify(toSerialize))})`;
-  };
-  let serializePreresolvedDataImp = (routeId, key, data) => {
-    let serializedData;
-    try {
-      serializedData = JSON.stringify(data);
-    } catch (error) {
-      return serializePreResolvedErrorImp(key, error);
-    }
-    return `${JSON.stringify(key)}:__remixContext.p(${escapeHtml(serializedData)})`;
-  };
-  let serializeErrorImp = (routeId, key, error) => {
-    let toSerialize;
-    if (serializeError && error instanceof Error) {
-      toSerialize = serializeError(error);
-    } else {
-      toSerialize = error;
-    }
-    return `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(key)}, !1, ${escapeHtml(JSON.stringify(toSerialize))})`;
-  };
-  let serializeDataImp = (routeId, key, data) => {
-    let serializedData;
-    try {
-      serializedData = JSON.stringify(data);
-    } catch (error) {
-      return serializeErrorImp(routeId, key, error);
-    }
-    return `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(key)}, ${escapeHtml(serializedData)})`;
-  };
-  let deferredScripts = [];
-  let initialScripts = React4.useMemo(() => {
-    var _manifest$hmr;
-    let streamScript = future.unstable_singleFetch ? (
-      // prettier-ignore
-      "window.__remixContext.stream = new ReadableStream({start(controller){window.__remixContext.streamController = controller;}}).pipeThrough(new TextEncoderStream());"
-    ) : "";
-    let contextScript = staticContext ? `window.__remixContext = ${serverHandoffString};${streamScript}` : " ";
-    let activeDeferreds = future.unstable_singleFetch ? void 0 : staticContext === null || staticContext === void 0 ? void 0 : staticContext.activeDeferreds;
-    contextScript += !activeDeferreds ? "" : ["__remixContext.p = function(v,e,p,x) {", "  if (typeof e !== 'undefined') {", true ? "    x=new Error(e.message);\n    x.stack=e.stack;" : '    x=new Error("Unexpected Server Error");\n    x.stack=undefined;', "    p=Promise.reject(x);", "  } else {", "    p=Promise.resolve(v);", "  }", "  return p;", "};", "__remixContext.n = function(i,k) {", "  __remixContext.t = __remixContext.t || {};", "  __remixContext.t[i] = __remixContext.t[i] || {};", "  let p = new Promise((r, e) => {__remixContext.t[i][k] = {r:(v)=>{r(v);},e:(v)=>{e(v);}};});", typeof abortDelay === "number" ? `setTimeout(() => {if(typeof p._error !== "undefined" || typeof p._data !== "undefined"){return;} __remixContext.t[i][k].e(new Error("Server timeout."))}, ${abortDelay});` : "", "  return p;", "};", "__remixContext.r = function(i,k,v,e,p,x) {", "  p = __remixContext.t[i][k];", "  if (typeof e !== 'undefined') {", true ? "    x=new Error(e.message);\n    x.stack=e.stack;" : '    x=new Error("Unexpected Server Error");\n    x.stack=undefined;', "    p.e(x);", "  } else {", "    p.r(v);", "  }", "};"].join("\n") + Object.entries(activeDeferreds).map(([routeId, deferredData]) => {
-      let pendingKeys = new Set(deferredData.pendingKeys);
-      let promiseKeyValues = deferredData.deferredKeys.map((key) => {
-        if (pendingKeys.has(key)) {
-          deferredScripts.push(/* @__PURE__ */ React4.createElement(DeferredHydrationScript, {
-            key: `${routeId} | ${key}`,
-            deferredData,
-            routeId,
-            dataKey: key,
-            scriptProps: props,
-            serializeData: serializeDataImp,
-            serializeError: serializeErrorImp
-          }));
-          return `${JSON.stringify(key)}:__remixContext.n(${JSON.stringify(routeId)}, ${JSON.stringify(key)})`;
-        } else {
-          let trackedPromise = deferredData.data[key];
-          if (typeof trackedPromise._error !== "undefined") {
-            return serializePreResolvedErrorImp(key, trackedPromise._error);
-          } else {
-            return serializePreresolvedDataImp(routeId, key, trackedPromise._data);
-          }
-        }
-      }).join(",\n");
-      return `Object.assign(__remixContext.state.loaderData[${JSON.stringify(routeId)}], {${promiseKeyValues}});`;
-    }).join("\n") + (deferredScripts.length > 0 ? `__remixContext.a=${deferredScripts.length};` : "");
-    let routeModulesScript = !isStatic ? " " : `${(_manifest$hmr = manifest.hmr) !== null && _manifest$hmr !== void 0 && _manifest$hmr.runtime ? `import ${JSON.stringify(manifest.hmr.runtime)};` : ""}import ${JSON.stringify(manifest.url)};
-${matches.map((match, index) => `import * as route${index} from ${JSON.stringify(manifest.routes[match.route.id].module)};`).join("\n")}
-window.__remixRouteModules = {${matches.map((match, index) => `${JSON.stringify(match.route.id)}:route${index}`).join(",")}};
+// node_modules/@remix-run/react/dist/esm/fog-of-war.js
+init_router();
+var React7 = __toESM(require_react());
 
-import(${JSON.stringify(manifest.entry.module)});`;
-    return /* @__PURE__ */ React4.createElement(React4.Fragment, null, /* @__PURE__ */ React4.createElement("script", _extends4({}, props, {
-      suppressHydrationWarning: true,
-      dangerouslySetInnerHTML: createHtml(contextScript),
-      type: void 0
-    })), /* @__PURE__ */ React4.createElement("script", _extends4({}, props, {
-      suppressHydrationWarning: true,
-      dangerouslySetInnerHTML: createHtml(routeModulesScript),
-      type: "module",
-      async: true
-    })));
-  }, []);
-  if (!isStatic && typeof __remixContext === "object" && __remixContext.a) {
-    for (let i = 0; i < __remixContext.a; i++) {
-      deferredScripts.push(/* @__PURE__ */ React4.createElement(DeferredHydrationScript, {
-        key: i,
-        scriptProps: props,
-        serializeData: serializeDataImp,
-        serializeError: serializeErrorImp
-      }));
-    }
-  }
-  let nextMatches = React4.useMemo(() => {
-    if (navigation.location) {
-      let matches2 = matchRoutes(router2.routes, navigation.location, router2.basename);
-      invariant2(matches2, `No routes match path "${navigation.location.pathname}"`);
-      return matches2;
-    }
-    return [];
-  }, [navigation.location, router2.routes, router2.basename]);
-  let routePreloads = matches.concat(nextMatches).map((match) => {
-    let route = manifest.routes[match.route.id];
-    return (route.imports || []).concat([route.module]);
-  }).flat(1);
-  let preloads = isHydrated ? [] : manifest.entry.imports.concat(routePreloads);
-  return isHydrated ? null : /* @__PURE__ */ React4.createElement(React4.Fragment, null, /* @__PURE__ */ React4.createElement("link", {
-    rel: "modulepreload",
-    href: manifest.url,
-    crossOrigin: props.crossOrigin
-  }), /* @__PURE__ */ React4.createElement("link", {
-    rel: "modulepreload",
-    href: manifest.entry.module,
-    crossOrigin: props.crossOrigin
-  }), dedupe(preloads).map((path) => /* @__PURE__ */ React4.createElement("link", {
-    key: path,
-    rel: "modulepreload",
-    href: path,
-    crossOrigin: props.crossOrigin
-  })), initialScripts, deferredScripts);
-}
-function DeferredHydrationScript({
-  dataKey,
-  deferredData,
-  routeId,
-  scriptProps,
-  serializeData,
-  serializeError
-}) {
-  if (typeof document === "undefined" && deferredData && dataKey && routeId) {
-    invariant2(deferredData.pendingKeys.includes(dataKey), `Deferred data for route ${routeId} with key ${dataKey} was not pending but tried to render a script for it.`);
-  }
-  return /* @__PURE__ */ React4.createElement(React4.Suspense, {
-    fallback: (
-      // This makes absolutely no sense. The server renders null as a fallback,
-      // but when hydrating, we need to render a script tag to avoid a hydration issue.
-      // To reproduce a hydration mismatch, just render null as a fallback.
-      typeof document === "undefined" && deferredData && dataKey && routeId ? null : /* @__PURE__ */ React4.createElement("script", _extends4({}, scriptProps, {
-        async: true,
-        suppressHydrationWarning: true,
-        dangerouslySetInnerHTML: {
-          __html: " "
-        }
-      }))
-    )
-  }, typeof document === "undefined" && deferredData && dataKey && routeId ? /* @__PURE__ */ React4.createElement(Await2, {
-    resolve: deferredData.data[dataKey],
-    errorElement: /* @__PURE__ */ React4.createElement(ErrorDeferredHydrationScript, {
-      dataKey,
-      routeId,
-      scriptProps,
-      serializeError
-    }),
-    children: (data) => {
-      return /* @__PURE__ */ React4.createElement("script", _extends4({}, scriptProps, {
-        async: true,
-        suppressHydrationWarning: true,
-        dangerouslySetInnerHTML: {
-          __html: serializeData(routeId, dataKey, data)
-        }
-      }));
-    }
-  }) : /* @__PURE__ */ React4.createElement("script", _extends4({}, scriptProps, {
-    async: true,
-    suppressHydrationWarning: true,
-    dangerouslySetInnerHTML: {
-      __html: " "
-    }
-  })));
-}
-function ErrorDeferredHydrationScript({
-  dataKey,
-  routeId,
-  scriptProps,
-  serializeError
-}) {
-  let error = useAsyncError();
-  return /* @__PURE__ */ React4.createElement("script", _extends4({}, scriptProps, {
-    suppressHydrationWarning: true,
-    dangerouslySetInnerHTML: {
-      __html: serializeError(routeId, dataKey, error)
-    }
-  }));
-}
-function dedupe(array) {
-  return [...new Set(array)];
-}
-function useMatches2() {
-  return useMatches();
-}
-function useLoaderData2() {
-  return useLoaderData();
-}
-function useRouteLoaderData2(routeId) {
-  return useRouteLoaderData(routeId);
-}
-function useActionData2() {
-  return useActionData();
-}
-function useFetcher2(opts = {}) {
-  return useFetcher(opts);
-}
-var LiveReload = (
-  // Dead Code Elimination magic for production builds.
-  // This way devs don't have to worry about doing the NODE_ENV check themselves.
-  false ? () => null : function LiveReload2({
-    origin,
-    port,
-    timeoutMs = 1e3,
-    nonce = void 0
-  }) {
-    let isViteClient = import.meta && import.meta.env !== void 0;
-    if (isViteClient) {
-      console.warn(["`<LiveReload />` is obsolete when using Vite and can conflict with Vite's built-in HMR runtime.", "", "Remove `<LiveReload />` from your code and instead only use `<Scripts />`.", "Then refresh the page to remove lingering scripts from `<LiveReload />`."].join("\n"));
-      return null;
-    }
-    origin ??= "http://localhost:3001/";
-    let js = String.raw;
-    return /* @__PURE__ */ React4.createElement("script", {
-      nonce,
-      suppressHydrationWarning: true,
-      dangerouslySetInnerHTML: {
-        __html: js`
-                function remixLiveReloadConnect(config) {
-                  let LIVE_RELOAD_ORIGIN = ${JSON.stringify(origin)};
-                  let protocol =
-                    LIVE_RELOAD_ORIGIN ? new URL(LIVE_RELOAD_ORIGIN).protocol.replace(/^http/, "ws") :
-                    location.protocol === "https:" ? "wss:" : "ws:"; // remove in v2?
-                  let hostname = LIVE_RELOAD_ORIGIN ? new URL(LIVE_RELOAD_ORIGIN).hostname : location.hostname;
-                  let url = new URL(protocol + "//" + hostname + "/socket");
-
-                  url.port =
-                    ${port} ||
-                    (LIVE_RELOAD_ORIGIN ? new URL(LIVE_RELOAD_ORIGIN).port : 8002);
-
-                  let ws = new WebSocket(url.href);
-                  ws.onmessage = async (message) => {
-                    let event = JSON.parse(message.data);
-                    if (event.type === "LOG") {
-                      console.log(event.message);
-                    }
-                    if (event.type === "RELOAD") {
-                      console.log("💿 Reloading window ...");
-                      window.location.reload();
-                    }
-                    if (event.type === "HMR") {
-                      if (!window.__hmr__ || !window.__hmr__.contexts) {
-                        console.log("💿 [HMR] No HMR context, reloading window ...");
-                        window.location.reload();
-                        return;
-                      }
-                      if (!event.updates || !event.updates.length) return;
-                      let updateAccepted = false;
-                      let needsRevalidation = new Set();
-                      for (let update of event.updates) {
-                        console.log("[HMR] " + update.reason + " [" + update.id +"]")
-                        if (update.revalidate) {
-                          needsRevalidation.add(update.routeId);
-                          console.log("[HMR] Revalidating [" + update.routeId + "]");
-                        }
-                        let imported = await import(update.url +  '?t=' + event.assetsManifest.hmr.timestamp);
-                        if (window.__hmr__.contexts[update.id]) {
-                          let accepted = window.__hmr__.contexts[update.id].emit(
-                            imported
-                          );
-                          if (accepted) {
-                            console.log("[HMR] Update accepted by", update.id);
-                            updateAccepted = true;
-                          }
-                        }
-                      }
-                      if (event.assetsManifest && window.__hmr__.contexts["remix:manifest"]) {
-                        let accepted = window.__hmr__.contexts["remix:manifest"].emit(
-                          { needsRevalidation, assetsManifest: event.assetsManifest }
-                        );
-                        if (accepted) {
-                          console.log("[HMR] Update accepted by", "remix:manifest");
-                          updateAccepted = true;
-                        }
-                      }
-                      if (!updateAccepted) {
-                        console.log("[HMR] Update rejected, reloading...");
-                        window.location.reload();
-                      }
-                    }
-                  };
-                  ws.onopen = () => {
-                    if (config && typeof config.onOpen === "function") {
-                      config.onOpen();
-                    }
-                  };
-                  ws.onclose = (event) => {
-                    if (event.code === 1006) {
-                      console.log("Remix dev asset server web socket closed. Reconnecting...");
-                      setTimeout(
-                        () =>
-                          remixLiveReloadConnect({
-                            onOpen: () => window.location.reload(),
-                          }),
-                      ${String(timeoutMs)}
-                      );
-                    }
-                  };
-                  ws.onerror = (error) => {
-                    console.log("Remix dev asset server web socket error:");
-                    console.error(error);
-                  };
-                }
-                remixLiveReloadConnect();
-              `
-      }
-    });
-  }
-);
-function mergeRefs(...refs) {
-  return (value) => {
-    refs.forEach((ref) => {
-      if (typeof ref === "function") {
-        ref(value);
-      } else if (ref != null) {
-        ref.current = value;
-      }
-    });
-  };
-}
+// node_modules/@remix-run/react/dist/esm/routes.js
+var React6 = __toESM(require_react());
+init_router();
+init_dist2();
 
 // node_modules/@remix-run/react/dist/esm/errorBoundaries.js
-var React5 = __toESM(require_react());
+var React4 = __toESM(require_react());
 init_dist2();
-var RemixErrorBoundary = class extends React5.Component {
+var RemixErrorBoundary = class extends React4.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -8117,8 +7768,9 @@ var RemixErrorBoundary = class extends React5.Component {
   }
   render() {
     if (this.state.error) {
-      return /* @__PURE__ */ React5.createElement(RemixRootDefaultErrorBoundary, {
-        error: this.state.error
+      return /* @__PURE__ */ React4.createElement(RemixRootDefaultErrorBoundary, {
+        error: this.state.error,
+        isOutsideRemixApp: true
       });
     } else {
       return this.props.children;
@@ -8126,10 +7778,11 @@ var RemixErrorBoundary = class extends React5.Component {
   }
 };
 function RemixRootDefaultErrorBoundary({
-  error
+  error,
+  isOutsideRemixApp
 }) {
   console.error(error);
-  let heyDeveloper = /* @__PURE__ */ React5.createElement("script", {
+  let heyDeveloper = /* @__PURE__ */ React4.createElement("script", {
     dangerouslySetInnerHTML: {
       __html: `
         console.log(
@@ -8139,9 +7792,9 @@ function RemixRootDefaultErrorBoundary({
     }
   });
   if (isRouteErrorResponse(error)) {
-    return /* @__PURE__ */ React5.createElement(BoundaryShell, {
+    return /* @__PURE__ */ React4.createElement(BoundaryShell, {
       title: "Unhandled Thrown Response!"
-    }, /* @__PURE__ */ React5.createElement("h1", {
+    }, /* @__PURE__ */ React4.createElement("h1", {
       style: {
         fontSize: "24px"
       }
@@ -8154,13 +7807,14 @@ function RemixRootDefaultErrorBoundary({
     let errorString = error == null ? "Unknown Error" : typeof error === "object" && "toString" in error ? error.toString() : JSON.stringify(error);
     errorInstance = new Error(errorString);
   }
-  return /* @__PURE__ */ React5.createElement(BoundaryShell, {
-    title: "Application Error!"
-  }, /* @__PURE__ */ React5.createElement("h1", {
+  return /* @__PURE__ */ React4.createElement(BoundaryShell, {
+    title: "Application Error!",
+    isOutsideRemixApp
+  }, /* @__PURE__ */ React4.createElement("h1", {
     style: {
       fontSize: "24px"
     }
-  }, "Application Error"), /* @__PURE__ */ React5.createElement("pre", {
+  }, "Application Error"), /* @__PURE__ */ React4.createElement("pre", {
     style: {
       padding: "2rem",
       background: "hsla(10, 50%, 50%, 0.1)",
@@ -8172,76 +7826,38 @@ function RemixRootDefaultErrorBoundary({
 function BoundaryShell({
   title,
   renderScripts,
+  isOutsideRemixApp,
   children
 }) {
   var _routeModules$root;
   let {
     routeModules
   } = useRemixContext();
-  if ((_routeModules$root = routeModules.root) !== null && _routeModules$root !== void 0 && _routeModules$root.Layout) {
+  if ((_routeModules$root = routeModules.root) !== null && _routeModules$root !== void 0 && _routeModules$root.Layout && !isOutsideRemixApp) {
     return children;
   }
-  return /* @__PURE__ */ React5.createElement("html", {
+  return /* @__PURE__ */ React4.createElement("html", {
     lang: "en"
-  }, /* @__PURE__ */ React5.createElement("head", null, /* @__PURE__ */ React5.createElement("meta", {
+  }, /* @__PURE__ */ React4.createElement("head", null, /* @__PURE__ */ React4.createElement("meta", {
     charSet: "utf-8"
-  }), /* @__PURE__ */ React5.createElement("meta", {
+  }), /* @__PURE__ */ React4.createElement("meta", {
     name: "viewport",
     content: "width=device-width,initial-scale=1,viewport-fit=cover"
-  }), /* @__PURE__ */ React5.createElement("title", null, title)), /* @__PURE__ */ React5.createElement("body", null, /* @__PURE__ */ React5.createElement("main", {
+  }), /* @__PURE__ */ React4.createElement("title", null, title)), /* @__PURE__ */ React4.createElement("body", null, /* @__PURE__ */ React4.createElement("main", {
     style: {
       fontFamily: "system-ui, sans-serif",
       padding: "2rem"
     }
-  }, children, renderScripts ? /* @__PURE__ */ React5.createElement(Scripts, null) : null)));
+  }, children, renderScripts ? /* @__PURE__ */ React4.createElement(Scripts, null) : null)));
 }
-
-// node_modules/@remix-run/react/dist/esm/errors.js
-init_router();
-function deserializeErrors2(errors) {
-  if (!errors)
-    return null;
-  let entries = Object.entries(errors);
-  let serialized = {};
-  for (let [key, val] of entries) {
-    if (val && val.__type === "RouteErrorResponse") {
-      serialized[key] = new ErrorResponseImpl(val.status, val.statusText, val.data, val.internal === true);
-    } else if (val && val.__type === "Error") {
-      if (val.__subType) {
-        let ErrorConstructor = window[val.__subType];
-        if (typeof ErrorConstructor === "function") {
-          try {
-            let error = new ErrorConstructor(val.message);
-            error.stack = val.stack;
-            serialized[key] = error;
-          } catch (e) {
-          }
-        }
-      }
-      if (serialized[key] == null) {
-        let error = new Error(val.message);
-        error.stack = val.stack;
-        serialized[key] = error;
-      }
-    } else {
-      serialized[key] = val;
-    }
-  }
-  return serialized;
-}
-
-// node_modules/@remix-run/react/dist/esm/routes.js
-var React7 = __toESM(require_react());
-init_router();
-init_dist2();
 
 // node_modules/@remix-run/react/dist/esm/fallback.js
-var React6 = __toESM(require_react());
+var React5 = __toESM(require_react());
 function RemixRootDefaultHydrateFallback() {
-  return /* @__PURE__ */ React6.createElement(BoundaryShell, {
+  return /* @__PURE__ */ React5.createElement(BoundaryShell, {
     title: "Loading...",
     renderScripts: true
-  }, /* @__PURE__ */ React6.createElement("script", {
+  }, /* @__PURE__ */ React5.createElement("script", {
     dangerouslySetInnerHTML: {
       __html: `
               console.log(
@@ -8269,23 +7885,23 @@ function groupRoutesByParentId(manifest) {
 function getRouteComponents(route, routeModule, isSpaMode) {
   let Component3 = getRouteModuleComponent(routeModule);
   let HydrateFallback = routeModule.HydrateFallback && (!isSpaMode || route.id === "root") ? routeModule.HydrateFallback : route.id === "root" ? RemixRootDefaultHydrateFallback : void 0;
-  let ErrorBoundary = routeModule.ErrorBoundary ? routeModule.ErrorBoundary : route.id === "root" ? () => /* @__PURE__ */ React7.createElement(RemixRootDefaultErrorBoundary, {
+  let ErrorBoundary = routeModule.ErrorBoundary ? routeModule.ErrorBoundary : route.id === "root" ? () => /* @__PURE__ */ React6.createElement(RemixRootDefaultErrorBoundary, {
     error: useRouteError()
   }) : void 0;
   if (route.id === "root" && routeModule.Layout) {
     return {
       ...Component3 ? {
-        element: /* @__PURE__ */ React7.createElement(routeModule.Layout, null, /* @__PURE__ */ React7.createElement(Component3, null))
+        element: /* @__PURE__ */ React6.createElement(routeModule.Layout, null, /* @__PURE__ */ React6.createElement(Component3, null))
       } : {
         Component: Component3
       },
       ...ErrorBoundary ? {
-        errorElement: /* @__PURE__ */ React7.createElement(routeModule.Layout, null, /* @__PURE__ */ React7.createElement(ErrorBoundary, null))
+        errorElement: /* @__PURE__ */ React6.createElement(routeModule.Layout, null, /* @__PURE__ */ React6.createElement(ErrorBoundary, null))
       } : {
         ErrorBoundary
       },
       ...HydrateFallback ? {
-        hydrateFallbackElement: /* @__PURE__ */ React7.createElement(routeModule.Layout, null, /* @__PURE__ */ React7.createElement(HydrateFallback, null))
+        hydrateFallbackElement: /* @__PURE__ */ React6.createElement(routeModule.Layout, null, /* @__PURE__ */ React6.createElement(HydrateFallback, null))
       } : {
         HydrateFallback
       }
@@ -8608,6 +8224,933 @@ function shouldHydrateRouteLoader(route, routeModule, isSpaMode) {
   return isSpaMode && route.id !== "root" || routeModule.clientLoader != null && (routeModule.clientLoader.hydrate === true || route.hasLoader !== true);
 }
 
+// node_modules/@remix-run/react/dist/esm/fog-of-war.js
+var URL_LIMIT = 7680;
+var fogOfWar = null;
+function isFogOfWarEnabled(future, isSpaMode) {
+  return future.unstable_fogOfWar === true && !isSpaMode;
+}
+function getPartialManifest(manifest, router2) {
+  let routeIds = new Set(router2.state.matches.map((m) => m.route.id));
+  let segments = router2.state.location.pathname.split("/").filter(Boolean);
+  let paths = ["/"];
+  segments.pop();
+  while (segments.length > 0) {
+    paths.push(`/${segments.join("/")}`);
+    segments.pop();
+  }
+  paths.forEach((path) => {
+    let matches = matchRoutes(router2.routes, path, router2.basename);
+    if (matches) {
+      matches.forEach((m) => routeIds.add(m.route.id));
+    }
+  });
+  let initialRoutes = [...routeIds].reduce((acc, id) => Object.assign(acc, {
+    [id]: manifest.routes[id]
+  }), {});
+  return {
+    ...manifest,
+    routes: initialRoutes
+  };
+}
+function initFogOfWar(manifest, routeModules, future, isSpaMode, basename) {
+  if (!isFogOfWarEnabled(future, isSpaMode)) {
+    return {
+      enabled: false
+    };
+  }
+  fogOfWar = {
+    nextPaths: /* @__PURE__ */ new Set(),
+    knownGoodPaths: /* @__PURE__ */ new Set(),
+    known404Paths: /* @__PURE__ */ new Set()
+  };
+  return {
+    enabled: true,
+    patchRoutesOnMiss: async ({
+      path,
+      patch
+    }) => {
+      if (fogOfWar.known404Paths.has(path) || fogOfWar.knownGoodPaths.has(path)) {
+        return;
+      }
+      await fetchAndApplyManifestPatches([path], fogOfWar, manifest, routeModules, future, isSpaMode, basename, patch);
+    }
+  };
+}
+function useFogOFWarDiscovery(router2, manifest, routeModules, future, isSpaMode) {
+  React7.useEffect(() => {
+    var _navigator$connection;
+    if (!isFogOfWarEnabled(future, isSpaMode) || ((_navigator$connection = navigator.connection) === null || _navigator$connection === void 0 ? void 0 : _navigator$connection.saveData) === true) {
+      return;
+    }
+    function registerPath(path) {
+      if (!path) {
+        return;
+      }
+      let url = new URL(path, window.location.origin);
+      let {
+        knownGoodPaths,
+        known404Paths,
+        nextPaths
+      } = fogOfWar;
+      if (knownGoodPaths.has(url.pathname) || known404Paths.has(url.pathname)) {
+        return;
+      }
+      nextPaths.add(url.pathname);
+    }
+    async function fetchPatches() {
+      let lazyPaths = getFogOfWarPaths(fogOfWar);
+      if (lazyPaths.length === 0) {
+        return;
+      }
+      try {
+        await fetchAndApplyManifestPatches(lazyPaths, fogOfWar, manifest, routeModules, future, isSpaMode, router2.basename, router2.patchRoutes);
+      } catch (e) {
+        console.error("Failed to fetch manifest patches", e);
+      }
+    }
+    document.body.querySelectorAll("a[data-discover]").forEach((a) => registerPath(a.getAttribute("href")));
+    fetchPatches();
+    let debouncedFetchPatches = debounce(fetchPatches, 100);
+    function isElement(node) {
+      return node.nodeType === Node.ELEMENT_NODE;
+    }
+    let observer = new MutationObserver((records) => {
+      let links = /* @__PURE__ */ new Set();
+      records.forEach((r) => {
+        [r.target, ...r.addedNodes].forEach((node) => {
+          if (!isElement(node))
+            return;
+          if (node.tagName === "A" && node.getAttribute("data-discover")) {
+            links.add(node);
+          } else if (node.tagName !== "A") {
+            node.querySelectorAll("a[data-discover]").forEach((el) => links.add(el));
+          }
+        });
+      });
+      links.forEach((link) => registerPath(link.getAttribute("href")));
+      debouncedFetchPatches();
+    });
+    observer.observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ["data-discover", "href"]
+    });
+    return () => observer.disconnect();
+  }, [future, isSpaMode, manifest, routeModules, router2]);
+}
+function getFogOfWarPaths(fogOfWar2, router2) {
+  let {
+    knownGoodPaths,
+    known404Paths,
+    nextPaths
+  } = fogOfWar2;
+  return Array.from(nextPaths.keys()).filter((path) => {
+    if (knownGoodPaths.has(path)) {
+      nextPaths.delete(path);
+      return false;
+    }
+    if (known404Paths.has(path)) {
+      nextPaths.delete(path);
+      return false;
+    }
+    return true;
+  });
+}
+async function fetchAndApplyManifestPatches(paths, _fogOfWar, manifest, routeModules, future, isSpaMode, basename, patchRoutes2) {
+  let {
+    nextPaths,
+    knownGoodPaths,
+    known404Paths
+  } = _fogOfWar;
+  let manifestPath = `${basename ?? "/"}/__manifest`.replace(/\/+/g, "/");
+  let url = new URL(manifestPath, window.location.origin);
+  url.searchParams.set("version", manifest.version);
+  paths.forEach((path) => url.searchParams.append("p", path));
+  if (url.toString().length > URL_LIMIT) {
+    nextPaths.clear();
+    return;
+  }
+  let res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`${res.status} ${res.statusText}`);
+  } else if (res.status >= 400) {
+    throw new Error(await res.text());
+  }
+  let data = await res.json();
+  let knownRoutes = new Set(Object.keys(manifest.routes));
+  let patches = Object.values(data.patches).reduce((acc, route) => !knownRoutes.has(route.id) ? Object.assign(acc, {
+    [route.id]: route
+  }) : acc, {});
+  Object.assign(manifest.routes, patches);
+  data.notFoundPaths.forEach((p) => known404Paths.add(p));
+  paths.forEach((p) => knownGoodPaths.add(p));
+  let parentIds = /* @__PURE__ */ new Set();
+  Object.values(patches).forEach((patch) => {
+    if (!patch.parentId || !patches[patch.parentId]) {
+      parentIds.add(patch.parentId);
+    }
+  });
+  parentIds.forEach((parentId) => patchRoutes2(parentId || null, createClientRoutes(patches, routeModules, null, future, isSpaMode, parentId)));
+}
+function debounce(callback, wait) {
+  let timeoutId;
+  return (...args) => {
+    window.clearTimeout(timeoutId);
+    timeoutId = window.setTimeout(() => callback(...args), wait);
+  };
+}
+
+// node_modules/@remix-run/react/dist/esm/components.js
+function useDataRouterContext3() {
+  let context = React8.useContext(DataRouterContext);
+  invariant2(context, "You must render this element inside a <DataRouterContext.Provider> element");
+  return context;
+}
+function useDataRouterStateContext() {
+  let context = React8.useContext(DataRouterStateContext);
+  invariant2(context, "You must render this element inside a <DataRouterStateContext.Provider> element");
+  return context;
+}
+var RemixContext = /* @__PURE__ */ React8.createContext(void 0);
+RemixContext.displayName = "Remix";
+function useRemixContext() {
+  let context = React8.useContext(RemixContext);
+  invariant2(context, "You must render this element inside a <Remix> element");
+  return context;
+}
+function usePrefetchBehavior(prefetch, theirElementProps) {
+  let [maybePrefetch, setMaybePrefetch] = React8.useState(false);
+  let [shouldPrefetch, setShouldPrefetch] = React8.useState(false);
+  let {
+    onFocus,
+    onBlur,
+    onMouseEnter,
+    onMouseLeave,
+    onTouchStart
+  } = theirElementProps;
+  let ref = React8.useRef(null);
+  React8.useEffect(() => {
+    if (prefetch === "render") {
+      setShouldPrefetch(true);
+    }
+    if (prefetch === "viewport") {
+      let callback = (entries) => {
+        entries.forEach((entry) => {
+          setShouldPrefetch(entry.isIntersecting);
+        });
+      };
+      let observer = new IntersectionObserver(callback, {
+        threshold: 0.5
+      });
+      if (ref.current)
+        observer.observe(ref.current);
+      return () => {
+        observer.disconnect();
+      };
+    }
+  }, [prefetch]);
+  let setIntent = () => {
+    if (prefetch === "intent") {
+      setMaybePrefetch(true);
+    }
+  };
+  let cancelIntent = () => {
+    if (prefetch === "intent") {
+      setMaybePrefetch(false);
+      setShouldPrefetch(false);
+    }
+  };
+  React8.useEffect(() => {
+    if (maybePrefetch) {
+      let id = setTimeout(() => {
+        setShouldPrefetch(true);
+      }, 100);
+      return () => {
+        clearTimeout(id);
+      };
+    }
+  }, [maybePrefetch]);
+  return [shouldPrefetch, ref, {
+    onFocus: composeEventHandlers(onFocus, setIntent),
+    onBlur: composeEventHandlers(onBlur, cancelIntent),
+    onMouseEnter: composeEventHandlers(onMouseEnter, setIntent),
+    onMouseLeave: composeEventHandlers(onMouseLeave, cancelIntent),
+    onTouchStart: composeEventHandlers(onTouchStart, setIntent)
+  }];
+}
+var ABSOLUTE_URL_REGEX3 = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+var NavLink2 = /* @__PURE__ */ React8.forwardRef(({
+  to,
+  prefetch = "none",
+  discover = "render",
+  ...props
+}, forwardedRef) => {
+  let isAbsolute = typeof to === "string" && ABSOLUTE_URL_REGEX3.test(to);
+  let href = useHref(to);
+  let [shouldPrefetch, ref, prefetchHandlers] = usePrefetchBehavior(prefetch, props);
+  return /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement(NavLink, _extends4({}, props, prefetchHandlers, {
+    ref: mergeRefs(forwardedRef, ref),
+    to,
+    "data-discover": !isAbsolute && discover === "render" ? "true" : void 0
+  })), shouldPrefetch && !isAbsolute ? /* @__PURE__ */ React8.createElement(PrefetchPageLinks, {
+    page: href
+  }) : null);
+});
+NavLink2.displayName = "NavLink";
+var Link2 = /* @__PURE__ */ React8.forwardRef(({
+  to,
+  prefetch = "none",
+  discover = "render",
+  ...props
+}, forwardedRef) => {
+  let isAbsolute = typeof to === "string" && ABSOLUTE_URL_REGEX3.test(to);
+  let href = useHref(to);
+  let [shouldPrefetch, ref, prefetchHandlers] = usePrefetchBehavior(prefetch, props);
+  return /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement(Link, _extends4({}, props, prefetchHandlers, {
+    ref: mergeRefs(forwardedRef, ref),
+    to,
+    "data-discover": !isAbsolute && discover === "render" ? "true" : void 0
+  })), shouldPrefetch && !isAbsolute ? /* @__PURE__ */ React8.createElement(PrefetchPageLinks, {
+    page: href
+  }) : null);
+});
+Link2.displayName = "Link";
+function composeEventHandlers(theirHandler, ourHandler) {
+  return (event) => {
+    theirHandler && theirHandler(event);
+    if (!event.defaultPrevented) {
+      ourHandler(event);
+    }
+  };
+}
+function getActiveMatches(matches, errors, isSpaMode) {
+  if (isSpaMode && !isHydrated) {
+    return [matches[0]];
+  }
+  if (errors) {
+    let errorIdx = matches.findIndex((m) => errors[m.route.id] !== void 0);
+    return matches.slice(0, errorIdx + 1);
+  }
+  return matches;
+}
+function Links() {
+  let {
+    isSpaMode,
+    manifest,
+    routeModules,
+    criticalCss
+  } = useRemixContext();
+  let {
+    errors,
+    matches: routerMatches
+  } = useDataRouterStateContext();
+  let matches = getActiveMatches(routerMatches, errors, isSpaMode);
+  let keyedLinks = React8.useMemo(() => getKeyedLinksForMatches(matches, routeModules, manifest), [matches, routeModules, manifest]);
+  return /* @__PURE__ */ React8.createElement(React8.Fragment, null, criticalCss ? /* @__PURE__ */ React8.createElement("style", {
+    dangerouslySetInnerHTML: {
+      __html: criticalCss
+    }
+  }) : null, keyedLinks.map(({
+    key,
+    link
+  }) => isPageLinkDescriptor(link) ? /* @__PURE__ */ React8.createElement(PrefetchPageLinks, _extends4({
+    key
+  }, link)) : /* @__PURE__ */ React8.createElement("link", _extends4({
+    key
+  }, link))));
+}
+function PrefetchPageLinks({
+  page,
+  ...dataLinkProps
+}) {
+  let {
+    router: router2
+  } = useDataRouterContext3();
+  let matches = React8.useMemo(() => matchRoutes(router2.routes, page, router2.basename), [router2.routes, page, router2.basename]);
+  if (!matches) {
+    console.warn(`Tried to prefetch ${page} but no routes matched.`);
+    return null;
+  }
+  return /* @__PURE__ */ React8.createElement(PrefetchPageLinksImpl, _extends4({
+    page,
+    matches
+  }, dataLinkProps));
+}
+function useKeyedPrefetchLinks(matches) {
+  let {
+    manifest,
+    routeModules
+  } = useRemixContext();
+  let [keyedPrefetchLinks, setKeyedPrefetchLinks] = React8.useState([]);
+  React8.useEffect(() => {
+    let interrupted = false;
+    void getKeyedPrefetchLinks(matches, manifest, routeModules).then((links) => {
+      if (!interrupted) {
+        setKeyedPrefetchLinks(links);
+      }
+    });
+    return () => {
+      interrupted = true;
+    };
+  }, [matches, manifest, routeModules]);
+  return keyedPrefetchLinks;
+}
+function PrefetchPageLinksImpl({
+  page,
+  matches: nextMatches,
+  ...linkProps
+}) {
+  let location = useLocation();
+  let {
+    future,
+    manifest,
+    routeModules
+  } = useRemixContext();
+  let {
+    matches
+  } = useDataRouterStateContext();
+  let newMatchesForData = React8.useMemo(() => getNewMatchesForLinks(page, nextMatches, matches, manifest, location, "data"), [page, nextMatches, matches, manifest, location]);
+  let newMatchesForAssets = React8.useMemo(() => getNewMatchesForLinks(page, nextMatches, matches, manifest, location, "assets"), [page, nextMatches, matches, manifest, location]);
+  let dataHrefs = React8.useMemo(() => getDataLinkHrefs(page, newMatchesForData, manifest), [newMatchesForData, page, manifest]);
+  let moduleHrefs = React8.useMemo(() => getModuleLinkHrefs(newMatchesForAssets, manifest), [newMatchesForAssets, manifest]);
+  let keyedPrefetchLinks = useKeyedPrefetchLinks(newMatchesForAssets);
+  let linksToRender = null;
+  if (!future.unstable_singleFetch) {
+    linksToRender = dataHrefs.map((href) => /* @__PURE__ */ React8.createElement("link", _extends4({
+      key: href,
+      rel: "prefetch",
+      as: "fetch",
+      href
+    }, linkProps)));
+  } else if (newMatchesForData.length > 0) {
+    let url = addRevalidationParam(manifest, routeModules, nextMatches.map((m) => m.route), newMatchesForData.map((m) => m.route), singleFetchUrl(page));
+    if (url.searchParams.get("_routes") !== "") {
+      linksToRender = /* @__PURE__ */ React8.createElement("link", _extends4({
+        key: url.pathname + url.search,
+        rel: "prefetch",
+        as: "fetch",
+        href: url.pathname + url.search
+      }, linkProps));
+    }
+  } else
+    ;
+  return /* @__PURE__ */ React8.createElement(React8.Fragment, null, linksToRender, moduleHrefs.map((href) => /* @__PURE__ */ React8.createElement("link", _extends4({
+    key: href,
+    rel: "modulepreload",
+    href
+  }, linkProps))), keyedPrefetchLinks.map(({
+    key,
+    link
+  }) => (
+    // these don't spread `linkProps` because they are full link descriptors
+    // already with their own props
+    /* @__PURE__ */ React8.createElement("link", _extends4({
+      key
+    }, link))
+  )));
+}
+function Meta() {
+  let {
+    isSpaMode,
+    routeModules
+  } = useRemixContext();
+  let {
+    errors,
+    matches: routerMatches,
+    loaderData
+  } = useDataRouterStateContext();
+  let location = useLocation();
+  let _matches = getActiveMatches(routerMatches, errors, isSpaMode);
+  let error = null;
+  if (errors) {
+    error = errors[_matches[_matches.length - 1].route.id];
+  }
+  let meta = [];
+  let leafMeta = null;
+  let matches = [];
+  for (let i = 0; i < _matches.length; i++) {
+    let _match = _matches[i];
+    let routeId = _match.route.id;
+    let data = loaderData[routeId];
+    let params = _match.params;
+    let routeModule = routeModules[routeId];
+    let routeMeta = [];
+    let match = {
+      id: routeId,
+      data,
+      meta: [],
+      params: _match.params,
+      pathname: _match.pathname,
+      handle: _match.route.handle,
+      error
+    };
+    matches[i] = match;
+    if (routeModule !== null && routeModule !== void 0 && routeModule.meta) {
+      routeMeta = typeof routeModule.meta === "function" ? routeModule.meta({
+        data,
+        params,
+        location,
+        matches,
+        error
+      }) : Array.isArray(routeModule.meta) ? [...routeModule.meta] : routeModule.meta;
+    } else if (leafMeta) {
+      routeMeta = [...leafMeta];
+    }
+    routeMeta = routeMeta || [];
+    if (!Array.isArray(routeMeta)) {
+      throw new Error("The route at " + _match.route.path + " returns an invalid value. All route meta functions must return an array of meta objects.\n\nTo reference the meta function API, see https://remix.run/route/meta");
+    }
+    match.meta = routeMeta;
+    matches[i] = match;
+    meta = [...routeMeta];
+    leafMeta = meta;
+  }
+  return /* @__PURE__ */ React8.createElement(React8.Fragment, null, meta.flat().map((metaProps) => {
+    if (!metaProps) {
+      return null;
+    }
+    if ("tagName" in metaProps) {
+      let {
+        tagName,
+        ...rest
+      } = metaProps;
+      if (!isValidMetaTag(tagName)) {
+        console.warn(`A meta object uses an invalid tagName: ${tagName}. Expected either 'link' or 'meta'`);
+        return null;
+      }
+      let Comp = tagName;
+      return /* @__PURE__ */ React8.createElement(Comp, _extends4({
+        key: JSON.stringify(rest)
+      }, rest));
+    }
+    if ("title" in metaProps) {
+      return /* @__PURE__ */ React8.createElement("title", {
+        key: "title"
+      }, String(metaProps.title));
+    }
+    if ("charset" in metaProps) {
+      metaProps.charSet ??= metaProps.charset;
+      delete metaProps.charset;
+    }
+    if ("charSet" in metaProps && metaProps.charSet != null) {
+      return typeof metaProps.charSet === "string" ? /* @__PURE__ */ React8.createElement("meta", {
+        key: "charSet",
+        charSet: metaProps.charSet
+      }) : null;
+    }
+    if ("script:ld+json" in metaProps) {
+      try {
+        let json4 = JSON.stringify(metaProps["script:ld+json"]);
+        return /* @__PURE__ */ React8.createElement("script", {
+          key: `script:ld+json:${json4}`,
+          type: "application/ld+json",
+          dangerouslySetInnerHTML: {
+            __html: json4
+          }
+        });
+      } catch (err) {
+        return null;
+      }
+    }
+    return /* @__PURE__ */ React8.createElement("meta", _extends4({
+      key: JSON.stringify(metaProps)
+    }, metaProps));
+  }));
+}
+function isValidMetaTag(tagName) {
+  return typeof tagName === "string" && /^(meta|link)$/.test(tagName);
+}
+function Await2(props) {
+  return /* @__PURE__ */ React8.createElement(Await, props);
+}
+var isHydrated = false;
+function Scripts(props) {
+  let {
+    manifest,
+    serverHandoffString,
+    abortDelay,
+    serializeError,
+    isSpaMode,
+    future,
+    renderMeta
+  } = useRemixContext();
+  let {
+    router: router2,
+    static: isStatic,
+    staticContext
+  } = useDataRouterContext3();
+  let {
+    matches: routerMatches
+  } = useDataRouterStateContext();
+  let enableFogOfWar = isFogOfWarEnabled(future, isSpaMode);
+  if (renderMeta) {
+    renderMeta.didRenderScripts = true;
+  }
+  let matches = getActiveMatches(routerMatches, null, isSpaMode);
+  React8.useEffect(() => {
+    isHydrated = true;
+  }, []);
+  let serializePreResolvedErrorImp = (key, error) => {
+    let toSerialize;
+    if (serializeError && error instanceof Error) {
+      toSerialize = serializeError(error);
+    } else {
+      toSerialize = error;
+    }
+    return `${JSON.stringify(key)}:__remixContext.p(!1, ${escapeHtml(JSON.stringify(toSerialize))})`;
+  };
+  let serializePreresolvedDataImp = (routeId, key, data) => {
+    let serializedData;
+    try {
+      serializedData = JSON.stringify(data);
+    } catch (error) {
+      return serializePreResolvedErrorImp(key, error);
+    }
+    return `${JSON.stringify(key)}:__remixContext.p(${escapeHtml(serializedData)})`;
+  };
+  let serializeErrorImp = (routeId, key, error) => {
+    let toSerialize;
+    if (serializeError && error instanceof Error) {
+      toSerialize = serializeError(error);
+    } else {
+      toSerialize = error;
+    }
+    return `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(key)}, !1, ${escapeHtml(JSON.stringify(toSerialize))})`;
+  };
+  let serializeDataImp = (routeId, key, data) => {
+    let serializedData;
+    try {
+      serializedData = JSON.stringify(data);
+    } catch (error) {
+      return serializeErrorImp(routeId, key, error);
+    }
+    return `__remixContext.r(${JSON.stringify(routeId)}, ${JSON.stringify(key)}, ${escapeHtml(serializedData)})`;
+  };
+  let deferredScripts = [];
+  let initialScripts = React8.useMemo(() => {
+    var _manifest$hmr;
+    let streamScript = future.unstable_singleFetch ? (
+      // prettier-ignore
+      "window.__remixContext.stream = new ReadableStream({start(controller){window.__remixContext.streamController = controller;}}).pipeThrough(new TextEncoderStream());"
+    ) : "";
+    let contextScript = staticContext ? `window.__remixContext = ${serverHandoffString};${streamScript}` : " ";
+    let activeDeferreds = future.unstable_singleFetch ? void 0 : staticContext === null || staticContext === void 0 ? void 0 : staticContext.activeDeferreds;
+    contextScript += !activeDeferreds ? "" : ["__remixContext.p = function(v,e,p,x) {", "  if (typeof e !== 'undefined') {", true ? "    x=new Error(e.message);\n    x.stack=e.stack;" : '    x=new Error("Unexpected Server Error");\n    x.stack=undefined;', "    p=Promise.reject(x);", "  } else {", "    p=Promise.resolve(v);", "  }", "  return p;", "};", "__remixContext.n = function(i,k) {", "  __remixContext.t = __remixContext.t || {};", "  __remixContext.t[i] = __remixContext.t[i] || {};", "  let p = new Promise((r, e) => {__remixContext.t[i][k] = {r:(v)=>{r(v);},e:(v)=>{e(v);}};});", typeof abortDelay === "number" ? `setTimeout(() => {if(typeof p._error !== "undefined" || typeof p._data !== "undefined"){return;} __remixContext.t[i][k].e(new Error("Server timeout."))}, ${abortDelay});` : "", "  return p;", "};", "__remixContext.r = function(i,k,v,e,p,x) {", "  p = __remixContext.t[i][k];", "  if (typeof e !== 'undefined') {", true ? "    x=new Error(e.message);\n    x.stack=e.stack;" : '    x=new Error("Unexpected Server Error");\n    x.stack=undefined;', "    p.e(x);", "  } else {", "    p.r(v);", "  }", "};"].join("\n") + Object.entries(activeDeferreds).map(([routeId, deferredData]) => {
+      let pendingKeys = new Set(deferredData.pendingKeys);
+      let promiseKeyValues = deferredData.deferredKeys.map((key) => {
+        if (pendingKeys.has(key)) {
+          deferredScripts.push(/* @__PURE__ */ React8.createElement(DeferredHydrationScript, {
+            key: `${routeId} | ${key}`,
+            deferredData,
+            routeId,
+            dataKey: key,
+            scriptProps: props,
+            serializeData: serializeDataImp,
+            serializeError: serializeErrorImp
+          }));
+          return `${JSON.stringify(key)}:__remixContext.n(${JSON.stringify(routeId)}, ${JSON.stringify(key)})`;
+        } else {
+          let trackedPromise = deferredData.data[key];
+          if (typeof trackedPromise._error !== "undefined") {
+            return serializePreResolvedErrorImp(key, trackedPromise._error);
+          } else {
+            return serializePreresolvedDataImp(routeId, key, trackedPromise._data);
+          }
+        }
+      }).join(",\n");
+      return `Object.assign(__remixContext.state.loaderData[${JSON.stringify(routeId)}], {${promiseKeyValues}});`;
+    }).join("\n") + (deferredScripts.length > 0 ? `__remixContext.a=${deferredScripts.length};` : "");
+    let routeModulesScript = !isStatic ? " " : `${(_manifest$hmr = manifest.hmr) !== null && _manifest$hmr !== void 0 && _manifest$hmr.runtime ? `import ${JSON.stringify(manifest.hmr.runtime)};` : ""}${enableFogOfWar ? "" : `import ${JSON.stringify(manifest.url)}`};
+${matches.map((match, index) => `import * as route${index} from ${JSON.stringify(manifest.routes[match.route.id].module)};`).join("\n")}
+${enableFogOfWar ? (
+      // Inline a minimal manifest with the SSR matches
+      `window.__remixManifest = ${JSON.stringify(getPartialManifest(manifest, router2), null, 2)};`
+    ) : ""}
+window.__remixRouteModules = {${matches.map((match, index) => `${JSON.stringify(match.route.id)}:route${index}`).join(",")}};
+
+import(${JSON.stringify(manifest.entry.module)});`;
+    return /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("script", _extends4({}, props, {
+      suppressHydrationWarning: true,
+      dangerouslySetInnerHTML: createHtml(contextScript),
+      type: void 0
+    })), /* @__PURE__ */ React8.createElement("script", _extends4({}, props, {
+      suppressHydrationWarning: true,
+      dangerouslySetInnerHTML: createHtml(routeModulesScript),
+      type: "module",
+      async: true
+    })));
+  }, []);
+  if (!isStatic && typeof __remixContext === "object" && __remixContext.a) {
+    for (let i = 0; i < __remixContext.a; i++) {
+      deferredScripts.push(/* @__PURE__ */ React8.createElement(DeferredHydrationScript, {
+        key: i,
+        scriptProps: props,
+        serializeData: serializeDataImp,
+        serializeError: serializeErrorImp
+      }));
+    }
+  }
+  let routePreloads = matches.map((match) => {
+    let route = manifest.routes[match.route.id];
+    return (route.imports || []).concat([route.module]);
+  }).flat(1);
+  let preloads = isHydrated ? [] : manifest.entry.imports.concat(routePreloads);
+  return isHydrated ? null : /* @__PURE__ */ React8.createElement(React8.Fragment, null, !enableFogOfWar ? /* @__PURE__ */ React8.createElement("link", {
+    rel: "modulepreload",
+    href: manifest.url,
+    crossOrigin: props.crossOrigin
+  }) : null, /* @__PURE__ */ React8.createElement("link", {
+    rel: "modulepreload",
+    href: manifest.entry.module,
+    crossOrigin: props.crossOrigin
+  }), dedupe(preloads).map((path) => /* @__PURE__ */ React8.createElement("link", {
+    key: path,
+    rel: "modulepreload",
+    href: path,
+    crossOrigin: props.crossOrigin
+  })), initialScripts, deferredScripts);
+}
+function DeferredHydrationScript({
+  dataKey,
+  deferredData,
+  routeId,
+  scriptProps,
+  serializeData,
+  serializeError
+}) {
+  if (typeof document === "undefined" && deferredData && dataKey && routeId) {
+    invariant2(deferredData.pendingKeys.includes(dataKey), `Deferred data for route ${routeId} with key ${dataKey} was not pending but tried to render a script for it.`);
+  }
+  return /* @__PURE__ */ React8.createElement(React8.Suspense, {
+    fallback: (
+      // This makes absolutely no sense. The server renders null as a fallback,
+      // but when hydrating, we need to render a script tag to avoid a hydration issue.
+      // To reproduce a hydration mismatch, just render null as a fallback.
+      typeof document === "undefined" && deferredData && dataKey && routeId ? null : /* @__PURE__ */ React8.createElement("script", _extends4({}, scriptProps, {
+        async: true,
+        suppressHydrationWarning: true,
+        dangerouslySetInnerHTML: {
+          __html: " "
+        }
+      }))
+    )
+  }, typeof document === "undefined" && deferredData && dataKey && routeId ? /* @__PURE__ */ React8.createElement(Await2, {
+    resolve: deferredData.data[dataKey],
+    errorElement: /* @__PURE__ */ React8.createElement(ErrorDeferredHydrationScript, {
+      dataKey,
+      routeId,
+      scriptProps,
+      serializeError
+    }),
+    children: (data) => {
+      return /* @__PURE__ */ React8.createElement("script", _extends4({}, scriptProps, {
+        async: true,
+        suppressHydrationWarning: true,
+        dangerouslySetInnerHTML: {
+          __html: serializeData(routeId, dataKey, data)
+        }
+      }));
+    }
+  }) : /* @__PURE__ */ React8.createElement("script", _extends4({}, scriptProps, {
+    async: true,
+    suppressHydrationWarning: true,
+    dangerouslySetInnerHTML: {
+      __html: " "
+    }
+  })));
+}
+function ErrorDeferredHydrationScript({
+  dataKey,
+  routeId,
+  scriptProps,
+  serializeError
+}) {
+  let error = useAsyncError();
+  return /* @__PURE__ */ React8.createElement("script", _extends4({}, scriptProps, {
+    suppressHydrationWarning: true,
+    dangerouslySetInnerHTML: {
+      __html: serializeError(routeId, dataKey, error)
+    }
+  }));
+}
+function dedupe(array) {
+  return [...new Set(array)];
+}
+function useMatches2() {
+  return useMatches();
+}
+function useLoaderData2() {
+  return useLoaderData();
+}
+function useRouteLoaderData2(routeId) {
+  return useRouteLoaderData(routeId);
+}
+function useActionData2() {
+  return useActionData();
+}
+function useFetcher2(opts = {}) {
+  return useFetcher(opts);
+}
+var LiveReload = (
+  // Dead Code Elimination magic for production builds.
+  // This way devs don't have to worry about doing the NODE_ENV check themselves.
+  false ? () => null : function LiveReload2({
+    origin,
+    port,
+    timeoutMs = 1e3,
+    nonce = void 0
+  }) {
+    let isViteClient = import.meta && import.meta.env !== void 0;
+    if (isViteClient) {
+      console.warn(["`<LiveReload />` is obsolete when using Vite and can conflict with Vite's built-in HMR runtime.", "", "Remove `<LiveReload />` from your code and instead only use `<Scripts />`.", "Then refresh the page to remove lingering scripts from `<LiveReload />`."].join("\n"));
+      return null;
+    }
+    origin ??= "http://localhost:3001/";
+    let js = String.raw;
+    return /* @__PURE__ */ React8.createElement("script", {
+      nonce,
+      suppressHydrationWarning: true,
+      dangerouslySetInnerHTML: {
+        __html: js`
+                function remixLiveReloadConnect(config) {
+                  let LIVE_RELOAD_ORIGIN = ${JSON.stringify(origin)};
+                  let protocol =
+                    LIVE_RELOAD_ORIGIN ? new URL(LIVE_RELOAD_ORIGIN).protocol.replace(/^http/, "ws") :
+                    location.protocol === "https:" ? "wss:" : "ws:"; // remove in v2?
+                  let hostname = LIVE_RELOAD_ORIGIN ? new URL(LIVE_RELOAD_ORIGIN).hostname : location.hostname;
+                  let url = new URL(protocol + "//" + hostname + "/socket");
+
+                  url.port =
+                    ${port} ||
+                    (LIVE_RELOAD_ORIGIN ? new URL(LIVE_RELOAD_ORIGIN).port : 8002);
+
+                  let ws = new WebSocket(url.href);
+                  ws.onmessage = async (message) => {
+                    let event = JSON.parse(message.data);
+                    if (event.type === "LOG") {
+                      console.log(event.message);
+                    }
+                    if (event.type === "RELOAD") {
+                      console.log("💿 Reloading window ...");
+                      window.location.reload();
+                    }
+                    if (event.type === "HMR") {
+                      if (!window.__hmr__ || !window.__hmr__.contexts) {
+                        console.log("💿 [HMR] No HMR context, reloading window ...");
+                        window.location.reload();
+                        return;
+                      }
+                      if (!event.updates || !event.updates.length) return;
+                      let updateAccepted = false;
+                      let needsRevalidation = new Set();
+                      for (let update of event.updates) {
+                        console.log("[HMR] " + update.reason + " [" + update.id +"]")
+                        if (update.revalidate) {
+                          needsRevalidation.add(update.routeId);
+                          console.log("[HMR] Revalidating [" + update.routeId + "]");
+                        }
+                        let imported = await import(update.url +  '?t=' + event.assetsManifest.hmr.timestamp);
+                        if (window.__hmr__.contexts[update.id]) {
+                          let accepted = window.__hmr__.contexts[update.id].emit(
+                            imported
+                          );
+                          if (accepted) {
+                            console.log("[HMR] Update accepted by", update.id);
+                            updateAccepted = true;
+                          }
+                        }
+                      }
+                      if (event.assetsManifest && window.__hmr__.contexts["remix:manifest"]) {
+                        let accepted = window.__hmr__.contexts["remix:manifest"].emit(
+                          { needsRevalidation, assetsManifest: event.assetsManifest }
+                        );
+                        if (accepted) {
+                          console.log("[HMR] Update accepted by", "remix:manifest");
+                          updateAccepted = true;
+                        }
+                      }
+                      if (!updateAccepted) {
+                        console.log("[HMR] Update rejected, reloading...");
+                        window.location.reload();
+                      }
+                    }
+                  };
+                  ws.onopen = () => {
+                    if (config && typeof config.onOpen === "function") {
+                      config.onOpen();
+                    }
+                  };
+                  ws.onclose = (event) => {
+                    if (event.code === 1006) {
+                      console.log("Remix dev asset server web socket closed. Reconnecting...");
+                      setTimeout(
+                        () =>
+                          remixLiveReloadConnect({
+                            onOpen: () => window.location.reload(),
+                          }),
+                      ${String(timeoutMs)}
+                      );
+                    }
+                  };
+                  ws.onerror = (error) => {
+                    console.log("Remix dev asset server web socket error:");
+                    console.error(error);
+                  };
+                }
+                remixLiveReloadConnect();
+              `
+      }
+    });
+  }
+);
+function mergeRefs(...refs) {
+  return (value) => {
+    refs.forEach((ref) => {
+      if (typeof ref === "function") {
+        ref(value);
+      } else if (ref != null) {
+        ref.current = value;
+      }
+    });
+  };
+}
+
+// node_modules/@remix-run/react/dist/esm/errors.js
+init_router();
+function deserializeErrors2(errors) {
+  if (!errors)
+    return null;
+  let entries = Object.entries(errors);
+  let serialized = {};
+  for (let [key, val] of entries) {
+    if (val && val.__type === "RouteErrorResponse") {
+      serialized[key] = new ErrorResponseImpl(val.status, val.statusText, val.data, val.internal === true);
+    } else if (val && val.__type === "Error") {
+      if (val.__subType) {
+        let ErrorConstructor = window[val.__subType];
+        if (typeof ErrorConstructor === "function") {
+          try {
+            let error = new ErrorConstructor(val.message);
+            error.stack = val.stack;
+            serialized[key] = error;
+          } catch (e) {
+          }
+        }
+      }
+      if (serialized[key] == null) {
+        let error = new Error(val.message);
+        error.stack = val.stack;
+        serialized[key] = error;
+      }
+    } else {
+      serialized[key] = val;
+    }
+  }
+  return serialized;
+}
+
 // node_modules/@remix-run/react/dist/esm/browser.js
 if (!window.$RefreshReg$ || !window.$RefreshSig$ || !window.$RefreshRuntime$) {
   console.warn("remix:hmr: React Fast Refresh only works when the Remix compiler is running in development mode.");
@@ -8696,7 +9239,7 @@ function RemixBrowser(_props) {
       let errorMsg = `Initial URL (${initialPathname}) does not match URL at time of hydration (${hydratedPathname}), reloading page...`;
       console.error(errorMsg);
       window.location.reload();
-      return /* @__PURE__ */ React8.createElement(React8.Fragment, null);
+      return /* @__PURE__ */ React9.createElement(React9.Fragment, null);
     }
     if (window.__remixContext.future.unstable_singleFetch) {
       if (!stateDecodingPromise) {
@@ -8726,7 +9269,7 @@ function RemixBrowser(_props) {
           ...window.__remixContext.state.loaderData
         }
       };
-      let initialMatches = matchRoutes(routes, window.location);
+      let initialMatches = matchRoutes(routes, window.location, window.__remixContext.basename);
       if (initialMatches) {
         for (let match of initialMatches) {
           let routeId = match.route.id;
@@ -8743,6 +9286,10 @@ function RemixBrowser(_props) {
         hydrationData.errors = deserializeErrors2(hydrationData.errors);
       }
     }
+    let {
+      enabled: isFogOfWarEnabled2,
+      patchRoutesOnMiss
+    } = initFogOfWar(window.__remixManifest, window.__remixRouteModules, window.__remixContext.future, window.__remixContext.isSpaMode, window.__remixContext.basename);
     router = createRouter({
       routes,
       history: createBrowserHistory(),
@@ -8758,7 +9305,10 @@ function RemixBrowser(_props) {
       },
       hydrationData,
       mapRouteProperties,
-      unstable_dataStrategy: window.__remixContext.future.unstable_singleFetch ? getSingleFetchDataStrategy(window.__remixManifest, window.__remixRouteModules) : void 0
+      unstable_dataStrategy: window.__remixContext.future.unstable_singleFetch ? getSingleFetchDataStrategy(window.__remixManifest, window.__remixRouteModules) : void 0,
+      ...isFogOfWarEnabled2 ? {
+        unstable_patchRoutesOnMiss: patchRoutesOnMiss
+      } : {}
     });
     if (router.state.initialized) {
       routerInitialized = true;
@@ -8770,28 +9320,29 @@ function RemixBrowser(_props) {
       hmrRouterReadyResolve(router);
     }
   }
-  let [criticalCss, setCriticalCss] = React8.useState(true ? window.__remixContext.criticalCss : void 0);
+  let [criticalCss, setCriticalCss] = React9.useState(true ? window.__remixContext.criticalCss : void 0);
   if (true) {
     window.__remixClearCriticalCss = () => setCriticalCss(void 0);
   }
-  let [location, setLocation] = React8.useState(router.state.location);
-  React8.useLayoutEffect(() => {
+  let [location, setLocation] = React9.useState(router.state.location);
+  React9.useLayoutEffect(() => {
     if (!routerInitialized) {
       routerInitialized = true;
       router.initialize();
     }
   }, []);
-  React8.useLayoutEffect(() => {
+  React9.useLayoutEffect(() => {
     return router.subscribe((newState) => {
       if (newState.location !== location) {
         setLocation(newState.location);
       }
     });
   }, [location]);
+  useFogOFWarDiscovery(router, window.__remixManifest, window.__remixRouteModules, window.__remixContext.future, window.__remixContext.isSpaMode);
   return (
     // This fragment is important to ensure we match the <RemixServer> JSX
     // structure so that useId values hydrate correctly
-    /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement(RemixContext.Provider, {
+    /* @__PURE__ */ React9.createElement(React9.Fragment, null, /* @__PURE__ */ React9.createElement(RemixContext.Provider, {
       value: {
         manifest: window.__remixManifest,
         routeModules: window.__remixRouteModules,
@@ -8799,18 +9350,20 @@ function RemixBrowser(_props) {
         criticalCss,
         isSpaMode: window.__remixContext.isSpaMode
       }
-    }, /* @__PURE__ */ React8.createElement(RemixErrorBoundary, {
+    }, /* @__PURE__ */ React9.createElement(RemixErrorBoundary, {
       location
-    }, /* @__PURE__ */ React8.createElement(RouterProvider2, {
+    }, /* @__PURE__ */ React9.createElement(RouterProvider2, {
       router,
       fallbackElement: null,
       future: {
         v7_startTransition: true
       }
-    }))), window.__remixContext.future.unstable_singleFetch ? /* @__PURE__ */ React8.createElement(React8.Fragment, null) : null)
+    }))), window.__remixContext.future.unstable_singleFetch ? /* @__PURE__ */ React9.createElement(React9.Fragment, null) : null)
   );
 }
-_s(RemixBrowser, "2Jc0pK5iA8IBztJHvZ5F40Owts4=");
+_s(RemixBrowser, "n34maDGonqcvsMaCLj5c3jhn2kM=", false, function() {
+  return [useFogOFWarDiscovery];
+});
 _c = RemixBrowser;
 var _c;
 $RefreshReg$(_c, "RemixBrowser");
@@ -8818,7 +9371,7 @@ window.$RefreshReg$ = prevRefreshReg;
 window.$RefreshSig$ = prevRefreshSig;
 
 // node_modules/@remix-run/react/dist/esm/scroll-restoration.js
-var React9 = __toESM(require_react());
+var React10 = __toESM(require_react());
 init_dist2();
 var STORAGE_KEY = "positions";
 function ScrollRestoration2({
@@ -8834,7 +9387,7 @@ function ScrollRestoration2({
     getKey,
     storageKey: STORAGE_KEY
   });
-  let key = React9.useMemo(
+  let key = React10.useMemo(
     () => {
       if (!getKey)
         return null;
@@ -8866,7 +9419,7 @@ function ScrollRestoration2({
       sessionStorage.removeItem(STORAGE_KEY2);
     }
   }).toString();
-  return /* @__PURE__ */ React9.createElement("script", _extends4({}, props, {
+  return /* @__PURE__ */ React10.createElement("script", _extends4({}, props, {
     suppressHydrationWarning: true,
     dangerouslySetInnerHTML: {
       __html: `(${restoreScroll})(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(key)})`
@@ -8875,7 +9428,7 @@ function ScrollRestoration2({
 }
 
 // node_modules/@remix-run/react/dist/esm/server.js
-var React10 = __toESM(require_react());
+var React11 = __toESM(require_react());
 var import_server = __toESM(require_server());
 function RemixServer({
   context,
@@ -8910,7 +9463,7 @@ function RemixServer({
       v7_relativeSplatPath: context.future.v3_relativeSplatPath
     }
   });
-  return /* @__PURE__ */ React10.createElement(React10.Fragment, null, /* @__PURE__ */ React10.createElement(RemixContext.Provider, {
+  return /* @__PURE__ */ React11.createElement(React11.Fragment, null, /* @__PURE__ */ React11.createElement(RemixContext.Provider, {
     value: {
       manifest,
       routeModules,
@@ -8922,13 +9475,13 @@ function RemixServer({
       abortDelay,
       renderMeta: context.renderMeta
     }
-  }, /* @__PURE__ */ React10.createElement(RemixErrorBoundary, {
+  }, /* @__PURE__ */ React11.createElement(RemixErrorBoundary, {
     location: router2.state.location
-  }, /* @__PURE__ */ React10.createElement(import_server.StaticRouterProvider, {
+  }, /* @__PURE__ */ React11.createElement(import_server.StaticRouterProvider, {
     router: router2,
     context: context.staticHandlerContext,
     hydrate: false
-  }))), context.future.unstable_singleFetch && context.serverHandoffStream ? /* @__PURE__ */ React10.createElement(React10.Suspense, null, /* @__PURE__ */ React10.createElement(StreamTransfer, {
+  }))), context.future.unstable_singleFetch && context.serverHandoffStream ? /* @__PURE__ */ React11.createElement(React11.Suspense, null, /* @__PURE__ */ React11.createElement(StreamTransfer, {
     context,
     identifier: 0,
     reader: context.serverHandoffStream.getReader(),
@@ -9007,7 +9560,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.16.1
+   * @remix-run/router v1.17.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9019,7 +9572,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.23.1
+   * React Router v6.24.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9031,7 +9584,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.23.1
+   * React Router DOM v6.24.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9043,7 +9596,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/responses.js:
   (**
-   * @remix-run/server-runtime v2.9.2
+   * @remix-run/server-runtime v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9055,7 +9608,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/single-fetch.js:
   (**
-   * @remix-run/server-runtime v2.9.2
+   * @remix-run/server-runtime v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9067,7 +9620,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/index.js:
   (**
-   * @remix-run/server-runtime v2.9.2
+   * @remix-run/server-runtime v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9079,7 +9632,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9091,7 +9644,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9103,7 +9656,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9115,7 +9668,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9127,7 +9680,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9139,7 +9692,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9151,19 +9704,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/single-fetch.js:
   (**
-   * @remix-run/react v2.9.2
-   *
-   * Copyright (c) Remix Software Inc.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE.md file in the root directory of this source tree.
-   *
-   * @license MIT
-   *)
-
-@remix-run/react/dist/esm/components.js:
-  (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9175,19 +9716,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v2.9.2
-   *
-   * Copyright (c) Remix Software Inc.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE.md file in the root directory of this source tree.
-   *
-   * @license MIT
-   *)
-
-@remix-run/react/dist/esm/errors.js:
-  (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9199,7 +9728,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fallback.js:
   (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9211,7 +9740,43 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/fog-of-war.js:
+  (**
+   * @remix-run/react v2.10.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/components.js:
+  (**
+   * @remix-run/react v2.10.0
+   *
+   * Copyright (c) Remix Software Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE.md file in the root directory of this source tree.
+   *
+   * @license MIT
+   *)
+
+@remix-run/react/dist/esm/errors.js:
+  (**
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9223,7 +9788,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9235,7 +9800,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9247,7 +9812,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/server.js:
   (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9259,7 +9824,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v2.9.2
+   * @remix-run/react v2.10.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9269,4 +9834,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-AMD6ONX5.js.map
+//# sourceMappingURL=/build/_shared/chunk-VIBEVKQM.js.map
