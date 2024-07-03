@@ -801,7 +801,7 @@ function getPathContributingMatches(matches) {
 function getResolveToMatches(matches, v7_relativeSplatPath) {
   let pathMatches = getPathContributingMatches(matches);
   if (v7_relativeSplatPath) {
-    return pathMatches.map((match, idx) => idx === matches.length - 1 ? match.pathname : match.pathnameBase);
+    return pathMatches.map((match, idx) => idx === pathMatches.length - 1 ? match.pathname : match.pathnameBase);
   }
   return pathMatches.map((match) => match.pathnameBase);
 }
@@ -911,6 +911,12 @@ function createRouter(init) {
     initialErrors = {
       [route.id]: error
     };
+  }
+  if (initialMatches && patchRoutesOnMissImpl) {
+    let fogOfWar2 = checkFogOfWar(initialMatches, dataRoutes, init.history.location.pathname);
+    if (fogOfWar2.active) {
+      initialMatches = null;
+    }
   }
   let initialized;
   if (!initialMatches) {
@@ -2264,7 +2270,7 @@ function createRouter(init) {
         };
       } else {
         let leafRoute = matches[matches.length - 1].route;
-        if (leafRoute.path === "*") {
+        if (leafRoute.path && (leafRoute.path === "*" || leafRoute.path.endsWith("/*"))) {
           let partialMatches = matchRoutesImpl(routesToUse, pathname, basename, true);
           return {
             active: true,
@@ -2282,21 +2288,26 @@ function createRouter(init) {
     let partialMatches = matches;
     let route = partialMatches.length > 0 ? partialMatches[partialMatches.length - 1].route : null;
     while (true) {
+      let isNonHMR = inFlightDataRoutes == null;
+      let routesToUse = inFlightDataRoutes || dataRoutes;
       try {
-        await loadLazyRouteChildren(patchRoutesOnMissImpl, pathname, partialMatches, dataRoutes || inFlightDataRoutes, manifest, mapRouteProperties2, pendingPatchRoutes, signal);
+        await loadLazyRouteChildren(patchRoutesOnMissImpl, pathname, partialMatches, routesToUse, manifest, mapRouteProperties2, pendingPatchRoutes, signal);
       } catch (e) {
         return {
           type: "error",
           error: e,
           partialMatches
         };
+      } finally {
+        if (isNonHMR) {
+          dataRoutes = [...dataRoutes];
+        }
       }
       if (signal.aborted) {
         return {
           type: "aborted"
         };
       }
-      let routesToUse = inFlightDataRoutes || dataRoutes;
       let newMatches = matchRoutes(routesToUse, pathname, basename);
       let matchedSplat = false;
       if (newMatches) {
@@ -2339,6 +2350,15 @@ function createRouter(init) {
     manifest = {};
     inFlightDataRoutes = convertRoutesToDataRoutes(newRoutes, mapRouteProperties2, void 0, manifest);
   }
+  function patchRoutes(routeId, children) {
+    let isNonHMR = inFlightDataRoutes == null;
+    let routesToUse = inFlightDataRoutes || dataRoutes;
+    patchRoutesImpl(routeId, children, routesToUse, manifest, mapRouteProperties2);
+    if (isNonHMR) {
+      dataRoutes = [...dataRoutes];
+      updateState({});
+    }
+  }
   router2 = {
     get basename() {
       return basename;
@@ -2370,9 +2390,7 @@ function createRouter(init) {
     dispose,
     getBlocker,
     deleteBlocker,
-    patchRoutes(routeId, children) {
-      return patchRoutes(routeId, children, dataRoutes || inFlightDataRoutes, manifest, mapRouteProperties2);
-    },
+    patchRoutes,
     _internalFetchControllers: fetchControllers,
     _internalActiveDeferreds: activeDeferreds,
     // TODO: Remove setRoutes, it's temporary to avoid dealing with
@@ -2999,7 +3017,7 @@ async function loadLazyRouteChildren(patchRoutesOnMissImpl, path, matches, route
         matches,
         patch: (routeId, children) => {
           if (!signal.aborted) {
-            patchRoutes(routeId, children, routes, manifest, mapRouteProperties2);
+            patchRoutesImpl(routeId, children, routes, manifest, mapRouteProperties2);
           }
         }
       });
@@ -3012,7 +3030,7 @@ async function loadLazyRouteChildren(patchRoutesOnMissImpl, path, matches, route
     pendingRouteChildren.delete(key);
   }
 }
-function patchRoutes(routeId, children, routes, manifest, mapRouteProperties2) {
+function patchRoutesImpl(routeId, children, routesToUse, manifest, mapRouteProperties2) {
   if (routeId) {
     var _route$children;
     let route = manifest[routeId];
@@ -3024,8 +3042,8 @@ function patchRoutes(routeId, children, routes, manifest, mapRouteProperties2) {
       route.children = dataChildren;
     }
   } else {
-    let dataChildren = convertRoutesToDataRoutes(children, mapRouteProperties2, ["patch", String(routes.length || "0")], manifest);
-    routes.push(...dataChildren);
+    let dataChildren = convertRoutesToDataRoutes(children, mapRouteProperties2, ["patch", String(routesToUse.length || "0")], manifest);
+    routesToUse.push(...dataChildren);
   }
 }
 async function loadLazyRouteModule(route, mapRouteProperties2, manifest) {
@@ -5823,7 +5841,7 @@ function useLinkClickHandler(to, _temp) {
   }, [location, navigate, path, replaceProp, state, target, to, preventScrollReset, relative, unstable_viewTransition]);
 }
 function useSearchParams(defaultInit) {
-  true ? warning(typeof URLSearchParams !== "undefined", "You cannot use the `useSearchParams` hook in a browser that does not support the URLSearchParams API. If you need to support Internet Explorer 11, we recommend you load a polyfill such as https://github.com/ungap/url-search-params\n\nIf you're unsure how to load polyfills, we recommend you check out https://polyfill.io/v3/ which provides some recommendations about how to load polyfills only for users that need them, instead of for every user.") : void 0;
+  true ? warning(typeof URLSearchParams !== "undefined", "You cannot use the `useSearchParams` hook in a browser that does not support the URLSearchParams API. If you need to support Internet Explorer 11, we recommend you load a polyfill such as https://github.com/ungap/url-search-params.") : void 0;
   let defaultSearchParamsRef = React2.useRef(createSearchParams(defaultInit));
   let hasSetSearchParamsRef = React2.useRef(false);
   let location = useLocation();
@@ -8283,7 +8301,8 @@ function useFogOFWarDiscovery(router2, manifest, routeModules, future, isSpaMode
     if (!isFogOfWarEnabled(future, isSpaMode) || ((_navigator$connection = navigator.connection) === null || _navigator$connection === void 0 ? void 0 : _navigator$connection.saveData) === true) {
       return;
     }
-    function registerPath(path) {
+    function registerElement(el) {
+      let path = el.tagName === "FORM" ? el.getAttribute("action") : el.getAttribute("href");
       if (!path) {
         return;
       }
@@ -8309,33 +8328,36 @@ function useFogOFWarDiscovery(router2, manifest, routeModules, future, isSpaMode
         console.error("Failed to fetch manifest patches", e);
       }
     }
-    document.body.querySelectorAll("a[data-discover]").forEach((a) => registerPath(a.getAttribute("href")));
+    document.body.querySelectorAll("a[data-discover], form[data-discover]").forEach((el) => registerElement(el));
     fetchPatches();
     let debouncedFetchPatches = debounce(fetchPatches, 100);
     function isElement(node) {
       return node.nodeType === Node.ELEMENT_NODE;
     }
     let observer = new MutationObserver((records) => {
-      let links = /* @__PURE__ */ new Set();
+      let elements = /* @__PURE__ */ new Set();
       records.forEach((r) => {
         [r.target, ...r.addedNodes].forEach((node) => {
           if (!isElement(node))
             return;
           if (node.tagName === "A" && node.getAttribute("data-discover")) {
-            links.add(node);
-          } else if (node.tagName !== "A") {
-            node.querySelectorAll("a[data-discover]").forEach((el) => links.add(el));
+            elements.add(node);
+          } else if (node.tagName === "FORM" && node.getAttribute("data-discover")) {
+            elements.add(node);
+          }
+          if (node.tagName !== "A") {
+            node.querySelectorAll("a[data-discover], form[data-discover]").forEach((el) => elements.add(el));
           }
         });
       });
-      links.forEach((link) => registerPath(link.getAttribute("href")));
+      elements.forEach((el) => registerElement(el));
       debouncedFetchPatches();
     });
     observer.observe(document.documentElement, {
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: ["data-discover", "href"]
+      attributeFilter: ["data-discover", "href", "action"]
     });
     return () => observer.disconnect();
   }, [future, isSpaMode, manifest, routeModules, router2]);
@@ -8358,7 +8380,7 @@ function getFogOfWarPaths(fogOfWar2, router2) {
     return true;
   });
 }
-async function fetchAndApplyManifestPatches(paths, _fogOfWar, manifest, routeModules, future, isSpaMode, basename, patchRoutes2) {
+async function fetchAndApplyManifestPatches(paths, _fogOfWar, manifest, routeModules, future, isSpaMode, basename, patchRoutes) {
   let {
     nextPaths,
     knownGoodPaths,
@@ -8392,7 +8414,7 @@ async function fetchAndApplyManifestPatches(paths, _fogOfWar, manifest, routeMod
       parentIds.add(patch.parentId);
     }
   });
-  parentIds.forEach((parentId) => patchRoutes2(parentId || null, createClientRoutes(patches, routeModules, null, future, isSpaMode, parentId)));
+  parentIds.forEach((parentId) => patchRoutes(parentId || null, createClientRoutes(patches, routeModules, null, future, isSpaMode, parentId)));
 }
 function debounce(callback, wait) {
   let timeoutId;
@@ -8481,6 +8503,9 @@ function usePrefetchBehavior(prefetch, theirElementProps) {
   }];
 }
 var ABSOLUTE_URL_REGEX3 = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+function getDiscoverAttr(discover, isAbsolute, reloadDocument) {
+  return discover === "render" && !isAbsolute && !reloadDocument ? "true" : void 0;
+}
 var NavLink2 = /* @__PURE__ */ React8.forwardRef(({
   to,
   prefetch = "none",
@@ -8493,7 +8518,7 @@ var NavLink2 = /* @__PURE__ */ React8.forwardRef(({
   return /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement(NavLink, _extends4({}, props, prefetchHandlers, {
     ref: mergeRefs(forwardedRef, ref),
     to,
-    "data-discover": !isAbsolute && discover === "render" ? "true" : void 0
+    "data-discover": getDiscoverAttr(discover, isAbsolute, props.reloadDocument)
   })), shouldPrefetch && !isAbsolute ? /* @__PURE__ */ React8.createElement(PrefetchPageLinks, {
     page: href
   }) : null);
@@ -8511,12 +8536,22 @@ var Link2 = /* @__PURE__ */ React8.forwardRef(({
   return /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement(Link, _extends4({}, props, prefetchHandlers, {
     ref: mergeRefs(forwardedRef, ref),
     to,
-    "data-discover": !isAbsolute && discover === "render" ? "true" : void 0
+    "data-discover": getDiscoverAttr(discover, isAbsolute, props.reloadDocument)
   })), shouldPrefetch && !isAbsolute ? /* @__PURE__ */ React8.createElement(PrefetchPageLinks, {
     page: href
   }) : null);
 });
 Link2.displayName = "Link";
+var Form2 = /* @__PURE__ */ React8.forwardRef(({
+  discover = "render",
+  ...props
+}, forwardedRef) => {
+  let isAbsolute = typeof props.action === "string" && ABSOLUTE_URL_REGEX3.test(props.action);
+  return /* @__PURE__ */ React8.createElement(Form, _extends4({}, props, {
+    "data-discover": getDiscoverAttr(discover, isAbsolute, props.reloadDocument)
+  }));
+});
+Form2.displayName = "Form";
 function composeEventHandlers(theirHandler, ourHandler) {
   return (event) => {
     theirHandler && theirHandler(event);
@@ -9523,7 +9558,6 @@ export {
   createRoutesFromChildren,
   renderMatches,
   createSearchParams,
-  Form,
   useLinkClickHandler,
   useSearchParams,
   useSubmit,
@@ -9541,6 +9575,7 @@ export {
   RemixContext,
   NavLink2 as NavLink,
   Link2 as Link,
+  Form2 as Form,
   Links,
   PrefetchPageLinks,
   Meta,
@@ -9560,7 +9595,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.17.0
+   * @remix-run/router v1.17.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9572,7 +9607,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.24.0
+   * React Router v6.24.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9584,7 +9619,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.24.0
+   * React Router DOM v6.24.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9596,7 +9631,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/responses.js:
   (**
-   * @remix-run/server-runtime v2.10.0
+   * @remix-run/server-runtime v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9608,7 +9643,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/single-fetch.js:
   (**
-   * @remix-run/server-runtime v2.10.0
+   * @remix-run/server-runtime v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9620,7 +9655,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/index.js:
   (**
-   * @remix-run/server-runtime v2.10.0
+   * @remix-run/server-runtime v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9632,7 +9667,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9644,7 +9679,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9656,7 +9691,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9668,7 +9703,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9680,7 +9715,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9692,7 +9727,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9704,7 +9739,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/single-fetch.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9716,7 +9751,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9728,7 +9763,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fallback.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9740,7 +9775,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9752,7 +9787,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fog-of-war.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9764,7 +9799,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9776,7 +9811,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9788,7 +9823,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9800,7 +9835,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9812,7 +9847,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/server.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9824,7 +9859,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v2.10.0
+   * @remix-run/react v2.10.1
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9834,4 +9869,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-VIBEVKQM.js.map
+//# sourceMappingURL=/build/_shared/chunk-O7BDEFJK.js.map
