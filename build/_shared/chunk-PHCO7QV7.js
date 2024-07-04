@@ -8548,6 +8548,7 @@ var Form2 = /* @__PURE__ */ React8.forwardRef(({
 }, forwardedRef) => {
   let isAbsolute = typeof props.action === "string" && ABSOLUTE_URL_REGEX3.test(props.action);
   return /* @__PURE__ */ React8.createElement(Form, _extends4({}, props, {
+    ref: forwardedRef,
     "data-discover": getDiscoverAttr(discover, isAbsolute, props.reloadDocument)
   }));
 });
@@ -9631,7 +9632,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/responses.js:
   (**
-   * @remix-run/server-runtime v2.10.1
+   * @remix-run/server-runtime v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9643,7 +9644,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/single-fetch.js:
   (**
-   * @remix-run/server-runtime v2.10.1
+   * @remix-run/server-runtime v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9655,7 +9656,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/index.js:
   (**
-   * @remix-run/server-runtime v2.10.1
+   * @remix-run/server-runtime v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9667,7 +9668,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9679,7 +9680,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9691,7 +9692,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9703,7 +9704,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9715,7 +9716,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9727,7 +9728,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9739,7 +9740,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/single-fetch.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9751,7 +9752,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9763,7 +9764,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fallback.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9775,7 +9776,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9787,7 +9788,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fog-of-war.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9799,7 +9800,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9811,7 +9812,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9823,7 +9824,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9835,7 +9836,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9847,7 +9848,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/server.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9859,7 +9860,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v2.10.1
+   * @remix-run/react v2.10.2
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9869,4 +9870,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-O7BDEFJK.js.map
+//# sourceMappingURL=/build/_shared/chunk-PHCO7QV7.js.map
