@@ -3,6 +3,15 @@ import "/build/_shared/chunk-PNG5AS42.js";
 // app/data/events.json
 var events_default = [
   {
+    date: "2024-08-08T18:00:00.000-04:00",
+    duration: {
+      hours: 2
+    },
+    link: "https://rsvp.place/events/phillyjs/669028e67aabde274a00f304",
+    location: "Indy Hall",
+    topics: ["A presentation by Richard Feldman"]
+  },
+  {
     date: "2024-07-11T18:00:00.000-04:00",
     duration: {
       hours: 2
@@ -302,4 +311,4 @@ var events_default = [
 export {
   events_default as default
 };
-//# sourceMappingURL=/build/_shared/events-34HIGGLY.js.map
+//# sourceMappingURL=/build/_shared/events-STZBTCPR.js.map
