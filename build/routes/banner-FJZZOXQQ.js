@@ -1,10 +1,10 @@
 import {
   constructSiteTitle,
   upperFirst
-} from "/build/_shared/chunk-6XEC5PYM.js";
+} from "/build/_shared/chunk-D2U2X4LY.js";
 import {
   site
-} from "/build/_shared/chunk-WTODQLLK.js";
+} from "/build/_shared/chunk-F3DHP5JX.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XGOTYLZ5.js";
@@ -40,7 +40,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/AdLogo.tsx"
   );
-  import.meta.hot.lastModified = "1720668523774.741";
+  import.meta.hot.lastModified = "1720668557082.9019";
 }
 function AdLogo({
   className
@@ -88,7 +88,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/utils/dates.ts"
   );
-  import.meta.hot.lastModified = "1720668523774.741";
+  import.meta.hot.lastModified = "1720668557082.9019";
 }
 function getMonthAndYear(params) {
   const month = params.get("month")?.toLowerCase();
@@ -143,7 +143,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/AdText.tsx"
   );
-  import.meta.hot.lastModified = "1720668523774.741";
+  import.meta.hot.lastModified = "1720668557082.9019";
 }
 function AdText() {
   _s();
@@ -151,7 +151,7 @@ function AdText() {
     month,
     year
   } = useMonthAndYear();
-  return /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("div", { className: "ad-text", children: [
+  return /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("div", { className: "banner-text", children: [
     /* @__PURE__ */ (0, import_jsx_dev_runtime2.jsxDEV)("h1", { children: site.title }, void 0, false, {
       fileName: "app/components/AdText.tsx",
       lineNumber: 35,
@@ -181,7 +181,7 @@ $RefreshReg$(_c2, "AdText");
 window.$RefreshReg$ = prevRefreshReg;
 window.$RefreshSig$ = prevRefreshSig;
 
-// app/routes/ad.tsx
+// app/routes/banner.tsx
 var import_jsx_dev_runtime3 = __toESM(require_jsx_dev_runtime());
 if (!window.$RefreshReg$ || !window.$RefreshSig$ || !window.$RefreshRuntime$) {
   console.warn("remix:hmr: React Fast Refresh only works when the Remix compiler is running in development mode.");
@@ -189,7 +189,7 @@ if (!window.$RefreshReg$ || !window.$RefreshSig$ || !window.$RefreshRuntime$) {
   prevRefreshReg = window.$RefreshReg$;
   prevRefreshSig = window.$RefreshSig$;
   window.$RefreshReg$ = (type, id) => {
-    window.$RefreshRuntime$.register(type, '"app/routes/ad.tsx"' + id);
+    window.$RefreshRuntime$.register(type, '"app/routes/banner.tsx"' + id);
   };
   window.$RefreshSig$ = window.$RefreshRuntime$.createSignatureFunctionForTransform;
 }
@@ -198,9 +198,9 @@ var prevRefreshSig;
 if (import.meta) {
   import.meta.hot = createHotContext(
     //@ts-expect-error
-    "app/routes/ad.tsx"
+    "app/routes/banner.tsx"
   );
-  import.meta.hot.lastModified = "1720668523774.741";
+  import.meta.hot.lastModified = "1720668557082.9019";
 }
 var meta = ({
   location
@@ -210,38 +210,38 @@ var meta = ({
     year
   } = getMonthAndYear(new URLSearchParams(location.search));
   return [{
-    title: constructSiteTitle(`Ad (${upperFirst(month)} ${year})`)
+    title: constructSiteTitle(`Banner (${upperFirst(month)} ${year})`)
   }];
 };
-function Ad() {
-  return /* @__PURE__ */ (0, import_jsx_dev_runtime3.jsxDEV)("main", { className: "ad-main", children: [
-    /* @__PURE__ */ (0, import_jsx_dev_runtime3.jsxDEV)("div", { className: "ad-img-area", children: /* @__PURE__ */ (0, import_jsx_dev_runtime3.jsxDEV)(AdLogo, { className: "ad-img" }, void 0, false, {
-      fileName: "app/routes/ad.tsx",
+function Banner() {
+  return /* @__PURE__ */ (0, import_jsx_dev_runtime3.jsxDEV)("main", { className: "banner-main", children: [
+    /* @__PURE__ */ (0, import_jsx_dev_runtime3.jsxDEV)("div", { className: "banner-img-area", children: /* @__PURE__ */ (0, import_jsx_dev_runtime3.jsxDEV)(AdLogo, { className: "banner-img" }, void 0, false, {
+      fileName: "app/routes/banner.tsx",
       lineNumber: 39,
       columnNumber: 5
     }, this) }, void 0, false, {
-      fileName: "app/routes/ad.tsx",
+      fileName: "app/routes/banner.tsx",
       lineNumber: 38,
       columnNumber: 4
     }, this),
     /* @__PURE__ */ (0, import_jsx_dev_runtime3.jsxDEV)(AdText, {}, void 0, false, {
-      fileName: "app/routes/ad.tsx",
+      fileName: "app/routes/banner.tsx",
       lineNumber: 41,
       columnNumber: 4
     }, this)
   ] }, void 0, true, {
-    fileName: "app/routes/ad.tsx",
+    fileName: "app/routes/banner.tsx",
     lineNumber: 37,
     columnNumber: 10
   }, this);
 }
-_c3 = Ad;
+_c3 = Banner;
 var _c3;
-$RefreshReg$(_c3, "Ad");
+$RefreshReg$(_c3, "Banner");
 window.$RefreshReg$ = prevRefreshReg;
 window.$RefreshSig$ = prevRefreshSig;
 export {
-  Ad as default,
+  Banner as default,
   meta
 };
-//# sourceMappingURL=/build/routes/ad-MYLDFLTW.js.map
+//# sourceMappingURL=/build/routes/banner-FJZZOXQQ.js.map

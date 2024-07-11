@@ -1,6 +1,6 @@
 import {
   site
-} from "/build/_shared/chunk-WTODQLLK.js";
+} from "/build/_shared/chunk-F3DHP5JX.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XGOTYLZ5.js";
@@ -23,7 +23,7 @@ import {
 } from "/build/_shared/chunk-PNG5AS42.js";
 
 // app/root.css
-var root_default = "/build/_assets/root-FHIF5J4B.css";
+var root_default = "/build/_assets/root-DNEVF5KK.css";
 
 // app/root.tsx
 var import_jsx_dev_runtime = __toESM(require_jsx_dev_runtime());
@@ -157,4 +157,4 @@ window.$RefreshSig$ = prevRefreshSig;
 export {
   App as default
 };
-//# sourceMappingURL=/build/root-4GG27KYN.js.map
+//# sourceMappingURL=/build/root-NLXLXYGM.js.map
