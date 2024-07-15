@@ -14,6 +14,12 @@ var currentSponsors = [
     href: "https://libertyjobs.com",
     imageHref: "/assets/logos/liberty-regular.png",
     name: "Liberty Jobs"
+  },
+  {
+    description: "Connect, protect and build everywhere:  put the connectivity cloud to work for you.",
+    href: "https://www.cloudflare.com/",
+    imageHref: "/assets/logos/cloudflare.png",
+    name: "Cloudflare"
   }
 ];
 var sponsors_default = {
@@ -23,4 +29,4 @@ export {
   currentSponsors,
   sponsors_default as default
 };
-//# sourceMappingURL=/build/_shared/sponsors-SZV3ZWAA.js.map
+//# sourceMappingURL=/build/_shared/sponsors-HPERTX4A.js.map
