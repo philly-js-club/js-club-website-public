@@ -28,6 +28,7 @@ __export(router_exports, {
   UNSAFE_ErrorResponseImpl: () => ErrorResponseImpl,
   UNSAFE_convertRouteMatchToUiMatch: () => convertRouteMatchToUiMatch,
   UNSAFE_convertRoutesToDataRoutes: () => convertRoutesToDataRoutes,
+  UNSAFE_decodePath: () => decodePath,
   UNSAFE_getResolveToMatches: () => getResolveToMatches,
   UNSAFE_invariant: () => invariant,
   UNSAFE_warning: () => warning,
@@ -889,7 +890,7 @@ function createRouter(init) {
     v7_partialHydration: false,
     v7_prependBasename: false,
     v7_relativeSplatPath: false,
-    unstable_skipActionErrorRevalidation: false
+    v7_skipActionErrorRevalidation: false
   }, init.future);
   let unlistenHistory = null;
   let subscribers = /* @__PURE__ */ new Set();
@@ -912,7 +913,7 @@ function createRouter(init) {
       [route.id]: error
     };
   }
-  if (initialMatches && patchRoutesOnMissImpl) {
+  if (initialMatches && patchRoutesOnMissImpl && !init.hydrationData) {
     let fogOfWar2 = checkFogOfWar(initialMatches, dataRoutes, init.history.location.pathname);
     if (fogOfWar2.active) {
       initialMatches = null;
@@ -1371,13 +1372,12 @@ function createRouter(init) {
         };
       } else if (discoverResult.type === "error") {
         let {
-          error,
-          notFoundMatches,
-          route
+          boundaryId,
+          error
         } = handleDiscoverRouteError(location.pathname, discoverResult);
         return {
-          matches: notFoundMatches,
-          pendingActionResult: [route.id, {
+          matches: discoverResult.partialMatches,
+          pendingActionResult: [boundaryId, {
             type: ResultType.error,
             error
           }]
@@ -1477,15 +1477,14 @@ function createRouter(init) {
         };
       } else if (discoverResult.type === "error") {
         let {
-          error,
-          notFoundMatches,
-          route
+          boundaryId,
+          error
         } = handleDiscoverRouteError(location.pathname, discoverResult);
         return {
-          matches: notFoundMatches,
+          matches: discoverResult.partialMatches,
           loaderData: {},
           errors: {
-            [route.id]: error
+            [boundaryId]: error
           }
         };
       } else if (!discoverResult.matches) {
@@ -1506,7 +1505,7 @@ function createRouter(init) {
       }
     }
     let routesToUse = inFlightDataRoutes || dataRoutes;
-    let [matchesToLoad, revalidatingFetchers] = getMatchesToLoad(init.history, state, matches, activeSubmission, location, future.v7_partialHydration && initialHydration === true, future.unstable_skipActionErrorRevalidation, isRevalidationRequired, cancelledDeferredRoutes, cancelledFetcherLoads, deletedFetchers, fetchLoadMatches, fetchRedirectIds, routesToUse, basename, pendingActionResult);
+    let [matchesToLoad, revalidatingFetchers] = getMatchesToLoad(init.history, state, matches, activeSubmission, location, future.v7_partialHydration && initialHydration === true, future.v7_skipActionErrorRevalidation, isRevalidationRequired, cancelledDeferredRoutes, cancelledFetcherLoads, deletedFetchers, fetchLoadMatches, fetchRedirectIds, routesToUse, basename, pendingActionResult);
     cancelActiveDeferreds((routeId) => !(matches && matches.some((m) => m.route.id === routeId)) || matchesToLoad && matchesToLoad.some((m) => m.route.id === routeId));
     pendingNavigationLoadId = ++incrementingLoadId;
     if (matchesToLoad.length === 0 && revalidatingFetchers.length === 0) {
@@ -1781,7 +1780,7 @@ function createRouter(init) {
     fetchReloadIds.set(key, loadId);
     let loadFetcher = getLoadingFetcher(submission, actionResult.data);
     state.fetchers.set(key, loadFetcher);
-    let [matchesToLoad, revalidatingFetchers] = getMatchesToLoad(init.history, state, matches, submission, nextLocation, false, future.unstable_skipActionErrorRevalidation, isRevalidationRequired, cancelledDeferredRoutes, cancelledFetcherLoads, deletedFetchers, fetchLoadMatches, fetchRedirectIds, routesToUse, basename, [match.route.id, actionResult]);
+    let [matchesToLoad, revalidatingFetchers] = getMatchesToLoad(init.history, state, matches, submission, nextLocation, false, future.v7_skipActionErrorRevalidation, isRevalidationRequired, cancelledDeferredRoutes, cancelledFetcherLoads, deletedFetchers, fetchLoadMatches, fetchRedirectIds, routesToUse, basename, [match.route.id, actionResult]);
     revalidatingFetchers.filter((rf) => rf.key !== key).forEach((rf) => {
       let staleKey = rf.key;
       let existingFetcher2 = state.fetchers.get(staleKey);
@@ -2193,18 +2192,13 @@ function createRouter(init) {
     };
   }
   function handleDiscoverRouteError(pathname, discoverResult) {
-    let matches = discoverResult.partialMatches;
-    let route = matches[matches.length - 1].route;
-    let error = getInternalRouterError(400, {
-      type: "route-discovery",
-      routeId: route.id,
-      pathname,
-      message: discoverResult.error != null && "message" in discoverResult.error ? discoverResult.error : String(discoverResult.error)
-    });
     return {
-      notFoundMatches: matches,
-      route,
-      error
+      boundaryId: findNearestBoundary(discoverResult.partialMatches).route.id,
+      error: getInternalRouterError(400, {
+        type: "route-discovery",
+        pathname,
+        message: discoverResult.error != null && "message" in discoverResult.error ? discoverResult.error : String(discoverResult.error)
+      })
     };
   }
   function cancelActiveDeferreds(predicate) {
@@ -2921,7 +2915,7 @@ function getMatchesToLoad(history, state, matches, submission, location, isIniti
       nextParams: nextRouteMatch.params
     }, submission, {
       actionResult,
-      unstable_actionStatus: actionStatus,
+      actionStatus,
       defaultShouldRevalidate: shouldSkipRevalidation ? false : (
         // Forced revalidation due to submission, useRevalidator, or X-Remix-Revalidate
         isRevalidationRequired || currentUrl.pathname + currentUrl.search === nextUrl.pathname + nextUrl.search || // Search params affect all loaders
@@ -2963,7 +2957,7 @@ function getMatchesToLoad(history, state, matches, submission, location, isIniti
         nextParams: matches[matches.length - 1].params
       }, submission, {
         actionResult,
-        unstable_actionStatus: actionStatus,
+        actionStatus,
         defaultShouldRevalidate: shouldSkipRevalidation ? false : isRevalidationRequired
       }));
     }
@@ -3495,7 +3489,7 @@ function getInternalRouterError(status, _temp5) {
   if (status === 400) {
     statusText = "Bad Request";
     if (type === "route-discovery") {
-      errorMessage = 'Unable to match URL "' + pathname + '" - the `children()` function for ' + ("route `" + routeId + "` threw the following error:\n" + message);
+      errorMessage = 'Unable to match URL "' + pathname + '" - the `unstable_patchRoutesOnMiss()` ' + ("function threw the following error:\n" + message);
     } else if (method && pathname && routeId) {
       errorMessage = "You made a " + method + ' request to "' + pathname + '" but ' + ('did not provide a `loader` for route "' + routeId + '", ') + "so there is no way to handle the request.";
     } else if (type === "defer-action") {
@@ -4181,7 +4175,7 @@ function useMatch(pattern) {
   let {
     pathname
   } = useLocation();
-  return React.useMemo(() => matchPath(pattern, pathname), [pathname, pattern]);
+  return React.useMemo(() => matchPath(pattern, decodePath(pathname)), [pathname, pattern]);
 }
 function useIsomorphicLayoutEffect(cb) {
   let isStatic = React.useContext(NavigationContext).static;
@@ -6617,7 +6611,7 @@ var require_server = __commonJS({
             v7_partialHydration: opts.future?.v7_partialHydration === true,
             v7_prependBasename: false,
             v7_relativeSplatPath: opts.future?.v7_relativeSplatPath === true,
-            unstable_skipActionErrorRevalidation: false
+            v7_skipActionErrorRevalidation: false
           };
         },
         get state() {
@@ -7052,9 +7046,10 @@ async function loadRouteModule(route, routeModulesCache) {
     routeModulesCache[route.id] = routeModule;
     return routeModule;
   } catch (error) {
+    console.error(`Error loading route module \`${route.module}\`, reloading page...`);
+    console.error(error);
     if (window.__remixContext.isSpaMode && // @ts-expect-error
     typeof import.meta.hot !== "undefined") {
-      console.error(`Error loading route module \`${route.module}\`:`, error);
       throw error;
     }
     window.location.reload();
@@ -7609,19 +7604,20 @@ function singleFetchLoaderStrategy(manifest, routeModules, request, matches) {
   return Promise.all(matches.map(async (m) => m.resolve(async (handler) => {
     let result;
     let url = stripIndexParam(singleFetchUrl(request.url));
+    let init = await createRequestInit(request);
     if (manifest.routes[m.route.id].hasClientLoader) {
       result = await handler(async () => {
         url.searchParams.set("_routes", m.route.id);
         let {
           data
-        } = await fetchAndDecode(url);
+        } = await fetchAndDecode(url, init);
         return unwrapSingleFetchResults(data, m.route.id);
       });
     } else {
       result = await handler(async () => {
         if (!singleFetchPromise) {
           url = addRevalidationParam(manifest, routeModules, matches.map((m2) => m2.route), matches.filter((m2) => m2.shouldLoad).map((m2) => m2.route), url);
-          singleFetchPromise = fetchAndDecode(url).then(({
+          singleFetchPromise = fetchAndDecode(url, init).then(({
             data
           }) => data);
         }
@@ -9337,7 +9333,7 @@ function RemixBrowser(_props) {
         v7_prependBasename: true,
         v7_relativeSplatPath: window.__remixContext.future.v3_relativeSplatPath,
         // Single fetch enables this underlying behavior
-        unstable_skipActionErrorRevalidation: window.__remixContext.future.unstable_singleFetch === true
+        v7_skipActionErrorRevalidation: window.__remixContext.future.unstable_singleFetch === true
       },
       hydrationData,
       mapRouteProperties,
@@ -9596,7 +9592,7 @@ export {
 
 @remix-run/router/dist/router.js:
   (**
-   * @remix-run/router v1.17.1
+   * @remix-run/router v1.18.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9608,7 +9604,7 @@ export {
 
 react-router/dist/index.js:
   (**
-   * React Router v6.24.1
+   * React Router v6.25.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9620,7 +9616,7 @@ react-router/dist/index.js:
 
 react-router-dom/dist/index.js:
   (**
-   * React Router DOM v6.24.1
+   * React Router DOM v6.25.0
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9632,7 +9628,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/responses.js:
   (**
-   * @remix-run/server-runtime v2.10.2
+   * @remix-run/server-runtime v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9644,7 +9640,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/single-fetch.js:
   (**
-   * @remix-run/server-runtime v2.10.2
+   * @remix-run/server-runtime v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9656,7 +9652,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/server-runtime/dist/esm/index.js:
   (**
-   * @remix-run/server-runtime v2.10.2
+   * @remix-run/server-runtime v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9668,7 +9664,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/_virtual/_rollupPluginBabelHelpers.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9680,7 +9676,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/invariant.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9692,7 +9688,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routeModules.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9704,7 +9700,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/links.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9716,7 +9712,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/markup.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9728,7 +9724,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/data.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9740,7 +9736,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/single-fetch.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9752,7 +9748,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errorBoundaries.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9764,7 +9760,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fallback.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9776,7 +9772,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/routes.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9788,7 +9784,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/fog-of-war.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9800,7 +9796,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/components.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9812,7 +9808,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/errors.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9824,7 +9820,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/browser.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9836,7 +9832,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/scroll-restoration.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9848,7 +9844,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/server.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9860,7 +9856,7 @@ react-router-dom/dist/index.js:
 
 @remix-run/react/dist/esm/index.js:
   (**
-   * @remix-run/react v2.10.2
+   * @remix-run/react v2.10.3
    *
    * Copyright (c) Remix Software Inc.
    *
@@ -9870,4 +9866,4 @@ react-router-dom/dist/index.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=/build/_shared/chunk-PHCO7QV7.js.map
+//# sourceMappingURL=/build/_shared/chunk-W3GBPXPB.js.map
