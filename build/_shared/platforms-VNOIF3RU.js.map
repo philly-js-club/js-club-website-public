@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../app/data/platforms.json"],
-  "sourcesContent": ["{\n\t\"currentPlatforms\": [\n\t\t{\n\t\t\t\"href\": \"https://github.com/philly-js-club\",\n\t\t\t\"imageHref\": \"/assets/logos/github.png\",\n\t\t\t\"name\": \"Github\"\n\t\t},\n\t\t{\n\t\t\t\"href\": \"https://forms.gle/NDLyNNE51RHoXgMC7\",\n\t\t\t\"imageHref\": \"/assets/logos/slack.png\",\n\t\t\t\"name\": \"Slack\"\n\t\t},\n\t\t{\n\t\t\t\"href\": \"https://jawns.club/@jsclub\",\n\t\t\t\"imageHref\": \"/assets/logos/mastodon.svg\",\n\t\t\t\"name\": \"Mastodon\"\n\t\t},\n\t\t{\n\t\t\t\"href\": \"https://www.linkedin.com/groups/12846035/\",\n\t\t\t\"imageHref\": \"/assets/logos/linkedin.png\",\n\t\t\t\"name\": \"LinkedIn\"\n\t\t},\n\t\t{\n\t\t\t\"href\": \"https://newsletter.joewoods.dev/phillyjs\",\n\t\t\t\"imageHref\": \"/assets/logos/newsletter.png\",\n\t\t\t\"name\": \"Newsletter\"\n\t\t}\n\t]\n}\n"],
-  "mappings": ";;;AACC,uBAAoB;AAAA,EACnB;AAAA,IACC,MAAQ;AAAA,IACR,WAAa;AAAA,IACb,MAAQ;AAAA,EACT;AAAA,EACA;AAAA,IACC,MAAQ;AAAA,IACR,WAAa;AAAA,IACb,MAAQ;AAAA,EACT;AAAA,EACA;AAAA,IACC,MAAQ;AAAA,IACR,WAAa;AAAA,IACb,MAAQ;AAAA,EACT;AAAA,EACA;AAAA,IACC,MAAQ;AAAA,IACR,WAAa;AAAA,IACb,MAAQ;AAAA,EACT;AAAA,EACA;AAAA,IACC,MAAQ;AAAA,IACR,WAAa;AAAA,IACb,MAAQ;AAAA,EACT;AACD;AA3BD;AAAA,EACC;AA2BD;",
-  "names": []
-}

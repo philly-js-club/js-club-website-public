@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../app/data/team.json"],
-  "sourcesContent": ["{\n\t\"members\": [\n\t\t{ \"name\": \"Joe Woods\", \"role\": \"Director\" },\n\t\t{ \"name\": \"Chasen Stark\", \"role\": \"Events\" },\n\t\t{ \"name\": \"Josh Goldberg\", \"role\": \"Marketing\" },\n\t\t{ \"name\": \"Cody Lewis\", \"role\": \"Community\" },\n\t\t{ \"name\": \"Denzel Echevarria\", \"role\": \"Outreach\" }\n\t],\n\t\"organizersEmeritum\": [\"Rasha Moumneh\", \"Matt Brophy\"]\n}\n"],
-  "mappings": ";;;AACC,cAAW;AAAA,EACV,EAAE,MAAQ,aAAa,MAAQ,WAAW;AAAA,EAC1C,EAAE,MAAQ,gBAAgB,MAAQ,SAAS;AAAA,EAC3C,EAAE,MAAQ,iBAAiB,MAAQ,YAAY;AAAA,EAC/C,EAAE,MAAQ,cAAc,MAAQ,YAAY;AAAA,EAC5C,EAAE,MAAQ,qBAAqB,MAAQ,WAAW;AACnD;AACA,yBAAsB,CAAC,iBAAiB,aAAa;AARtD;AAAA,EACC;AAAA,EAOA;AACD;",
-  "names": []
-}
