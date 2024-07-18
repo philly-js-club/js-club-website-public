@@ -1,16 +1,16 @@
 import {
   EventDetails,
   require_node
-} from "/build/_shared/chunk-ALQ53HQA.js";
+} from "/build/_shared/chunk-LXRCE54G.js";
 import {
   PageGrid
-} from "/build/_shared/chunk-JUD3RQLV.js";
+} from "/build/_shared/chunk-EOYUQEH2.js";
 import {
   constructSiteTitle
-} from "/build/_shared/chunk-ABFZRA3E.js";
+} from "/build/_shared/chunk-O6OWEVCB.js";
 import {
   site
-} from "/build/_shared/chunk-HLG2HIJT.js";
+} from "/build/_shared/chunk-R4VVNN7R.js";
 import {
   require_jsx_dev_runtime
 } from "/build/_shared/chunk-XGOTYLZ5.js";
@@ -53,7 +53,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/components/CalendarSubscriptionLinks.tsx"
   );
-  import.meta.hot.lastModified = "1721312823853.4841";
+  import.meta.hot.lastModified = "1721312876568.463";
 }
 function CalendarSubscriptionLinks({
   webcalUrl
@@ -61,7 +61,9 @@ function CalendarSubscriptionLinks({
   _s();
   const [showMore, setShowMore] = (0, import_react.useState)(false);
   return /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("div", { className: "calendar-subscription", children: [
-    /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("button", { onClick: () => setShowMore((s) => !s), children: "\u{1F4C6} Subscribe with your favorite calendar client" }, void 0, false, {
+    /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("button", { onClick: () => {
+      setShowMore((s) => !s);
+    }, children: "\u{1F4C6} Subscribe with your favorite calendar client" }, void 0, false, {
       fileName: "app/components/CalendarSubscriptionLinks.tsx",
       lineNumber: 29,
       columnNumber: 4
@@ -69,31 +71,31 @@ function CalendarSubscriptionLinks({
     showMore && /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)(import_jsx_dev_runtime.Fragment, { children: [
       /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("p", { children: /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("a", { href: `https://www.google.com/calendar/render?cid=${webcalUrl}`, children: "Subscribe with Google Calendar" }, void 0, false, {
         fileName: "app/components/CalendarSubscriptionLinks.tsx",
-        lineNumber: 34,
+        lineNumber: 36,
         columnNumber: 7
       }, this) }, void 0, false, {
         fileName: "app/components/CalendarSubscriptionLinks.tsx",
-        lineNumber: 33,
+        lineNumber: 35,
         columnNumber: 6
       }, this),
       /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("p", { children: "To subscribe, point your calendar client to the following URL:" }, void 0, false, {
         fileName: "app/components/CalendarSubscriptionLinks.tsx",
-        lineNumber: 38,
+        lineNumber: 40,
         columnNumber: 6
       }, this),
       /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("p", { children: webcalUrl }, void 0, false, {
         fileName: "app/components/CalendarSubscriptionLinks.tsx",
-        lineNumber: 39,
+        lineNumber: 41,
         columnNumber: 6
       }, this),
       /* @__PURE__ */ (0, import_jsx_dev_runtime.jsxDEV)("p", { children: "\u26A0\uFE0F Be sure to not download and import that file! You'll need to subscribe to the calendar updates in order for your calendar client to continue to fetch new events." }, void 0, false, {
         fileName: "app/components/CalendarSubscriptionLinks.tsx",
-        lineNumber: 40,
+        lineNumber: 42,
         columnNumber: 6
       }, this)
     ] }, void 0, true, {
       fileName: "app/components/CalendarSubscriptionLinks.tsx",
-      lineNumber: 32,
+      lineNumber: 34,
       columnNumber: 17
     }, this)
   ] }, void 0, true, {
@@ -129,7 +131,7 @@ if (import.meta) {
     //@ts-expect-error
     "app/routes/events.tsx"
   );
-  import.meta.hot.lastModified = "1721312823853.4841";
+  import.meta.hot.lastModified = "1721312876568.463";
 }
 var meta = () => {
   return [{
@@ -191,4 +193,4 @@ export {
   Events as default,
   meta
 };
-//# sourceMappingURL=/build/routes/events-222SUAAO.js.map
+//# sourceMappingURL=/build/routes/events-LTUXNZZN.js.map
