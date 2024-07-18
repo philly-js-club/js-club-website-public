@@ -1,0 +1,436 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta content="https://phillyjs.com" property="og:url"/><meta content="https://phillyjs.com" property="twitter:url"/><meta content="https://phillyjs.com/assets/social.png" property="og:image"/><meta content="https://phillyjs.com/assets/social.png" property="twitter:image"/><meta content="Philadelphia JavaScript Club" property="og:title"/><meta content="Philadelphia JavaScript Club" property="twitter:title"/><meta content="Philly JS Club" name="title"/><meta content="summary" property="twitter:card"/><meta content="website" property="og:type"/><meta content="width=device-width,initial-scale=1" name="viewport"/><meta content="A local community for talking about the things that excite us about Javascript development and the web." name="description"/><meta content="A local community for talking about the things that excite us about Javascript development and the web." property="twitter:description"/><link href="https://fonts.googleapis.com" rel="preconnect"/><title>Sponsors | Philly JS Club</title><style>
+/* /app/root.css */
+@import url("https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;600;700;900&display=swap");
+/*
+TODO: WE WILL CHOOSE A MORE COMPONENT-ORIENTED STYLING SOLUTION!
+
+Don't come at us with your annoying CSS-in-JS/Tailwind/whatever hot takes.
+We know they exist. We've seen them. We've used them. They're all subpar.
+
+We want a styling solution with...
+* ...design systems token support
+* ...longevity (i.e. is used in multiple reputable repos)
+* ...minimal runtime performance bloat
+* ...responsive type safe CSS-in-JS props
+
+Let us know if you think you've found one we'd like. 😏
+*/
+/* Shared */
+.larger {
+	font-size: var(--font-size-larger);
+	font-weight: var(--font-weight-larger);
+}
+.large {
+	font-size: var(--font-size-large);
+	font-weight: var(--font-weight-large);
+}
+.medium {
+	font-size: var(--font-size-medium);
+	font-weight: var(--font-weight-medium);
+}
+.smaller {
+	font-size: var(--font-size-small);
+	font-weight: var(--font-weight-small);
+}
+.body-text {
+	font-size: var(--font-size-medium);
+	font-weight: var(--font-weight-light);
+	line-height: var(--line-height-medium);
+}
+:is(.body-text, .large, .larger, .medium)
+	+ :is(.body-text, .large, .larger, .medium) {
+	margin-top: 1em;
+}
+/* Arrows */
+.arrow {
+	margin: 0;
+}
+.arrow-back {
+	height: 0.7em;
+	margin-left: 0.1em;
+	width: 0.7em;
+}
+.arrow-out {
+	height: 1em;
+	margin-bottom: -0.1em;
+	margin-left: 0.1em;
+	width: 1em;
+}
+/* EventDetails */
+.event-details {
+	margin: 1.5rem 0;
+}
+.event-details-light {
+	font-weight: var(--font-weight-light);
+}
+.event-details + .event-details {
+	margin-top: 3rem;
+}
+.event-details-date {
+	font-size: var(--font-size-large);
+	margin-bottom: 1rem;
+}
+.event-details-topics {
+	margin: 2rem 0 1rem;
+}
+.event-details-topic {
+	margin: 0.25em 0;
+}
+/* PageGrid */
+.page-grid {
+	display: grid;
+	grid-gap: 0 4rem;
+	grid-template: minmax(min-content, max-content) / minmax(100%, 1fr);
+	grid-template-areas: "header" "left" "footer";
+	height: 100%;
+	margin: auto;
+	padding: 2rem;
+	position: relative;
+	width: 100%;
+}
+.page-grid-header {
+	display: flex;
+	flex-direction: column;
+	grid-area: header;
+}
+.page-grid-title {
+	font-size: var(--font-size-title);
+	font-weight: var(--font-weight-title);
+	line-height: var(--line-height-title);
+	margin: 0;
+	padding: 0;
+}
+.page-grid-subtitle {
+	font-size: var(--font-size-larger);
+	font-weight: var(--font-weight-title);
+	line-height: var(--line-height-larger);
+	text-transform: uppercase;
+}
+.page-grid-left {
+	grid-area: left;
+}
+.page-grid-footer {
+	align-content: flex-end;
+	align-items: baseline;
+	display: flex;
+	flex-wrap: wrap;
+	font-size: var(--font-size-medium);
+	font-weight: var(--font-weight-large);
+	grid-area: footer;
+	height: 100%;
+	justify-content: flex-start;
+}
+.page-grid-footer-separator {
+	flex-basis: 100%;
+}
+.page-grid-footer-link {
+	padding: 0;
+}
+.page-grid-footer-link.active {
+	text-decoration: underline;
+}
+.page-grid-footer-link:not(
+		:first-of-type,
+		.page-grid-footer-separator + .page-grid-footer-link
+	)::before {
+	background: var(--color-foreground);
+	border-radius: 100%;
+	content: "";
+	display: inline-block;
+	height: 0.3em;
+	margin: 0 0.5em 0.15em;
+	position: relative;
+	width: 0.3em;
+}
+@media (width >= 1000px) {
+	.page-grid {
+		grid-template-columns: minmax(40%, 1fr) 1fr;
+	}
+
+	.page-grid-header,
+	.page-grid-footer {
+		position: fixed;
+		right: 2rem;
+		width: 50%;
+	}
+
+	.page-grid-header {
+		text-align: right;
+		top: 2rem;
+		z-index: 1;
+	}
+
+	.page-grid-footer {
+		align-self: flex-end;
+		bottom: 2rem;
+		height: auto;
+		justify-content: flex-end;
+	}
+
+	.page-grid-left {
+		padding-bottom: 2rem;
+	}
+}
+/* About */
+.about-page-text {
+	font-size: var(--font-size-small);
+	margin: 1rem 0 2rem;
+}
+.about-page-text a {
+	text-decoration: underline;
+}
+/* Events */
+.events-year {
+	list-style-type: none;
+	padding: 0;
+}
+.events-year-list + .events-year-list {
+	margin-top: 5rem;
+}
+.events-year-heading {
+	font-size: var(--font-size-larger);
+	font-weight: var(--font-weight-larger);
+}
+.events-year-events-list {
+	padding: 0;
+}
+/* Calendar Subscription */
+.calendar-subscription {
+	font-size: var(--font-size-small);
+}
+.calendar-subscription button {
+	background: var(--color-background);
+	border: 2px solid var(--color-foreground);
+	border-radius: 1em;
+	color: var(--color-foreground);
+	cursor: pointer;
+	font-size: var(--font-size-smaller);
+	margin: 1em 0;
+	padding: 0.5em;
+	text-align: left;
+	width: auto;
+}
+.calendar-subscription a {
+	text-decoration: underline;
+}
+.calendar-subscription p {
+	margin-top: 0.5em;
+}
+@media screen and (width >= 1000px) {
+	.calendar-subscription button {
+		margin-top: 0;
+	}
+}
+/* Banner page */
+.banner-main {
+	align-items: center;
+	background: var(--color-foreground);
+	color: var(--color-background);
+	display: flex;
+	flex-direction: column;
+	gap: 4rem;
+	height: 100%;
+	justify-content: center;
+	width: 100%;
+}
+.banner-img {
+	height: min(50vw, 50vh);
+	width: min(50vw, 50vh);
+}
+.banner-text {
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+	text-align: center;
+}
+.banner-text h1 {
+	font-size: 5rem;
+	font-weight: var(--font-weight-title);
+	line-height: 0.85;
+	margin: 0 15vw;
+	text-transform: uppercase;
+}
+.banner-text p {
+	font-size: var(--font-size-larger);
+	font-weight: 700;
+}
+@media screen and (width >= 700px) {
+	.banner-main {
+		flex-direction: row;
+		gap: 2rem;
+		justify-content: center;
+		padding: 2rem;
+	}
+
+	.banner-img-area {
+		text-align: right;
+		width: 50%;
+	}
+
+	.banner-img {
+		height: 40vh;
+		width: 40vh;
+	}
+
+	.banner-text {
+		text-align: left;
+		width: 50%;
+	}
+
+	.banner-text h1 {
+		margin: 0;
+	}
+}
+@media screen and (width >= 1000px) {
+	.banner-text {
+		align-content: flex-start;
+	}
+
+	.banner-text h1 {
+		font-size: 7rem;
+	}
+}
+@media screen and (width >= 1400px) {
+	.banner-img {
+		height: 50vh;
+		width: 50vh;
+	}
+
+	.banner-text h1 {
+		font-size: 10rem;
+	}
+}
+/* Icons */
+.icons {
+	list-style-type: none;
+	margin-top: 3rem;
+	padding: 0;
+}
+.icon-list + .icon-list {
+	margin-top: 3rem;
+}
+.icon {
+	align-items: center;
+	display: flex;
+	flex-flow: row wrap;
+	gap: 2rem;
+}
+.icon-info {
+	flex: 1 0 50%;
+}
+.icon-info > * + * {
+	margin-top: 0.5rem;
+}
+/* Sponsors */
+.sponsor-cta > a {
+	text-decoration: underline;
+}
+.sponsor-image {
+	height: 10rem;
+	width: 10rem;
+}
+/* Join Us */
+.platform-image {
+	width: 5rem;
+}
+:root {
+	--color-background: #efdb4f;
+	--color-foreground: #323330;
+	--font-size-smaller: clamp(1.5rem, 2vw, 2rem);
+	--font-size-small: clamp(1.5rem, 4vw, 2rem);
+	--font-size-medium: clamp(1.5rem, 4vw, var(--font-size-large));
+	--font-size-large: clamp(2rem, 4vw, 3rem);
+	--font-size-larger: clamp(2.5rem, 5vw, 5rem);
+	--font-size-title: clamp(7rem, 13vw, 15rem);
+	--font-weight-light: 400;
+	--font-weight-medium: 600;
+	--font-weight-large: 700;
+	--font-weight-larger: 700;
+	--font-weight-title: 900;
+	--line-height-medium: clamp(1.5rem, 6vw, var(--font-size-medium));
+	--line-height-title: clamp(5.5rem, 12vw, 12rem);
+	--width-main-max: 150rem;
+}
+@media screen and (width >= 700px) {
+	:root {
+		--padding-page: 2rem;
+	}
+}
+* {
+	box-sizing: border-box;
+}
+body,
+html {
+	border: 0;
+	height: 100%;
+	margin: 0;
+	width: 100%;
+}
+body {
+	background: var(--color-background);
+	font-family: "League Spartan", monospace;
+	font-smooth: smooth; /* stylelint-disable property-no-unknown */
+	-webkit-font-smoothing: antialiased;
+	overflow: overlay;
+}
+body,
+:link,
+:visited {
+	color: var(--color-foreground);
+	text-decoration: none;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+	margin: 0;
+	padding: 0;
+}
+::selection {
+	background: var(--color-foreground);
+	color: var(--color-background);
+}
+.only-dark {
+	display: none;
+}
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-background: #323330;
+		--color-foreground: #efdb4f;
+	}
+
+	.only-dark {
+		display: block;
+	}
+
+	.only-light {
+		display: none;
+	}
+}
+</style></head><body><div class="page-grid"><header class="page-grid-header"><h1 class="page-grid-title">Sponsors</h1><a class="page-grid-subtitle" href="/">Philly JS Club<svg aria-label="Back indication arrow" class="arrow arrow-back" fill="none" transform="rotate(180)" viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg"><path d="M19.1924 8.70711C19.5829 8.31658 19.5829 7.68343 19.1924 7.29289L12.8284 0.928933C12.4379 0.538412 11.8047 1.24551 11.4142 1.63604C11.0237 2.02656 10.3166 2.65973 10.7071 3.05025L15.6569 8L10.7071 12.9497C10.3166 13.3403 11.0237 13.9734 11.4142 14.364C11.8047 14.7545 12.4379 15.4616 12.8284 15.0711L19.1924 8.70711ZM0.100505 9.41421H17.0711V6.58579H0.100505V8V9.41421Z" fill="currentColor"></path></svg></a></header><main class="page-grid-left"><h2 class="larger">Thanks, Sponsors!</h2><p class="sponsor-cta body-text">Philly JS wouldn&#x27;t exist without the support of our beloved sponsors. Interested in sponsoring us?<!-- --> <a class="underline" href="mailto:phillyjs@joewoods.dev">Reach out to Joe!</a></p><ol class="icons"><li class="icon-list"><div class="icon"><img alt="Indy Hall logo" class="sponsor-image" src="/assets/logos/indy-hall.png"/><div class="icon-info"><a href="https://indyhall.org/" rel="noreferrer" target="_blank"><h3 class="larger">Indy Hall<!-- --> <svg aria-label="External link indication arrow" class="arrow arrow-out medium" fill="none" transform="rotate(-45)" viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg"><path d="M19.1924 8.70711C19.5829 8.31658 19.5829 7.68343 19.1924 7.29289L12.8284 0.928933C12.4379 0.538412 11.8047 1.24551 11.4142 1.63604C11.0237 2.02656 10.3166 2.65973 10.7071 3.05025L15.6569 8L10.7071 12.9497C10.3166 13.3403 11.0237 13.9734 11.4142 14.364C11.8047 14.7545 12.4379 15.4616 12.8284 15.0711L19.1924 8.70711ZM0.100505 9.41421H17.0711V6.58579H0.100505V8V9.41421Z" fill="currentColor"></path></svg></h3></a><p class="smaller">Join hundreds of people who choose Indy Hall as their work community, online and in person.</p></div></div></li><li class="icon-list"><div class="icon"><img alt="Liberty Jobs logo" class="sponsor-image only-light" src="/assets/logos/liberty-regular.png"/><img alt="Liberty Jobs logo" class="sponsor-image only-dark" src="/assets/logos/liberty.png"/><div class="icon-info"><a href="https://libertyjobs.com" rel="noreferrer" target="_blank"><h3 class="larger">Liberty Jobs<!-- --> <svg aria-label="External link indication arrow" class="arrow arrow-out medium" fill="none" transform="rotate(-45)" viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg"><path d="M19.1924 8.70711C19.5829 8.31658 19.5829 7.68343 19.1924 7.29289L12.8284 0.928933C12.4379 0.538412 11.8047 1.24551 11.4142 1.63604C11.0237 2.02656 10.3166 2.65973 10.7071 3.05025L15.6569 8L10.7071 12.9497C10.3166 13.3403 11.0237 13.9734 11.4142 14.364C11.8047 14.7545 12.4379 15.4616 12.8284 15.0711L19.1924 8.70711ZM0.100505 9.41421H17.0711V6.58579H0.100505V8V9.41421Z" fill="currentColor"></path></svg></h3></a><p class="smaller">The essential destination site for technical job seekers.</p></div></div></li><li class="icon-list"><div class="icon"><img alt="Cloudflare logo" class="sponsor-image" src="/assets/logos/cloudflare.png"/><div class="icon-info"><a href="https://www.cloudflare.com/" rel="noreferrer" target="_blank"><h3 class="larger">Cloudflare<!-- --> <svg aria-label="External link indication arrow" class="arrow arrow-out medium" fill="none" transform="rotate(-45)" viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg"><path d="M19.1924 8.70711C19.5829 8.31658 19.5829 7.68343 19.1924 7.29289L12.8284 0.928933C12.4379 0.538412 11.8047 1.24551 11.4142 1.63604C11.0237 2.02656 10.3166 2.65973 10.7071 3.05025L15.6569 8L10.7071 12.9497C10.3166 13.3403 11.0237 13.9734 11.4142 14.364C11.8047 14.7545 12.4379 15.4616 12.8284 15.0711L19.1924 8.70711ZM0.100505 9.41421H17.0711V6.58579H0.100505V8V9.41421Z" fill="currentColor"></path></svg></h3></a><p class="smaller">Connect, protect and build everywhere:  put the connectivity cloud to work for you.</p></div></div></li></ol></main><footer class="page-grid-footer"><a class="page-grid-footer-link" href="/about">About</a><a class="page-grid-footer-link" href="/code-of-conduct">Code of Conduct</a><span class="page-grid-footer-separator"></span><a class="page-grid-footer-link" href="/events">Events</a><a aria-current="page" class="page-grid-footer-link active" href="/sponsors">Sponsors</a><span class="page-grid-footer-separator"></span><a class="page-grid-footer-link" href="/join-us">Join Us</a></footer></div><script>((STORAGE_KEY, restoreKey) => {
+    if (!window.history.state || !window.history.state.key) {
+      let key = Math.random().toString(32).slice(2);
+      window.history.replaceState({
+        key
+      }, "");
+    }
+    try {
+      let positions = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "{}");
+      let storedY = positions[restoreKey || window.history.state.key];
+      if (typeof storedY === "number") {
+        window.scrollTo(0, storedY);
+      }
+    } catch (error) {
+      console.error(error);
+      sessionStorage.removeItem(STORAGE_KEY);
+    }
+  })("positions", null)</script><link rel="modulepreload" href="/@id/__x00__virtual:remix/browser-manifest"/><link rel="modulepreload" href="/node_modules/@remix-run/dev/dist/config/defaults/entry.client.tsx"/><link rel="modulepreload" href="/app/root.tsx"/><link rel="modulepreload" href="/app/routes/sponsors.tsx"/><script>window.__remixContext = {"url":"/sponsors","basename":"/","criticalCss":"\n/* /app/root.css */\n@import url(\"https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;600;700;900\u0026display=swap\");\n/*\nTODO: WE WILL CHOOSE A MORE COMPONENT-ORIENTED STYLING SOLUTION!\n\nDon't come at us with your annoying CSS-in-JS/Tailwind/whatever hot takes.\nWe know they exist. We've seen them. We've used them. They're all subpar.\n\nWe want a styling solution with...\n* ...design systems token support\n* ...longevity (i.e. is used in multiple reputable repos)\n* ...minimal runtime performance bloat\n* ...responsive type safe CSS-in-JS props\n\nLet us know if you think you've found one we'd like. 😏\n*/\n/* Shared */\n.larger {\n\tfont-size: var(--font-size-larger);\n\tfont-weight: var(--font-weight-larger);\n}\n.large {\n\tfont-size: var(--font-size-large);\n\tfont-weight: var(--font-weight-large);\n}\n.medium {\n\tfont-size: var(--font-size-medium);\n\tfont-weight: var(--font-weight-medium);\n}\n.smaller {\n\tfont-size: var(--font-size-small);\n\tfont-weight: var(--font-weight-small);\n}\n.body-text {\n\tfont-size: var(--font-size-medium);\n\tfont-weight: var(--font-weight-light);\n\tline-height: var(--line-height-medium);\n}\n:is(.body-text, .large, .larger, .medium)\n\t+ :is(.body-text, .large, .larger, .medium) {\n\tmargin-top: 1em;\n}\n/* Arrows */\n.arrow {\n\tmargin: 0;\n}\n.arrow-back {\n\theight: 0.7em;\n\tmargin-left: 0.1em;\n\twidth: 0.7em;\n}\n.arrow-out {\n\theight: 1em;\n\tmargin-bottom: -0.1em;\n\tmargin-left: 0.1em;\n\twidth: 1em;\n}\n/* EventDetails */\n.event-details {\n\tmargin: 1.5rem 0;\n}\n.event-details-light {\n\tfont-weight: var(--font-weight-light);\n}\n.event-details + .event-details {\n\tmargin-top: 3rem;\n}\n.event-details-date {\n\tfont-size: var(--font-size-large);\n\tmargin-bottom: 1rem;\n}\n.event-details-topics {\n\tmargin: 2rem 0 1rem;\n}\n.event-details-topic {\n\tmargin: 0.25em 0;\n}\n/* PageGrid */\n.page-grid {\n\tdisplay: grid;\n\tgrid-gap: 0 4rem;\n\tgrid-template: minmax(min-content, max-content) / minmax(100%, 1fr);\n\tgrid-template-areas: \"header\" \"left\" \"footer\";\n\theight: 100%;\n\tmargin: auto;\n\tpadding: 2rem;\n\tposition: relative;\n\twidth: 100%;\n}\n.page-grid-header {\n\tdisplay: flex;\n\tflex-direction: column;\n\tgrid-area: header;\n}\n.page-grid-title {\n\tfont-size: var(--font-size-title);\n\tfont-weight: var(--font-weight-title);\n\tline-height: var(--line-height-title);\n\tmargin: 0;\n\tpadding: 0;\n}\n.page-grid-subtitle {\n\tfont-size: var(--font-size-larger);\n\tfont-weight: var(--font-weight-title);\n\tline-height: var(--line-height-larger);\n\ttext-transform: uppercase;\n}\n.page-grid-left {\n\tgrid-area: left;\n}\n.page-grid-footer {\n\talign-content: flex-end;\n\talign-items: baseline;\n\tdisplay: flex;\n\tflex-wrap: wrap;\n\tfont-size: var(--font-size-medium);\n\tfont-weight: var(--font-weight-large);\n\tgrid-area: footer;\n\theight: 100%;\n\tjustify-content: flex-start;\n}\n.page-grid-footer-separator {\n\tflex-basis: 100%;\n}\n.page-grid-footer-link {\n\tpadding: 0;\n}\n.page-grid-footer-link.active {\n\ttext-decoration: underline;\n}\n.page-grid-footer-link:not(\n\t\t:first-of-type,\n\t\t.page-grid-footer-separator + .page-grid-footer-link\n\t)::before {\n\tbackground: var(--color-foreground);\n\tborder-radius: 100%;\n\tcontent: \"\";\n\tdisplay: inline-block;\n\theight: 0.3em;\n\tmargin: 0 0.5em 0.15em;\n\tposition: relative;\n\twidth: 0.3em;\n}\n@media (width \u003e= 1000px) {\n\t.page-grid {\n\t\tgrid-template-columns: minmax(40%, 1fr) 1fr;\n\t}\n\n\t.page-grid-header,\n\t.page-grid-footer {\n\t\tposition: fixed;\n\t\tright: 2rem;\n\t\twidth: 50%;\n\t}\n\n\t.page-grid-header {\n\t\ttext-align: right;\n\t\ttop: 2rem;\n\t\tz-index: 1;\n\t}\n\n\t.page-grid-footer {\n\t\talign-self: flex-end;\n\t\tbottom: 2rem;\n\t\theight: auto;\n\t\tjustify-content: flex-end;\n\t}\n\n\t.page-grid-left {\n\t\tpadding-bottom: 2rem;\n\t}\n}\n/* About */\n.about-page-text {\n\tfont-size: var(--font-size-small);\n\tmargin: 1rem 0 2rem;\n}\n.about-page-text a {\n\ttext-decoration: underline;\n}\n/* Events */\n.events-year {\n\tlist-style-type: none;\n\tpadding: 0;\n}\n.events-year-list + .events-year-list {\n\tmargin-top: 5rem;\n}\n.events-year-heading {\n\tfont-size: var(--font-size-larger);\n\tfont-weight: var(--font-weight-larger);\n}\n.events-year-events-list {\n\tpadding: 0;\n}\n/* Calendar Subscription */\n.calendar-subscription {\n\tfont-size: var(--font-size-small);\n}\n.calendar-subscription button {\n\tbackground: var(--color-background);\n\tborder: 2px solid var(--color-foreground);\n\tborder-radius: 1em;\n\tcolor: var(--color-foreground);\n\tcursor: pointer;\n\tfont-size: var(--font-size-smaller);\n\tmargin: 1em 0;\n\tpadding: 0.5em;\n\ttext-align: left;\n\twidth: auto;\n}\n.calendar-subscription a {\n\ttext-decoration: underline;\n}\n.calendar-subscription p {\n\tmargin-top: 0.5em;\n}\n@media screen and (width \u003e= 1000px) {\n\t.calendar-subscription button {\n\t\tmargin-top: 0;\n\t}\n}\n/* Banner page */\n.banner-main {\n\talign-items: center;\n\tbackground: var(--color-foreground);\n\tcolor: var(--color-background);\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: 4rem;\n\theight: 100%;\n\tjustify-content: center;\n\twidth: 100%;\n}\n.banner-img {\n\theight: min(50vw, 50vh);\n\twidth: min(50vw, 50vh);\n}\n.banner-text {\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: 2rem;\n\ttext-align: center;\n}\n.banner-text h1 {\n\tfont-size: 5rem;\n\tfont-weight: var(--font-weight-title);\n\tline-height: 0.85;\n\tmargin: 0 15vw;\n\ttext-transform: uppercase;\n}\n.banner-text p {\n\tfont-size: var(--font-size-larger);\n\tfont-weight: 700;\n}\n@media screen and (width \u003e= 700px) {\n\t.banner-main {\n\t\tflex-direction: row;\n\t\tgap: 2rem;\n\t\tjustify-content: center;\n\t\tpadding: 2rem;\n\t}\n\n\t.banner-img-area {\n\t\ttext-align: right;\n\t\twidth: 50%;\n\t}\n\n\t.banner-img {\n\t\theight: 40vh;\n\t\twidth: 40vh;\n\t}\n\n\t.banner-text {\n\t\ttext-align: left;\n\t\twidth: 50%;\n\t}\n\n\t.banner-text h1 {\n\t\tmargin: 0;\n\t}\n}\n@media screen and (width \u003e= 1000px) {\n\t.banner-text {\n\t\talign-content: flex-start;\n\t}\n\n\t.banner-text h1 {\n\t\tfont-size: 7rem;\n\t}\n}\n@media screen and (width \u003e= 1400px) {\n\t.banner-img {\n\t\theight: 50vh;\n\t\twidth: 50vh;\n\t}\n\n\t.banner-text h1 {\n\t\tfont-size: 10rem;\n\t}\n}\n/* Icons */\n.icons {\n\tlist-style-type: none;\n\tmargin-top: 3rem;\n\tpadding: 0;\n}\n.icon-list + .icon-list {\n\tmargin-top: 3rem;\n}\n.icon {\n\talign-items: center;\n\tdisplay: flex;\n\tflex-flow: row wrap;\n\tgap: 2rem;\n}\n.icon-info {\n\tflex: 1 0 50%;\n}\n.icon-info \u003e * + * {\n\tmargin-top: 0.5rem;\n}\n/* Sponsors */\n.sponsor-cta \u003e a {\n\ttext-decoration: underline;\n}\n.sponsor-image {\n\theight: 10rem;\n\twidth: 10rem;\n}\n/* Join Us */\n.platform-image {\n\twidth: 5rem;\n}\n:root {\n\t--color-background: #efdb4f;\n\t--color-foreground: #323330;\n\t--font-size-smaller: clamp(1.5rem, 2vw, 2rem);\n\t--font-size-small: clamp(1.5rem, 4vw, 2rem);\n\t--font-size-medium: clamp(1.5rem, 4vw, var(--font-size-large));\n\t--font-size-large: clamp(2rem, 4vw, 3rem);\n\t--font-size-larger: clamp(2.5rem, 5vw, 5rem);\n\t--font-size-title: clamp(7rem, 13vw, 15rem);\n\t--font-weight-light: 400;\n\t--font-weight-medium: 600;\n\t--font-weight-large: 700;\n\t--font-weight-larger: 700;\n\t--font-weight-title: 900;\n\t--line-height-medium: clamp(1.5rem, 6vw, var(--font-size-medium));\n\t--line-height-title: clamp(5.5rem, 12vw, 12rem);\n\t--width-main-max: 150rem;\n}\n@media screen and (width \u003e= 700px) {\n\t:root {\n\t\t--padding-page: 2rem;\n\t}\n}\n* {\n\tbox-sizing: border-box;\n}\nbody,\nhtml {\n\tborder: 0;\n\theight: 100%;\n\tmargin: 0;\n\twidth: 100%;\n}\nbody {\n\tbackground: var(--color-background);\n\tfont-family: \"League Spartan\", monospace;\n\tfont-smooth: smooth; /* stylelint-disable property-no-unknown */\n\t-webkit-font-smoothing: antialiased;\n\toverflow: overlay;\n}\nbody,\n:link,\n:visited {\n\tcolor: var(--color-foreground);\n\ttext-decoration: none;\n}\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\np {\n\tmargin: 0;\n\tpadding: 0;\n}\n::selection {\n\tbackground: var(--color-foreground);\n\tcolor: var(--color-background);\n}\n.only-dark {\n\tdisplay: none;\n}\n@media (prefers-color-scheme: dark) {\n\t:root {\n\t\t--color-background: #323330;\n\t\t--color-foreground: #efdb4f;\n\t}\n\n\t.only-dark {\n\t\tdisplay: block;\n\t}\n\n\t.only-light {\n\t\tdisplay: none;\n\t}\n}\n","future":{"v3_fetcherPersist":false,"v3_relativeSplatPath":false,"v3_throwAbortReason":false,"unstable_singleFetch":true,"unstable_fogOfWar":false},"isSpaMode":false};window.__remixContext.stream = new ReadableStream({start(controller){window.__remixContext.streamController = controller;}}).pipeThrough(new TextEncoderStream());</script><script type="module" async="">import "/@id/__x00__virtual:remix/inject-hmr-runtime";import "/@id/__x00__virtual:remix/browser-manifest";
+import * as route0 from "/app/root.tsx";
+import * as route1 from "/app/routes/sponsors.tsx";
+
+window.__remixRouteModules = {"root":route0,"routes/sponsors":route1};
+
+import("/node_modules/@remix-run/dev/dist/config/defaults/entry.client.tsx");</script></body></html><!--$--><script>window.__remixContext.streamController.enqueue("[{\"1\":2,\"29\":-5,\"30\":-5},\"loaderData\",{\"3\":4,\"28\":-5},\"routes/sponsors\",{\"5\":6},\"currentSponsors\",[7,16,23],{\"8\":9,\"10\":11,\"12\":13,\"14\":15},\"description\",\"Join hundreds of people who choose Indy Hall as their work community, online and in person.\",\"href\",\"https://indyhall.org/\",\"imageHref\",\"/assets/logos/indy-hall.png\",\"name\",\"Indy Hall\",{\"17\":18,\"8\":19,\"10\":20,\"12\":21,\"14\":22},\"darkModeImageHref\",\"/assets/logos/liberty.png\",\"The essential destination site for technical job seekers.\",\"https://libertyjobs.com\",\"/assets/logos/liberty-regular.png\",\"Liberty Jobs\",{\"8\":24,\"10\":25,\"12\":26,\"14\":27},\"Connect, protect and build everywhere:  put the connectivity cloud to work for you.\",\"https://www.cloudflare.com/\",\"/assets/logos/cloudflare.png\",\"Cloudflare\",\"root\",\"actionData\",\"errors\"]\n");</script><!--$--><script>window.__remixContext.streamController.close();</script><!--/$--><!--/$-->
