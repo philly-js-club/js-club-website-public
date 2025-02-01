@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://phillyjs.com/</id>
+    <title>Philly JS Club</title>
+    <updated>2025-02-01T00:00:00.000Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://phillyjs.com"/>
+    <link rel="self" href="https://phillyjs.com/feed.atom"/>
+    <subtitle>A local community for talking about the things that excite us about Javascript development and the web.</subtitle>
+    <rights>All rights reserved 2025, Philly JS Club</rights>
+    <entry>
+        <title type="html"><![CDATA[TBD - Graham Vasquez]]></title>
+        <id>https://rsvp.place/events/phillyjs/6795094cf2058bee35445b26</id>
+        <link href="https://rsvp.place/events/phillyjs/6795094cf2058bee35445b26"/>
+        <updated>2025-04-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Apr 10 2025, Location: Indy Hall, Details: https://rsvp.place/events/phillyjs/6795094cf2058bee35445b26]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Management of Non-Functional Requirements for Multiple Teams - Artem Deikun]]></title>
+        <id>https://rsvp.place/events/phillyjs/679507e2cbe4f9cc0de0d22d</id>
+        <link href="https://rsvp.place/events/phillyjs/679507e2cbe4f9cc0de0d22d"/>
+        <updated>2025-03-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Mar 13 2025, Location: Indy Hall, Details: https://rsvp.place/events/phillyjs/679507e2cbe4f9cc0de0d22d]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Geospatial Engineering with John Solly Joint Meeting with DataPhilly]]></title>
+        <id>https://rsvp.place/events/phillyjs/679022b0b2853a80b4b3eba7</id>
+        <link href="https://rsvp.place/events/phillyjs/679022b0b2853a80b4b3eba7"/>
+        <updated>2025-02-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Feb 20 2025, Location: Indy Hall, Details: https://rsvp.place/events/phillyjs/679022b0b2853a80b4b3eba7]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Developing Websites Using the Astro Framework - Nick Hodges]]></title>
+        <id>https://rsvp.place/events/phillyjs/6768742c237d7ecce8dd81cc</id>
+        <link href="https://rsvp.place/events/phillyjs/6768742c237d7ecce8dd81cc"/>
+        <updated>2025-01-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Jan 09 2025, Location: Indy Hall, Details: https://rsvp.place/events/phillyjs/6768742c237d7ecce8dd81cc]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Type-Safe APIs For All Clients Powered by GraphQL - Graham Vasquez]]></title>
+        <id>https://rsvp.place/events/phillyjs/672404aa68cc286d23ab0d5d</id>
+        <link href="https://rsvp.place/events/phillyjs/672404aa68cc286d23ab0d5d"/>
+        <updated>2024-12-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Dec 12 2024, Location: Indy Hall, Details: https://rsvp.place/events/phillyjs/672404aa68cc286d23ab0d5d]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Join us for Hack Night]]></title>
+        <id>https://rsvp.place/events/phillyjs/6707225424f2c13ece9aba09</id>
+        <link href="https://rsvp.place/events/phillyjs/6707225424f2c13ece9aba09"/>
+        <updated>2024-11-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Nov 14 2024, Location: Indy Hall, Details: https://rsvp.place/events/phillyjs/6707225424f2c13ece9aba09]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Set Phasers to Love: Designing with Lit and Design Systems with Sarah Peony (Rescheduled)]]></title>
+        <id>https://rsvp.place/events/phillyjs/66dc524f0b06b60a16cbc1af</id>
+        <link href="https://rsvp.place/events/phillyjs/66dc524f0b06b60a16cbc1af"/>
+        <updated>2024-10-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Oct 10 2024, Location: Indy Hall, Details: https://rsvp.place/events/phillyjs/66dc524f0b06b60a16cbc1af]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[XSS Code Injection with Jason Voccia and Brainstorming Future Topics with Dalton Strang]]></title>
+        <id>https://rsvp.place/events/phillyjs/66b4fbb594b4cd1e6e1eff9b</id>
+        <link href="https://rsvp.place/events/phillyjs/66b4fbb594b4cd1e6e1eff9b"/>
+        <updated>2024-09-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Sep 12 2024, Location: Indy Hall, Details: https://rsvp.place/events/phillyjs/66b4fbb594b4cd1e6e1eff9b]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Richard Feldman on Async/Await without the Ecosystem Split]]></title>
+        <id>https://rsvp.place/events/phillyjs/669028e67aabde274a00f304</id>
+        <link href="https://rsvp.place/events/phillyjs/669028e67aabde274a00f304"/>
+        <updated>2024-08-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Aug 08 2024, Location: Indy Hall, Details: https://rsvp.place/events/phillyjs/669028e67aabde274a00f304]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Passwordless Authentication with Ceora Ford]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-js-club-passwordless-authentication-with-ceora-ford-tickets-925430005057</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-js-club-passwordless-authentication-with-ceora-ford-tickets-925430005057"/>
+        <updated>2024-07-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Jul 11 2024, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-js-club-passwordless-authentication-with-ceora-ford-tickets-925430005057]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Debug like a Scientist with Jason Voccia]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-js-club-debug-like-a-scientist-with-jason-voccia-tickets-899252126317</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-js-club-debug-like-a-scientist-with-jason-voccia-tickets-899252126317"/>
+        <updated>2024-06-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Jun 13 2024, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-js-club-debug-like-a-scientist-with-jason-voccia-tickets-899252126317]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Rooftop Social Hour]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-js-club-rooftop-social-hour-tickets-883420192577</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-js-club-rooftop-social-hour-tickets-883420192577"/>
+        <updated>2024-05-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu May 16 2024, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-js-club-rooftop-social-hour-tickets-883420192577]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Technical.ly Super Meetup during Philly Tech Week Join JS Club at the annual Super Meetup — use code "SUPERMEETUP" at the link for a free ticket!]]></title>
+        <id>https://www.eventbrite.com/e/technically-developers-conference-tickets-825942023827</id>
+        <link href="https://www.eventbrite.com/e/technically-developers-conference-tickets-825942023827"/>
+        <updated>2024-05-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Wed May 08 2024, Location: Pizzeria Salvy, Details: https://www.eventbrite.com/e/technically-developers-conference-tickets-825942023827]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Hot Module Replacement with Chasen Stark]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-js-club-hot-module-replacement-with-chasen-stark-tickets-863156082077</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-js-club-hot-module-replacement-with-chasen-stark-tickets-863156082077"/>
+        <updated>2024-04-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Apr 11 2024, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-js-club-hot-module-replacement-with-chasen-stark-tickets-863156082077]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Style and Authenticate Your Next.js App with Josh Goldberg & Joe Woods]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-js-club-style-authenticate-your-nextjs-app-w-josh-joe-tickets-828968245337</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-js-club-style-authenticate-your-nextjs-app-w-josh-joe-tickets-828968245337"/>
+        <updated>2024-03-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Mar 14 2024, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-js-club-style-authenticate-your-nextjs-app-w-josh-joe-tickets-828968245337]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Better JavaScript Code for "Free" with ESLint! with Cody Lewis]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-better-javascript-code-for-free-w-eslint-tickets-803507501567</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-better-javascript-code-for-free-w-eslint-tickets-803507501567"/>
+        <updated>2024-02-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Feb 08 2024, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-better-javascript-code-for-free-w-eslint-tickets-803507501567]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Project Showcase!]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-project-showcase-tickets-784514593267</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-project-showcase-tickets-784514593267"/>
+        <updated>2024-01-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Jan 11 2024, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-project-showcase-tickets-784514593267]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Behind the Code: Panel Discussion on Software Development Careers]]></title>
+        <id>https://www.eventbrite.com/e/behind-the-code-panel-discussion-on-software-development-careers-tickets-741030440997</id>
+        <link href="https://www.eventbrite.com/e/behind-the-code-panel-discussion-on-software-development-careers-tickets-741030440997"/>
+        <updated>2023-11-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Nov 09 2023, Location: Indy Hall, Details: https://www.eventbrite.com/e/behind-the-code-panel-discussion-on-software-development-careers-tickets-741030440997]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Hack Night at Iffy Books]]></title>
+        <id>https://www.eventbrite.com/e/philly-js-club-october-hack-night-tickets-729326343727</id>
+        <link href="https://www.eventbrite.com/e/philly-js-club-october-hack-night-tickets-729326343727"/>
+        <updated>2023-10-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Fri Oct 27 2023, Location: Iffy Books, Details: https://www.eventbrite.com/e/philly-js-club-october-hack-night-tickets-729326343727]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Program the Cloud in TypeScript with Josh Kodroff]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-program-the-cloud-in-typescript-tickets-695626937897</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-program-the-cloud-in-typescript-tickets-695626937897"/>
+        <updated>2023-10-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Oct 19 2023, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-program-the-cloud-in-typescript-tickets-695626937897]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Hack Night at Iffy Books]]></title>
+        <id>https://www.eventbrite.com/e/philly-js-club-september-hack-night-tickets-713047844297</id>
+        <link href="https://www.eventbrite.com/e/philly-js-club-september-hack-night-tickets-713047844297"/>
+        <updated>2023-09-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Fri Sep 22 2023, Location: Iffy Books, Details: https://www.eventbrite.com/e/philly-js-club-september-hack-night-tickets-713047844297]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Debugging JavaScript Applications with Matt Brophy]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-debugging-javascript-applications-tickets-695620659117</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-debugging-javascript-applications-tickets-695620659117"/>
+        <updated>2023-09-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Sep 14 2023, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-debugging-javascript-applications-tickets-695620659117]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Hack Night at Iffy Books]]></title>
+        <id>https://www.eventbrite.com/e/philly-js-club-august-hack-night-tickets-699155150877</id>
+        <link href="https://www.eventbrite.com/e/philly-js-club-august-hack-night-tickets-699155150877"/>
+        <updated>2023-08-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Fri Aug 25 2023, Location: Iffy Books, Details: https://www.eventbrite.com/e/philly-js-club-august-hack-night-tickets-699155150877]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Authenticate Your Next.js App with Auth0 with Ceora Ford]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-authenticate-your-nextjs-app-with-auth0-tickets-676231214767</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-authenticate-your-nextjs-app-with-auth0-tickets-676231214767"/>
+        <updated>2023-08-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Aug 10 2023, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-authenticate-your-nextjs-app-with-auth0-tickets-676231214767]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Hack Night at Iffy Books]]></title>
+        <id>https://www.eventbrite.com/e/philly-js-club-hack-night-tickets-675704709977</id>
+        <link href="https://www.eventbrite.com/e/philly-js-club-hack-night-tickets-675704709977"/>
+        <updated>2023-07-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Fri Jul 28 2023, Location: Iffy Books, Details: https://www.eventbrite.com/e/philly-js-club-hack-night-tickets-675704709977]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Image Processing with JavaScript with Colby Fayock and Joe Woods]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-image-processing-with-javascript-tickets-654081735077</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-image-processing-with-javascript-tickets-654081735077"/>
+        <updated>2023-07-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Jul 13 2023, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-image-processing-with-javascript-tickets-654081735077]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Scripted Philadelphia: a Python, JavaScript, and Ruby joint meetup]]></title>
+        <id>https://www.eventbrite.com/e/scripted-philadelphia-a-python-javascript-and-ruby-joint-meetup-tickets-626403759507</id>
+        <link href="https://www.eventbrite.com/e/scripted-philadelphia-a-python-javascript-and-ruby-joint-meetup-tickets-626403759507"/>
+        <updated>2023-06-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Jun 29 2023, Location: Jon M. Huntsman Hall, Details: https://www.eventbrite.com/e/scripted-philadelphia-a-python-javascript-and-ruby-joint-meetup-tickets-626403759507]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Developments in React Router (and Remix) with Matt Brophy]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-developments-in-react-router-and-remix-tickets-627760688117</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-developments-in-react-router-and-remix-tickets-627760688117"/>
+        <updated>2023-06-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Jun 08 2023, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-developments-in-react-router-and-remix-tickets-627760688117]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Contributing to Open Source Projects]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-contributing-to-open-source-projects-tickets-621853449407</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-contributing-to-open-source-projects-tickets-621853449407"/>
+        <updated>2023-05-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Wed May 17 2023, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-contributing-to-open-source-projects-tickets-621853449407]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Technical.ly Super Meetup during Philly Tech Week]]></title>
+        <id>https://www.eventbrite.com/e/technically-super-meetup-during-philly-tech-week-tickets-611213515077</id>
+        <link href="https://www.eventbrite.com/e/technically-super-meetup-during-philly-tech-week-tickets-611213515077"/>
+        <updated>2023-05-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Wed May 10 2023, Location: HealthVerity, Details: https://www.eventbrite.com/e/technically-super-meetup-during-philly-tech-week-tickets-611213515077]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[We're very excited to welcome Ken Rimple to share the latest developments in Next.js 13.x!]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-569920616907</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-569920616907"/>
+        <updated>2023-04-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Apr 20 2023, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-569920616907]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[We're very excited to welcome Alexa Stefanou from PhillyCHI to share her expertise with JavaScript Design Systems.]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-541868732967</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-541868732967"/>
+        <updated>2023-03-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Mar 09 2023, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-541868732967]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Social meeting / hack night]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-519965168817</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-519965168817"/>
+        <updated>2023-02-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Feb 09 2023, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-519965168817]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[JavaScript build systems + TypeScript projects]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-472565545267</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-472565545267"/>
+        <updated>2023-01-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Wed Jan 11 2023, Location: Indy Hall, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-472565545267]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Linting & Mastodon!]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-451216569907</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-451216569907"/>
+        <updated>2022-11-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Nov 10 2022, Location: Fastmail's Philadelphia HQ, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-451216569907]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Social meeting / sharing projects]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-420958005727</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-420958005727"/>
+        <updated>2022-10-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Oct 13 2022, Location: Fastmail's Philadelphia HQ, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-420958005727]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Social meeting / sharing projects]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-400972919797</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-400972919797"/>
+        <updated>2022-09-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Sep 08 2022, Location: Fastmail's Philadelphia HQ, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-400972919797]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Social meeting / sharing projects]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-387233926097</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-387233926097"/>
+        <updated>2022-08-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Aug 11 2022, Location: Fastmail's Philadelphia HQ, Details: https://www.eventbrite.com/e/philadelphia-javascript-club-tickets-387233926097]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Social meeting / sharing projects]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-meetup-tickets-370871054307</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-meetup-tickets-370871054307"/>
+        <updated>2022-07-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Jul 14 2022, Location: Fastmail's Philadelphia HQ, Details: https://www.eventbrite.com/e/philadelphia-javascript-meetup-tickets-370871054307]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Our very first meeting!]]></title>
+        <id>https://www.eventbrite.com/e/philadelphia-javascript-meetup-tickets-345760176997</id>
+        <link href="https://www.eventbrite.com/e/philadelphia-javascript-meetup-tickets-345760176997"/>
+        <updated>2022-06-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Jun 09 2022, Location: Fastmail's Philadelphia HQ, Details: https://www.eventbrite.com/e/philadelphia-javascript-meetup-tickets-345760176997]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+</feed>
