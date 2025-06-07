@@ -9,6 +9,16 @@
     <subtitle>A local community for talking about the things that excite us about Javascript development and the web.</subtitle>
     <rights>All rights reserved 2025, Philly JS Club</rights>
     <entry>
+        <title type="html"><![CDATA[Ray Tracing CGI the Hard Way (with JS) - Steve Reuterskiold]]></title>
+        <id>https://lu.ma/wjedj2vf</id>
+        <link href="https://lu.ma/wjedj2vf"/>
+        <updated>2025-07-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Jul 10 2025, Location: Indy Hall, Details: https://lu.ma/wjedj2vf]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[Debugging like it is 2025 - Jason Voccia]]></title>
         <id>https://lu.ma/upv4aecf</id>
         <link href="https://lu.ma/upv4aecf"/>
