@@ -9,6 +9,26 @@
     <subtitle>A local community for talking about the things that excite us about Javascript development and the web.</subtitle>
     <rights>All rights reserved 2025, Philly JS Club</rights>
     <entry>
+        <title type="html"><![CDATA[TBD - Waskar M. Paulino]]></title>
+        <id>https://lu.ma/48qjrzii</id>
+        <link href="https://lu.ma/48qjrzii"/>
+        <updated>2025-09-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Sep 11 2025, Location: Indy Hall, Details: https://lu.ma/48qjrzii]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Vim Motions: For Fun & Profit - Graham Vasquez]]></title>
+        <id>https://lu.ma/mqpg2ova</id>
+        <link href="https://lu.ma/mqpg2ova"/>
+        <updated>2025-08-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Aug 14 2025, Location: Indy Hall, Details: https://lu.ma/mqpg2ova]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[Ray Tracing CGI the Hard Way (with JS) - Steve Reuterskiold]]></title>
         <id>https://lu.ma/wjedj2vf</id>
         <link href="https://lu.ma/wjedj2vf"/>
