@@ -9,6 +9,16 @@
     <subtitle>A local community for talking about the things that excite us about Javascript development and the web.</subtitle>
     <rights>All rights reserved 2025, Philly JS Club</rights>
     <entry>
+        <title type="html"><![CDATA[The Heat Death of the CMS: Using Astro and Git to Build a Website - Blythe White]]></title>
+        <id>https://luma.com/0ta9bshb</id>
+        <link href="https://luma.com/0ta9bshb"/>
+        <updated>2025-10-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Oct 09 2025, Location: Indy Hall, Details: https://luma.com/0ta9bshb]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[Drop the Code: Real-Time Audio Visuals with JavaScript - Waskar M. Paulino]]></title>
         <id>https://lu.ma/48qjrzii</id>
         <link href="https://lu.ma/48qjrzii"/>
