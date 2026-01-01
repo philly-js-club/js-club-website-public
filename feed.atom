@@ -2,12 +2,12 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://phillyjs.com/</id>
     <title>Philly JS Club</title>
-    <updated>2025-12-01T00:00:00.000Z</updated>
+    <updated>2026-01-01T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://phillyjs.com"/>
     <link rel="self" href="https://phillyjs.com/feed.atom"/>
     <subtitle>A local community for talking about the things that excite us about Javascript development and the web.</subtitle>
-    <rights>All rights reserved 2025, Philly JS Club</rights>
+    <rights>All rights reserved 2026, Philly JS Club</rights>
     <entry>
         <title type="html"><![CDATA[Join us for Indy Hall's Holiday Party Register as Meetup Members and Organizers Note: 3rd Thursday of the Month]]></title>
         <id>https://luma.com/indy-hall-iday</id>
