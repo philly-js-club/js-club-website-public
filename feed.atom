@@ -9,6 +9,16 @@
     <subtitle>A local community for talking about the things that excite us about Javascript development and the web.</subtitle>
     <rights>All rights reserved 2026, Philly JS Club</rights>
     <entry>
+        <title type="html"><![CDATA[Code with Claude.ai]]></title>
+        <id>https://luma.com/mrpld8aw</id>
+        <link href="https://luma.com/mrpld8aw"/>
+        <updated>2026-01-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Jan 08 2026, Location: Indy Hall, Details: https://luma.com/mrpld8aw]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[Join us for Indy Hall's Holiday Party Register as Meetup Members and Organizers Note: 3rd Thursday of the Month]]></title>
         <id>https://luma.com/indy-hall-iday</id>
         <link href="https://luma.com/indy-hall-iday"/>
