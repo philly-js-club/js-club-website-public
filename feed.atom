@@ -9,7 +9,37 @@
     <subtitle>A local community for talking about the things that excite us about Javascript development and the web.</subtitle>
     <rights>All rights reserved 2026, Philly JS Club</rights>
     <entry>
-        <title type="html"><![CDATA[Code with Claude.ai]]></title>
+        <title type="html"><![CDATA[Design / Development: The Loop that Shapped Me - Dalton Strang]]></title>
+        <id>https://luma.com/hlokd8cw</id>
+        <link href="https://luma.com/hlokd8cw"/>
+        <updated>2026-04-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Apr 09 2026, Location: Indy Hall, Details: https://luma.com/hlokd8cw]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Introduction to Hotwire - Mike Dalton]]></title>
+        <id>https://luma.com/m0gmf9zp</id>
+        <link href="https://luma.com/m0gmf9zp"/>
+        <updated>2026-03-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Mar 12 2026, Location: Indy Hall, Details: https://luma.com/m0gmf9zp]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Understanding the Brain of Modern Code Editors: Language Server Protocols (LSP) - Graham Vasquez]]></title>
+        <id>https://luma.com/py779csx</id>
+        <link href="https://luma.com/py779csx"/>
+        <updated>2026-02-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Thu Feb 12 2026, Location: Indy Hall, Details: https://luma.com/py779csx]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Code with Claude.ai - Jason Voccia]]></title>
         <id>https://luma.com/mrpld8aw</id>
         <link href="https://luma.com/mrpld8aw"/>
         <updated>2026-01-01T00:00:00.000Z</updated>
