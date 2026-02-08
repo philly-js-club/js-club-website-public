@@ -9,16 +9,6 @@
     <subtitle>A local community for talking about the things that excite us about Javascript development and the web.</subtitle>
     <rights>All rights reserved 2026, Philly JS Club</rights>
     <entry>
-        <title type="html"><![CDATA[Hackathon - The Big Philly Meetup Mashup]]></title>
-        <id>https://indyhall.org/goodneighbors/</id>
-        <link href="https://indyhall.org/goodneighbors/"/>
-        <updated>2026-03-01T00:00:00.000Z</updated>
-        <content type="html"><![CDATA[Date: Sun Mar 15 2026, Location: undefined, Details: https://indyhall.org/goodneighbors/]]></content>
-        <author>
-            <name>PhillyJS Club</name>
-        </author>
-    </entry>
-    <entry>
         <title type="html"><![CDATA[Design / Development: The Loop that Shapped Me - Dalton Strang]]></title>
         <id>https://luma.com/hlokd8cw</id>
         <link href="https://luma.com/hlokd8cw"/>
@@ -34,6 +24,16 @@
         <link href="https://luma.com/m0gmf9zp"/>
         <updated>2026-03-01T00:00:00.000Z</updated>
         <content type="html"><![CDATA[Date: Thu Mar 12 2026, Location: Indy Hall, Details: https://luma.com/m0gmf9zp]]></content>
+        <author>
+            <name>PhillyJS Club</name>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Hackathon - The Big Philly Meetup Mashup]]></title>
+        <id>https://indyhall.org/goodneighbors/</id>
+        <link href="https://indyhall.org/goodneighbors/"/>
+        <updated>2026-03-01T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[Date: Sun Mar 15 2026, Location: undefined, Details: https://indyhall.org/goodneighbors/]]></content>
         <author>
             <name>PhillyJS Club</name>
         </author>
